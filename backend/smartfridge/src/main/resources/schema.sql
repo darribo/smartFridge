@@ -1,0 +1,47 @@
+DROP TABLE IF EXISTS UserHousehold;
+DROP TABLE IF EXISTS UserAllergy;
+DROP TABLE IF EXISTS RefreshToken;
+DROP TABLE IF EXISTS Allergy;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS Household;
+
+
+CREATE TABLE users (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    userName VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    firstName VARCHAR(50) NOT NULL,
+    lastName VARCHAR(50) NOT NULL,
+    avatar VARCHAR(255),
+    role TINYINT NOT NULL
+);
+
+CREATE TABLE Household (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    countryCode VARCHAR(10) NOT NULL,
+    regionCode VARCHAR(10) NOT NULL,
+    regionName VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE UserHousehold (
+    userId BIGINT NOT NULL,
+    householdId BIGINT NOT NULL,
+    PRIMARY KEY (userId, householdId),
+    FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (householdId) REFERENCES Household(id) ON DELETE CASCADE
+);
+
+CREATE TABLE Allergy (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    tag VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE UserAllergy (
+    userId BIGINT NOT NULL,
+    allergyId BIGINT NOT NULL,
+    PRIMARY KEY (userId, allergyId),
+    FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (allergyId) REFERENCES Allergy(id) ON DELETE CASCADE
+);
