@@ -1,0 +1,27 @@
+{
+  "register": {
+    "title": "Join smartFridge",
+    "subtitle": "Manage your pantry and cook smart",
+    "firstName": "First name",
+    "firstNamePlaceholder": "Your name",
+    "lastName": "Last name",
+    "lastNamePlaceholder": "Your last name",
+    "username": "Username",
+    "usernamePlaceholder": "user_smartfridge",
+    "email": "Email address",
+    "emailPlaceholder": "example@agmail.com",
+    "password": "Password",
+    "passwordPlaceholder": "Minimum 8 characters",
+    "confirmPassword": "Confirm your password",
+    "confirmPasswordPlaceholder": "Minimum 8 characters",
+    "passwordsDoNotMatch": "Passwords are not equals",
+    "submit": "Create account"
+  },
+
+  "genericErrors": {
+    "requiredField": "Field required",
+    "min": "The maximum number of characters is {{min}}",
+    "max": "The maximum number of characters is {{max}}",
+    "emailInvalid": "Invalid email"
+  }
+}
