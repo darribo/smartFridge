@@ -2,25 +2,67 @@ package es.udc.bonilla.rivera.daniel.rest.dtos;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+@Schema(
+    name = "NewUserParams",
+    description = "Parámetros necesarios para el registro de un nuevo usuario"
+)
 public class NewUserParamsDto {
 
+    @Schema(
+        description = "Nombre de usuario único",
+        example = "darribo1501",
+        minLength = 1,
+        maxLength = 50
+    )
     private String userName;
 
+    @Schema(
+        description = "Contraseña del usuario (mínimo 8 caracteres)",
+        example = "Str0ngPass123!",
+        minLength = 8,
+        maxLength = 100
+    )
     private String password;
 
+    @Schema(
+        description = "Correo electrónico del usuario",
+        example = "joaquin@email.com"
+    )
     private String email;
 
+    @Schema(
+        description = "Nombre real del usuario",
+        example = "Daniel",
+        minLength = 1,
+        maxLength = 50
+    )
     private String firstName;
 
+    @Schema(
+        description = "Apellidos del usuario",
+        example = "Rivera Bonilla",
+        minLength = 1,
+        maxLength = 50
+    )
     private String lastName;
 
+    @Schema(
+        description = "Avatar del usuario (URL o imagen codificada en Base64)",
+        example = "https://example.com/avatar.png"
+    )
     private String avatar;
 
+    @Schema(
+        description = "Lista de identificadores de alergias asociadas al usuario",
+        example = "[1, 3, 7]",
+        nullable = true
+    )
     private List<Long> allergyIds;
 
     public NewUserParamsDto() {}

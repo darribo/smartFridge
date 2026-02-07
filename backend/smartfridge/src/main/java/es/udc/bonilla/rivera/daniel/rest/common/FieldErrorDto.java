@@ -1,8 +1,23 @@
 package es.udc.bonilla.rivera.daniel.rest.common;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(
+    name = "FieldError",
+    description = "Error de validación asociado a un campo concreto de la petición"
+)
 public class FieldErrorDto {
 
+    @Schema(
+        description = "Nombre del campo que contiene el error",
+        example = "email"
+    )
     private String fieldName;
+
+    @Schema(
+        description = "Mensaje de error legible para el usuario",
+        example = "Formato de email inválido"
+    )
     private String message;
 
 

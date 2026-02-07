@@ -7,6 +7,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 public class SecurityConfig {
@@ -20,8 +23,10 @@ public class SecurityConfig {
         http
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) //El servidor no guarda información de sesión entre peticiones
             .csrf(csrf -> csrf.disable()) //Se deshabilita CSRF porque no se usan cookies de sesión en Bearer Tokens
-            .cors(cors -> cors.disable()) //Se deshabilita CORS porque no se usan cookies de sesión en Bearer Tokens
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/docs/**").permitAll() //Se permite el acceso sin autenticar a la documentación Swagger
+                .requestMatchers("/swagger-ui/**").permitAll() //Se permite el acceso sin autenticar a la documentación Swagger
                 .requestMatchers("/users/signUp").permitAll() //Se permite el acceso sin autenticar a las rutas de login y refresh
                 .anyRequest().authenticated() //El resto de rutas requieren autenticación
             )
@@ -29,5 +34,21 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOriginPattern("*");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
+
+    
 
 }

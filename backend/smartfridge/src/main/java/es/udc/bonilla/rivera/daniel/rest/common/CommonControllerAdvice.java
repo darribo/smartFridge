@@ -17,6 +17,10 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 @ControllerAdvice
 public class CommonControllerAdvice {
@@ -27,6 +31,26 @@ public class CommonControllerAdvice {
     @Autowired
     private MessageSource messageSource;
 
+
+	@ApiResponse(
+        responseCode = "400",
+        description = "Error de validación de cuerpo (Bean Validation en @RequestBody). Devuelve una lista de errores por campo.",
+        content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(implementation = ErrorsDto.class),
+            examples = @ExampleObject(
+                name = "Errores de validación",
+                value = """
+                {
+                  "fieldErrors": [
+                    { "field": "email", "message": "Formato de email inválido" },
+                    { "field": "password", "message": "Debe tener al menos 8 caracteres" }
+                  ]
+                }
+                """
+            )
+        )
+    )
     @ExceptionHandler(MethodArgumentNotValidException.class)
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ResponseBody
@@ -40,6 +64,22 @@ public class CommonControllerAdvice {
 
 	}
 
+	@ApiResponse(
+        responseCode = "404",
+        description = "Recurso no encontrado (InstanceNotFoundException). Devuelve un mensaje global.",
+        content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(implementation = ErrorsDto.class),
+            examples = @ExampleObject(
+                name = "No encontrado",
+                value = """
+                {
+                  "globalError": "No existe el usuario con id 42"
+                }
+                """
+            )
+        )
+    )
 	@ExceptionHandler(InstanceNotFoundException.class)
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	@ResponseBody
@@ -53,6 +93,22 @@ public class CommonControllerAdvice {
 
 	}
 
+	@ApiResponse(
+        responseCode = "400",
+        description = "Recurso duplicado (DuplicateInstanceException). Devuelve un mensaje global.",
+        content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(implementation = ErrorsDto.class),
+            examples = @ExampleObject(
+                name = "Duplicado",
+                value = """
+                {
+                  "globalError": "Ya existe el usuario con email test@email.com"
+                }
+                """
+            )
+        )
+    )
 	@ExceptionHandler(DuplicateInstanceException.class)
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ResponseBody
@@ -66,6 +122,24 @@ public class CommonControllerAdvice {
 
 	}
 
+	@ApiResponse(
+        responseCode = "400",
+        description = "Error de validación de parámetros (Bean Validation en @RequestParam/@PathVariable). Devuelve una lista de errores por campo/parámetro.",
+        content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(implementation = ErrorsDto.class),
+            examples = @ExampleObject(
+                name = "Errores en parámetros",
+                value = """
+                {
+                  "fieldErrors": [
+                    { "field": "userId", "message": "debe ser mayor que 0" }
+                  ]
+                }
+                """
+            )
+        )
+    )
 	@ExceptionHandler(HandlerMethodValidationException.class)
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ResponseBody

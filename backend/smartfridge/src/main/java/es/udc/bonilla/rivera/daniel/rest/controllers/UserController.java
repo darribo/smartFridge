@@ -19,14 +19,24 @@ import es.udc.bonilla.rivera.daniel.model.entities.Allergy;
 import es.udc.bonilla.rivera.daniel.model.entities.User;
 import es.udc.bonilla.rivera.daniel.model.services.AllergyService;
 import es.udc.bonilla.rivera.daniel.model.services.UserService;
+import es.udc.bonilla.rivera.daniel.rest.common.ErrorsDto;
 import es.udc.bonilla.rivera.daniel.rest.common.JwtGenerator;
 import es.udc.bonilla.rivera.daniel.rest.common.JwtInfo;
 import es.udc.bonilla.rivera.daniel.rest.dtos.AuthenticatedUserDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewUserParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.UserConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.UserDto;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
-
+@Tag(
+    name = "Usuarios",
+    description = "Operaciones relacionadas con usuarios, sus datos y sus alergias."
+)
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -40,6 +50,18 @@ public class UserController {
     @Autowired
     private AllergyService allergyService;
 
+    @Operation(
+        summary = "Crear un nuevo usuario",
+        description = "Crea un nuevo usuario con sus datos y alergias asociadas."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Usuario creado",
+            content = @Content(schema = @Schema(implementation = AuthenticatedUserDto.class))),
+        @ApiResponse(responseCode = "404", description = "Alergia no encontrada",
+            content = @Content(schema = @Schema(implementation = ErrorsDto.class))),
+        @ApiResponse(responseCode = "400", description = "Nombre de usuario o email duplicado",
+            content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
+    })
     @PostMapping("/signUp")
     public ResponseEntity<AuthenticatedUserDto> signUp(@RequestBody @Validated NewUserParamsDto userDto) throws InstanceNotFoundException, DuplicateInstanceException {
 
