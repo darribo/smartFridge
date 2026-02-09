@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +43,9 @@ class UserServiceTest {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
     private User signUpUser(String userName, String email) {
 
         User user = new User(userName, ENCODED_PASSWORD, email, "Daniel", "Rivera", "avatar.png", User.Role.USER);
@@ -57,6 +61,44 @@ class UserServiceTest {
     private Household createHousehold(String name) {
         Household household = new Household(name, "ISO 3166-1", "ES-GA", "Galicia");
         return householdDao.save(household);
+    }
+
+    // -------------------------------------------------------------------------
+    // SignUp
+    // -------------------------------------------------------------------------
+
+    @Test
+    void signUpValid() throws Exception {
+
+        User created = userService.signUp("dani", "secret", "dani@example.com", "Daniel", "Rivera", "avatar.png");
+
+        assertNotNull(created);
+        assertNotNull(created.getId());
+        assertEquals("dani", created.getUserName());
+        assertEquals("dani@example.com", created.getEmail());
+        assertEquals("Daniel", created.getFirstName());
+        assertEquals("Rivera", created.getLastName());
+        assertEquals("avatar.png", created.getAvatar());
+        assertEquals(User.Role.USER, created.getRole());
+        assertEquals(true, passwordEncoder.matches("secret", created.getPassword()));
+    }
+
+    @Test
+    void signUpDuplicateUserName() {
+
+        signUpUser("dani", "dani@example.com");
+
+        assertThrows(DuplicateInstanceException.class,
+            () -> userService.signUp("dani", "secret", "dani2@example.com", "Daniel", "Rivera", "avatar.png"));
+    }
+
+    @Test
+    void signUpDuplicateEmail() {
+
+        signUpUser("dani", "dani@example.com");
+
+        assertThrows(DuplicateInstanceException.class,
+            () -> userService.signUp("dani2", "secret", "dani@example.com", "Daniel", "Rivera", "avatar.png"));
     }
 
     // -------------------------------------------------------------------------
