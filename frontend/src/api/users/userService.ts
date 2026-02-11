@@ -1,4 +1,4 @@
-import { ApiError, appFetch, fetchConfig, setReauthenticationCallback, setServiceToken } from "./appFetch"
+import { ApiError, appFetch, fetchConfig, setReauthenticationCallback, setServiceToken } from "../appFetch"
 
 export type NewUserParams = {
   userName: string;
@@ -6,8 +6,8 @@ export type NewUserParams = {
   email: string;
   firstName: string;
   lastName: string;
-  // avatar?: string;        //TODO: ¿Meter?
-  // allergyIds?: number[];  //TODO: Meter
+  // avatar?: string; TODO: ¿Meter?
+  allergyIds?: number[];
 };
 
 
@@ -39,11 +39,11 @@ const processLoginSignUp = async (authenticatedUser: AuthenticatedUser, reauthen
 
 export const signUp = async (user: NewUserParams, onSuccess?: (auth: AuthenticatedUser) => void, onError?: (err: ApiError) => void, reauthenticationCallback?: () => void) => {
     
-    const body = { ...user, avatar: "placeholder", allergyIds: []}; //TODO: Meter avatar y alergias con todo lo demás
+    const body = { ...user, avatar: "placeholder"}; //TODO: Meter avatar
     
     const options = await fetchConfig("POST", body);
     
-    appFetch(
+    return appFetch(
         "/users/signUp",
         options,
         (auth) => {

@@ -1,11 +1,13 @@
 import { ScrollView, View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import { FormLabel } from "../../components/FormLabel";
-import { useState, } from "react";
+import { useEffect, useState, } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { InputLabel } from "../../components/InputLabel";
+import { InputLabel } from "../../components/users/InputLabel";
 import { PrimaryButton } from "../../components/PrimaryButton";
-import { signUp } from "../../api/userService";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { AuthStackParamList } from "../../navigation/AuthStack";
+import type { NativeStackScreenProps, NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 type RegisterErrors = Partial<{ //Partial convierte todos los atributos en campos opcionales 
   firstName: string;
@@ -18,8 +20,11 @@ type RegisterErrors = Partial<{ //Partial convierte todos los atributos en campo
 
 const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 
-export const RegisterScreen = () => {
+type Props = NativeStackScreenProps<AuthStackParamList, "Register">;
+type Navigation = NativeStackNavigationProp<AuthStackParamList>;
 
+export const RegisterScreen = ({ navigation, route }: Props) => {
+    
     const { t } = useTranslation();
 
     const[showPassword, setShowPassword] = useState(false);
@@ -34,32 +39,30 @@ export const RegisterScreen = () => {
     const [errors, setErrors] = useState<RegisterErrors>({});
 
     const validate = (): RegisterErrors => {
-    const e: RegisterErrors = {};
+        const e: RegisterErrors = {};
 
-    if (!firstName.trim()) e.firstName = t("genericErrors.requiredField");
-    else if (firstName.trim().length > 50) e.firstName = t("genericErrors.max", { max: 50 });
+        if (!firstName.trim()) e.firstName = t("genericErrors.requiredField");
+        else if (firstName.trim().length > 50) e.firstName = t("genericErrors.max", { max: 50 });
 
-    if (!lastName.trim()) e.lastName = t("genericErrors.requiredField");
-    else if (firstName.trim().length > 50) e.firstName = t("genericErrors.max", { max: 50 });
+        if (!lastName.trim()) e.lastName = t("genericErrors.requiredField");
+        else if (lastName.trim().length > 50) e.lastName = t("genericErrors.max", { max: 50 });
 
-    if (!username.trim()) e.username = t("genericErrors.requiredField");
-    else if (username.trim().length > 50) e.username = t("genericErrors.max", { max: 50 });
+        if (!username.trim()) e.username = t("genericErrors.requiredField");
+        else if (username.trim().length > 50) e.username = t("genericErrors.max", { max: 50 });
 
-    if (!email.trim()) e.email = t("genericErrors.requiredField");
-    else if (email.trim().length > 100) e.email = t("genericErrors.max", { max: 100 });
-    else if (!isEmail(email)) e.email = t("genericErrors.emailInvalid");
+        if (!email.trim()) e.email = t("genericErrors.requiredField");
+        else if (email.trim().length > 100) e.email = t("genericErrors.max", { max: 100 });
+        else if (!isEmail(email)) e.email = t("genericErrors.emailInvalid");
 
-    if (!password) e.password = t("genericErrors.requiredField");
-    else if (password.length < 8) e.password = t("genericErrors.min", { min: 8 });
-    else if (password.length > 100) e.password = t("genericErrors.max", { max: 100 });
+        if (!password) e.password = t("genericErrors.requiredField");
+        else if (password.length < 8) e.password = t("genericErrors.min", { min: 8 });
+        else if (password.length > 100) e.password = t("genericErrors.max", { max: 100 });
 
-    if (!confirmPassword) e.confirmPassword = t("genericErrors.requiredField");
-    else if (confirmPassword !== password) e.confirmPassword = t("register.passwordsDoNotMatch");
+        if (!confirmPassword) e.confirmPassword = t("genericErrors.requiredField");
+        else if (confirmPassword !== password) e.confirmPassword = t("register.passwordsDoNotMatch");
 
-    return e;
-};
-
-
+        return e;
+    };
 
     const onSubmit = async () => {
         const e = validate();
@@ -75,11 +78,8 @@ export const RegisterScreen = () => {
             password,
         };
 
-        await signUp (
-            user,
-            (auth) => console.log(`Registrado el usuario con token ${auth.serviceToken}`),
-            (err) => console.log("Liada gorda")
-        )
+        navigation.navigate("Allergies", { user });
+        
     };
 
     const clearError = (key: keyof RegisterErrors) => {
@@ -87,95 +87,113 @@ export const RegisterScreen = () => {
         setErrors((prev) => ({ ...prev, [key]: undefined }));
     };
 
+    //Muestra errores en caso de venir de la pantalla anterior.
+    useEffect(() => {
+        const err = route.params?.backendError;
+        if (!err?.fieldErrors) return;
+
+        const fe = err.fieldErrors;
+        setErrors((prev) => ({
+            ...prev,
+            username: fe.userName ? (Array.isArray(fe.userName) ? fe.userName[0] : fe.userName) : prev.username,
+            email: fe.email ? (Array.isArray(fe.email) ? fe.email[0] : fe.email) : prev.email,
+            password: fe.password ? (Array.isArray(fe.password) ? fe.password[0] : fe.password) : prev.password,
+        }));
+    }, [route.params?.backendError]);
+
+
     return (
-        <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
 
-        <View style={styles.logoWrap}>
-            <Ionicons name="restaurant" size={30} color="#2bee7c" />
-        </View>
+        <SafeAreaView style={{ flex: 1 }}>
+            <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
 
-        <Text style={styles.title}>{t("register.title")}</Text>
-        <Text style={styles.subtitle}>
-            {t("register.subtitle")}
-        </Text>
+                <View style={styles.logoWrap}>
+                    <Ionicons name="restaurant" size={30} color="#2bee7c" />
+                </View>
 
-        
-        {/* 2 columnas Nombre / Apellidos */}
-        <View style={styles.row2}>
-            <View style={{ flex: 1 }}>
-            <FormLabel text={t("register.firstName")} />
-            <InputLabel
-                placeholder={t("register.firstNamePlaceholder")}
-                value={firstName}
-                onChangeText={(v) => { setFirstName(v); clearError("firstName"); }}
-                returnKeyType="next"
-                errorText={errors.firstName}
-            />
-            </View>
+                <Text style={styles.title}>{t("register.title")}</Text>
+                <Text style={styles.subtitle}>
+                    {t("register.subtitle")}
+                </Text>
 
-            <View style={{ width: 12 }} />
+                
+                {/* 2 columnas Nombre / Apellidos */}
+                <View style={styles.row2}>
+                    <View style={{ flex: 1 }}>
+                    <FormLabel text={t("register.firstName")} />
+                    <InputLabel
+                        placeholder={t("register.firstNamePlaceholder")}
+                        value={firstName}
+                        onChangeText={(v) => { setFirstName(v); clearError("firstName"); }}
+                        returnKeyType="next"
+                        errorText={errors.firstName}
+                    />
+                    </View>
 
-            <View style={{ flex: 1 }}>
-            <FormLabel text={t("register.lastName")} />
-            <InputLabel
-                placeholder={t("register.lastNamePlaceholder")}
-                value={lastName}
-                onChangeText={(v) => { setLastName(v); clearError("lastName"); }}
-                returnKeyType="next"
-                errorText={errors.lastName}
-            />
-            </View>
-        </View>
+                    <View style={{ width: 12 }} />
 
-        <FormLabel text={t("register.username")} />
-        <InputLabel
-            leftIcon="at"
-            placeholder={t("register.usernamePlaceholder")}
-            autoCapitalize="none"
-            value={username}
-            onChangeText={(v) => { setUsername(v); clearError("username"); }}
-            returnKeyType="next"
-            errorText={errors.username}
-        />
+                    <View style={{ flex: 1 }}>
+                    <FormLabel text={t("register.lastName")} />
+                    <InputLabel
+                        placeholder={t("register.lastNamePlaceholder")}
+                        value={lastName}
+                        onChangeText={(v) => { setLastName(v); clearError("lastName"); }}
+                        returnKeyType="next"
+                        errorText={errors.lastName}
+                    />
+                    </View>
+                </View>
 
-        <FormLabel text={t("register.email")} />
-        <InputLabel
-            leftIcon="mail"
-            placeholder={t("register.emailPlaceholder")}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={(v) => { setEmail(v); clearError("email"); }}
-            returnKeyType="next"
-            errorText={errors.email}
-        />
+                <FormLabel text={t("register.username")} />
+                <InputLabel
+                    leftIcon="at"
+                    placeholder={t("register.usernamePlaceholder")}
+                    autoCapitalize="none"
+                    value={username}
+                    onChangeText={(v) => { setUsername(v); clearError("username"); }}
+                    returnKeyType="next"
+                    errorText={errors.username}
+                />
 
-        <FormLabel text={t("register.password")} />
-        <InputLabel
-            leftIcon="lock-closed"
-            rightIcon={showPassword ? "eye-off" : "eye"}
-            onRightIconPress={() => setShowPassword((v) => !v)}
-            placeholder={t("register.passwordPlaceholder")}
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={(v) => { setPassword(v); clearError("password"); }}
-            returnKeyType="done"
-            errorText={errors.password}
-        />
+                <FormLabel text={t("register.email")} />
+                <InputLabel
+                    leftIcon="mail"
+                    placeholder={t("register.emailPlaceholder")}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    value={email}
+                    onChangeText={(v) => { setEmail(v); clearError("email"); }}
+                    returnKeyType="next"
+                    errorText={errors.email}
+                />
 
-        <FormLabel text={t("register.confirmPassword")} />
-        <InputLabel
-            leftIcon="lock-closed"
-            placeholder={t("register.confirmPasswordPlaceholder")}
-            secureTextEntry={!showPassword}
-            value={confirmPassword}
-            onChangeText={(v) => { setConfirmPassword(v); clearError("confirmPassword"); }}
-            returnKeyType="done"
-            errorText={errors.confirmPassword}
-        />
+                <FormLabel text={t("register.password")} />
+                <InputLabel
+                    leftIcon="lock-closed"
+                    rightIcon={showPassword ? "eye-off" : "eye"}
+                    onRightIconPress={() => setShowPassword((v) => !v)}
+                    placeholder={t("register.passwordPlaceholder")}
+                    secureTextEntry={!showPassword}
+                    value={password}
+                    onChangeText={(v) => { setPassword(v); clearError("password"); }}
+                    returnKeyType="done"
+                    errorText={errors.password}
+                />
 
-        <PrimaryButton text={t("register.submit")} onPress={onSubmit}/>
-        </ScrollView>
+                <FormLabel text={t("register.confirmPassword")} />
+                <InputLabel
+                    leftIcon="lock-closed"
+                    placeholder={t("register.confirmPasswordPlaceholder")}
+                    secureTextEntry={!showPassword}
+                    value={confirmPassword}
+                    onChangeText={(v) => { setConfirmPassword(v); clearError("confirmPassword"); }}
+                    returnKeyType="done"
+                    errorText={errors.confirmPassword}
+                />
+
+                <PrimaryButton text={t("register.submit")} onPress={onSubmit}/>
+            </ScrollView>
+        </SafeAreaView>
     );
 }
 

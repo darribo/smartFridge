@@ -5,11 +5,13 @@ import { config } from "../config/constants";
 export type ApiError = {
   globalErrors: string[];
   fieldErrors?: Record<string, string[] | string>;
+  isTimeout?: boolean;
   [k: string]: any;
 };
 
 let networkErrorCallback: ((e: ApiError) => void) | undefined;
 let reauthenticationCallback: (() => void) | undefined;
+let lastRequestCallback: (() => Promise<void>) | undefined;
 
 export const init = (cb: (e: ApiError) => void) => (networkErrorCallback = cb);
 export const setReauthenticationCallback = (cb: () => void) => (reauthenticationCallback = cb);
@@ -22,6 +24,12 @@ export const getServiceToken = async () =>
 
 export const removeServiceToken = async () =>
   AsyncStorage.removeItem(config.SERVICE_TOKEN_KEY);
+
+export const retryLastRequest = async () => {
+  if (!lastRequestCallback) return false;
+  await lastRequestCallback();
+  return true;
+};
 
 const isJson = (response: Response) => {
   const contentType = response.headers.get("content-type");
@@ -69,12 +77,24 @@ export const appFetch = async <T = any>(
   path: string,
   options: RequestInit,
   onSuccess?: (payload: T) => void,
-  onErrors?: (err: ApiError) => void
+  onErrors?: (err: ApiError) => void,
+  trackAsLastRequest = true
 ) => {
   const url = `${config.BASE_URL}${path}`;
+  if (trackAsLastRequest) {
+    lastRequestCallback = async () => {
+      await appFetch(path, options, onSuccess, onErrors, false);
+    };
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, config.REQUEST_TIMEOUT_MS);
 
   try {
-    const response = await fetch(url, options);
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(timeoutId);
 
     if (response.ok) {
       if (!onSuccess) return;
@@ -105,7 +125,12 @@ export const appFetch = async <T = any>(
     else if (networkErrorCallback) networkErrorCallback(err);
     else console.error("appFetch error:", err);
   } catch (e: any) {
-    const err: ApiError = { globalErrors: [e?.message || "Error de red"] };
+    clearTimeout(timeoutId);
+    const isTimeout = e?.name === "AbortError";
+    const err: ApiError = {
+      globalErrors: [isTimeout ? "La petición excedió el tiempo de espera" : e?.message || "Error de red"],
+      isTimeout,
+    };
 
     if (onErrors) onErrors(err);
     else if (networkErrorCallback) networkErrorCallback(err);

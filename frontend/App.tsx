@@ -1,7 +1,9 @@
-import { RegisterScreen } from "./src/screens/user/RegisterScreen";
 import "./src/i18n/i18n";
 
 import { init, setReauthenticationCallback, removeServiceToken } from "./src/api/appFetch";
+import { AuthStack } from "./src/navigation/AuthStack";
+import { NavigationContainer } from "@react-navigation/native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function App() {
   //Inicializa handler global de errores
@@ -13,6 +15,10 @@ export default function App() {
   });
 
   return (
-   <RegisterScreen />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NavigationContainer>
+        <AuthStack />
+      </NavigationContainer>
+    </GestureHandlerRootView>
   );
 }

@@ -1,4 +1,17 @@
 {
+  "common": {
+    "loading": "Loading…",
+    "retry": "Retry",
+    "understood": "Got it"
+  },
+
+  "genericErrors": {
+    "requiredField": "Field required",
+    "min": "The maximum number of characters is {{min}}",
+    "max": "The maximum number of characters is {{max}}",
+    "emailInvalid": "Invalid email"
+  },
+
   "register": {
     "title": "Join smartFridge",
     "subtitle": "Manage your pantry and cook smart",
@@ -17,11 +30,14 @@
     "passwordsDoNotMatch": "Passwords are not equals",
     "submit": "Create account"
   },
-
-  "genericErrors": {
-    "requiredField": "Field required",
-    "min": "The maximum number of characters is {{min}}",
-    "max": "The maximum number of characters is {{max}}",
-    "emailInvalid": "Invalid email"
+  
+  "allergy": {
+    "title": "Select your allergies",
+    "subtitle": "This helps us recommend safe recipes for you.",
+    "loadError": "Unable to load allergies",
+    "continue": "Continue",
+    "noAllergies": "I have no allergies",
+    "detail": "Detailed information",
+    "explanation": "By selecting this option, we will automatically filter out recipes that contain ingredients related to {{allergy}}."
   }
 }
