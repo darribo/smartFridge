@@ -21,6 +21,7 @@ import es.udc.bonilla.rivera.daniel.model.entities.Household;
 import es.udc.bonilla.rivera.daniel.model.entities.User;
 import es.udc.bonilla.rivera.daniel.model.entities.UserAllergy;
 import es.udc.bonilla.rivera.daniel.model.entities.UserHousehold;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.IncorrectLoginException;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -344,5 +345,61 @@ class UserServiceTest {
 
         assertThrows(InstanceNotFoundException.class,
             () -> userService.removeUserHousehold(user.getId(), household.getId()));
+    }
+
+    // -------------------------------------------------------------------------
+    // Login
+    // -------------------------------------------------------------------------
+
+    @Test
+    void loginValid() throws Exception {
+
+        String rawPassword = "secret";
+        User user = new User("daniel", passwordEncoder.encode(rawPassword), "daniel@example.com",
+            "Daniel", "Rivera", "avatar.png", User.Role.USER);
+        user = userDao.save(user);
+
+        User loggedUser = userService.login("daniel", rawPassword);
+
+        assertNotNull(loggedUser);
+        assertEquals(user.getId(), loggedUser.getId());
+        assertEquals("daniel", loggedUser.getUserName());
+        assertEquals("daniel@example.com", loggedUser.getEmail());
+    }
+
+    @Test
+    void loginWithANonExistingUserName() {
+
+        assertThrows(IncorrectLoginException.class,
+            () -> userService.login("non-existing-user", "secret"));
+    }
+
+    @Test
+    void loginWithWrongPassword() {
+
+        User user = new User("daniel", passwordEncoder.encode("secret"), "daniel@example.com",
+            "Daniel", "Rivera", "avatar.png", User.Role.USER);
+        userDao.save(user);
+
+        assertThrows(IncorrectLoginException.class,
+            () -> userService.login("daniel", "wrong-password"));
+    }
+
+    @Test
+    void loginFromIdValid() throws Exception {
+
+        User user = signUpUser("daniel", "daniel@example.com");
+
+        User loggedUser = userService.loginFromId(user.getId());
+
+        assertNotNull(loggedUser);
+        assertEquals(user.getId(), loggedUser.getId());
+        assertEquals("daniel", loggedUser.getUserName());
+    }
+
+    @Test
+    void loginFromIdWithANonExistingId() {
+        assertThrows(InstanceNotFoundException.class,
+            () -> userService.loginFromId(NON_EXISTING_ID));
     }
 }

@@ -1,4 +1,4 @@
-import { ScrollView, View, Text, StyleSheet } from "react-native";
+import { ScrollView, View, Text, StyleSheet, Pressable } from "react-native";
 import { useTranslation } from "react-i18next";
 import { FormLabel } from "../../components/FormLabel";
 import { useEffect, useState, } from "react";
@@ -7,7 +7,7 @@ import { InputLabel } from "../../components/users/InputLabel";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthStackParamList } from "../../navigation/AuthStack";
-import type { NativeStackScreenProps, NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 type RegisterErrors = Partial<{ //Partial convierte todos los atributos en campos opcionales 
   firstName: string;
@@ -21,7 +21,6 @@ type RegisterErrors = Partial<{ //Partial convierte todos los atributos en campo
 const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 
 type Props = NativeStackScreenProps<AuthStackParamList, "Register">;
-type Navigation = NativeStackNavigationProp<AuthStackParamList>;
 
 export const RegisterScreen = ({ navigation, route }: Props) => {
     
@@ -192,6 +191,13 @@ export const RegisterScreen = ({ navigation, route }: Props) => {
                 />
 
                 <PrimaryButton text={t("register.submit")} onPress={onSubmit}/>
+
+                <View style={styles.switchWrap}>
+                    <Text style={styles.switchText}>{t("register.haveAccount")}</Text>
+                    <Pressable onPress={() => navigation.navigate("Login")} hitSlop={8}>
+                        <Text style={styles.switchLink}>{t("register.goToLogin")}</Text>
+                    </Pressable>
+                </View>
             </ScrollView>
         </SafeAreaView>
     );
@@ -228,4 +234,21 @@ subtitle: {
 },
 
 row2: { flexDirection: "row", marginTop: 8 },
+switchWrap: {
+    marginTop: 14,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+},
+switchText: {
+    color: "#486356",
+    fontSize: 14,
+    fontWeight: "600",
+},
+switchLink: {
+    color: "#1f8f55",
+    fontSize: 14,
+    fontWeight: "800",
+},
 });

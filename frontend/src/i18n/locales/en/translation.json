@@ -2,16 +2,16 @@
   "common": {
     "loading": "Loading…",
     "retry": "Retry",
-    "understood": "Got it"
+    "understood": "Got it",
+    "networkError": "A network error occurred. Please try again.",
+    "timeoutError": "The request took too long. Please try again."
   },
-
   "genericErrors": {
     "requiredField": "Field required",
     "min": "The maximum number of characters is {{min}}",
     "max": "The maximum number of characters is {{max}}",
     "emailInvalid": "Invalid email"
   },
-
   "register": {
     "title": "Join smartFridge",
     "subtitle": "Manage your pantry and cook smart",
@@ -28,9 +28,10 @@
     "confirmPassword": "Confirm your password",
     "confirmPasswordPlaceholder": "Minimum 8 characters",
     "passwordsDoNotMatch": "Passwords are not equals",
-    "submit": "Create account"
+    "submit": "Create account",
+    "haveAccount": "Already have an account?",
+    "goToLogin": "Sign in"
   },
-  
   "allergy": {
     "title": "Select your allergies",
     "subtitle": "This helps us recommend safe recipes for you.",
@@ -39,5 +40,17 @@
     "noAllergies": "I have no allergies",
     "detail": "Detailed information",
     "explanation": "By selecting this option, we will automatically filter out recipes that contain ingredients related to {{allergy}}."
+  },
+  "login": {
+    "title": "Welcome back",
+    "subtitle": "Sign in to continue",
+    "username": "Username",
+    "usernamePlaceholder": "user_smartfridge",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "submit": "Sign in",
+    "noAccount": "Don't have an account?",
+    "goToRegister": "Create account",
+    "failed": "Unable to sign in"
   }
 }

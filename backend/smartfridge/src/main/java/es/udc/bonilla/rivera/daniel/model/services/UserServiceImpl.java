@@ -1,5 +1,7 @@
 package es.udc.bonilla.rivera.daniel.model.services;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import es.udc.bonilla.rivera.daniel.model.entities.UserAllergy;
 import es.udc.bonilla.rivera.daniel.model.entities.UserAllergyId;
 import es.udc.bonilla.rivera.daniel.model.entities.UserHousehold;
 import es.udc.bonilla.rivera.daniel.model.entities.UserHouseholdId;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.IncorrectLoginException;
 
 @Service
 @Transactional
@@ -132,6 +135,30 @@ public class UserServiceImpl implements UserService {
         }
 
         userHouseholdDao.deleteById(userHouseholdId);
+    }
+
+    @Override
+    public User login(String userName, String password) throws IncorrectLoginException {
+
+        Optional<User> user = userDao.findByUserName(userName);
+
+		if (!user.isPresent()) {
+			throw new IncorrectLoginException(userName, password);
+		}
+
+		if (!passwordEncoder.matches(password, user.get().getPassword())) {
+			throw new IncorrectLoginException(userName, password);
+		}
+
+		return user.get();
+
+        
+    }
+
+    @Override
+    @Transactional(readOnly=true)
+    public User loginFromId(Long id) throws InstanceNotFoundException {
+        return permissionChecker.checkUserExists(id);
     }
 
 }

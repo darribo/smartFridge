@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { config } from "../config/constants";
+import i18n from "../i18n/i18n";
 
 //Formato de error definido
 export type ApiError = {
@@ -128,7 +129,9 @@ export const appFetch = async <T = any>(
     clearTimeout(timeoutId);
     const isTimeout = e?.name === "AbortError";
     const err: ApiError = {
-      globalErrors: [isTimeout ? "La petición excedió el tiempo de espera" : e?.message || "Error de red"],
+      globalErrors: [
+        isTimeout ? i18n.t("common.timeoutError") : i18n.t("common.networkError"),
+      ],
       isTimeout,
     };
 
