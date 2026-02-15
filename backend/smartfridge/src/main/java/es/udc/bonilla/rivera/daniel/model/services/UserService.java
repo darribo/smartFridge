@@ -5,6 +5,7 @@ import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.entities.User;
 import es.udc.bonilla.rivera.daniel.model.entities.UserAllergy;
 import es.udc.bonilla.rivera.daniel.model.entities.UserHousehold;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.IncorrectLoginException;
 
 public interface UserService {
 
@@ -65,5 +66,24 @@ public interface UserService {
      * @throws InstanceNotFoundException Si no se encuentra el usuario o el hogar especificado.
      */
     void removeUserHousehold(Long userId, Long householdId) throws InstanceNotFoundException;
+
+    /**
+     * Autentica a un usuario con su nombre de usuario y contraseña.
+     *
+     * @param userName Nombre de usuario.
+     * @param password Contraseña del usuario.
+     * @return La entidad {@code User} autenticada.
+     * @throws IncorrectLoginException Si las credenciales son incorrectas.
+     */
+    User login(String userName, String password) throws IncorrectLoginException;
+
+    /**
+     * Recupera el usuario autenticado a partir de su identificador.
+     *
+     * @param id Identificador único del usuario.
+     * @return La entidad {@code User} correspondiente.
+     * @throws InstanceNotFoundException Si no se encuentra el usuario indicado.
+     */
+    User loginFromId(Long id) throws InstanceNotFoundException;
 
 }

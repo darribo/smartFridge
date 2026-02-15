@@ -1,7 +1,5 @@
 package es.udc.bonilla.rivera.daniel.rest.dtos;
 
-import java.util.List;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(
@@ -53,15 +51,9 @@ public class UserDto {
     )
     private String role;
 
-    @Schema(
-        description = "Lista de identificadores de alergias asociadas al usuario",
-        example = "[1, 3, 7]"
-    )
-    private List<Long> allergyIds;
-
     public UserDto() {}
 
-    public UserDto(Long userId, String userName, String email, String firstName, String lastName, String avatar, String role, List<Long> allergyIds) {
+    public UserDto(Long userId, String userName, String email, String firstName, String lastName, String avatar, String role) {
         this.id = userId;
         this.userName = userName;
         this.email = email;
@@ -69,7 +61,6 @@ public class UserDto {
         this.lastName = lastName;
         this.avatar = avatar;
         this.role = role;
-        this.allergyIds = allergyIds;
     }
 
     public Long getId() {
@@ -126,14 +117,6 @@ public class UserDto {
 
     public void setRole(String role) {
         this.role = role;
-    }
-
-    public List<Long> getAllergyIds() {
-        return allergyIds;
-    }
-
-    public void setAllergyIds(List<Long> allergyIds) {
-        this.allergyIds = allergyIds;
     }
 
 }
