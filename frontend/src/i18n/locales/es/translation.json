@@ -2,16 +2,16 @@
   "common": {
     "loading": "Cargando…",
     "retry": "Reintentar",
-    "understood": "Entendido"
+    "understood": "Entendido",
+    "networkError": "Ha ocurrido un error de red. Inténtalo de nuevo.",
+    "timeoutError": "La petición tardó demasiado. Inténtalo de nuevo."
   },
-
   "genericErrors": {
     "requiredField": "Campo obligatorio",
     "min": "Mínimo {{min}} caracteres",
-    "max":"Máximo {{max}} caracteres",
+    "max": "Máximo {{max}} caracteres",
     "emailInvalid": "Dirección de correo inválida"
   },
-
   "register": {
     "title": "Únete a smartFridge",
     "subtitle": "Gestiona tu despensa y cocina de forma inteligente",
@@ -28,9 +28,10 @@
     "confirmPassword": "Confirma tu contraseña",
     "confirmPasswordPlaceholder": "Mínimo 8 caracteres",
     "passwordsDoNotMatch": "Las contraseñas no son iguales",
-    "submit": "Crear cuenta"
+    "submit": "Crear cuenta",
+    "haveAccount": "¿Ya tienes cuenta?",
+    "goToLogin": "Inicia sesión"
   },
-
   "allergy": {
     "title": "Selecciona tus alergias",
     "subtitle": "Esto nos ayuda a recomendarte recetas seguras para ti.",
@@ -39,5 +40,17 @@
     "noAllergies": "No tengo alergias",
     "detail": "Información detallada",
     "explanation": "Al seleccionar esta opción, filtraremos automáticamente las recetas que contengan ingredientes relacionados con {{allergy}}."
+  },
+  "login": {
+    "title": "Bienvenido de nuevo",
+    "subtitle": "Accede a tu cuenta para continuar",
+    "username": "Nombre de usuario",
+    "usernamePlaceholder": "usuario_smartfridge",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Introduce tu contraseña",
+    "submit": "Iniciar sesión",
+    "noAccount": "¿No tienes cuenta?",
+    "goToRegister": "Crear cuenta",
+    "failed": "No se pudo iniciar sesión"
   }
 }

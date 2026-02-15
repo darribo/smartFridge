@@ -10,6 +10,11 @@ export type NewUserParams = {
   allergyIds?: number[];
 };
 
+export type LoginParams = {
+  userName: string;
+  password: string;
+};
+
 
 export type User = {
     id: number,
@@ -45,6 +50,20 @@ export const signUp = async (user: NewUserParams, onSuccess?: (auth: Authenticat
     
     return appFetch(
         "/users/signUp",
+        options,
+        (auth) => {
+            processLoginSignUp(auth, reauthenticationCallback, onSuccess);
+        },
+        onError
+    );
+};
+
+export const login = async (params: LoginParams, onSuccess?: (auth: AuthenticatedUser) => void, onError?: (err: ApiError) => void, reauthenticationCallback?: () => void) => {
+
+    const options = await fetchConfig("POST", params);
+
+    return appFetch(
+        "/users/login",
         options,
         (auth) => {
             processLoginSignUp(auth, reauthenticationCallback, onSuccess);
