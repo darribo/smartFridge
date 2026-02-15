@@ -1,0 +1,43 @@
+{
+  "common": {
+    "loading": "Cargando…",
+    "retry": "Reintentar",
+    "understood": "Entendido"
+  },
+
+  "genericErrors": {
+    "requiredField": "Campo obligatorio",
+    "min": "Mínimo {{min}} caracteres",
+    "max":"Máximo {{max}} caracteres",
+    "emailInvalid": "Dirección de correo inválida"
+  },
+
+  "register": {
+    "title": "Únete a smartFridge",
+    "subtitle": "Gestiona tu despensa y cocina de forma inteligente",
+    "firstName": "Nombre",
+    "firstNamePlaceholder": "Tu nombre",
+    "lastName": "Apellidos",
+    "lastNamePlaceholder": "Tu apellido",
+    "username": "Nombre de usuario",
+    "usernamePlaceholder": "usuario_smartfridge",
+    "email": "Correo electrónico",
+    "emailPlaceholder": "ejemplo@gmail.com",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Mínimo 8 caracteres",
+    "confirmPassword": "Confirma tu contraseña",
+    "confirmPasswordPlaceholder": "Mínimo 8 caracteres",
+    "passwordsDoNotMatch": "Las contraseñas no son iguales",
+    "submit": "Crear cuenta"
+  },
+
+  "allergy": {
+    "title": "Selecciona tus alergias",
+    "subtitle": "Esto nos ayuda a recomendarte recetas seguras para ti.",
+    "loadError": "No se pudieron cargar las alergias",
+    "continue": "Continuar",
+    "noAllergies": "No tengo alergias",
+    "detail": "Información detallada",
+    "explanation": "Al seleccionar esta opción, filtraremos automáticamente las recetas que contengan ingredientes relacionados con {{allergy}}."
+  }
+}
