@@ -1,4 +1,6 @@
 import { ApiError, appFetch, fetchConfig, setReauthenticationCallback, setServiceToken } from "../appFetch"
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { config } from "../../config/constants";
 
 export type NewUserParams = {
   userName: string;
@@ -32,6 +34,7 @@ export type AuthenticatedUser = {
 
 const processLoginSignUp = async (authenticatedUser: AuthenticatedUser, reauthenticationCallback?: () => void, onSuccess?: (auth: AuthenticatedUser) => void) => {
   await setServiceToken(authenticatedUser.serviceToken);
+  await AsyncStorage.setItem(config.AUTH_USER_KEY, JSON.stringify(authenticatedUser.user));
   
   if (reauthenticationCallback) {
     setReauthenticationCallback(reauthenticationCallback);
@@ -40,6 +43,17 @@ const processLoginSignUp = async (authenticatedUser: AuthenticatedUser, reauthen
   if (onSuccess) onSuccess(authenticatedUser);
 
 }
+
+export const getAuthenticatedUser = async (): Promise<User | null> => {
+  const raw = await AsyncStorage.getItem(config.AUTH_USER_KEY);
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw) as User;
+  } catch {
+    return null;
+  }
+};
 
 
 export const signUp = async (user: NewUserParams, onSuccess?: (auth: AuthenticatedUser) => void, onError?: (err: ApiError) => void, reauthenticationCallback?: () => void) => {

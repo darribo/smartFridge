@@ -65,6 +65,12 @@
     "cancel": "Cancelar",
     "defaultError": "Produciuse un erro"
   },
+  "updateHousehold": {
+    "title": "Editar fogar",
+    "subtitle": "Actualiza o nome e a descrición do teu fogar.",
+    "submit": "Gardar cambios",
+    "defaultError": "Non se puido actualizar o fogar"
+  },
   "households": {
     "membersCount_one": "{{count}} membro",
     "membersCount_other": "{{count}} membros",
@@ -77,6 +83,7 @@
   "household": {
     "detail": {
       "title": "Detalle do fogar",
+      "edit": "Editar fogar",
       "subtitle": "Información e membros do fogar",
       "descriptionLabel": "Descrición",
       "membersTitle": "Membros",

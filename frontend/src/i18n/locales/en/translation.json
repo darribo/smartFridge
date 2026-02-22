@@ -65,6 +65,12 @@
     "cancel": "Cancel",
     "defaultError": "An error occurred"
   },
+  "updateHousehold": {
+    "title": "Edit household",
+    "subtitle": "Update your household name and description.",
+    "submit": "Save changes",
+    "defaultError": "Unable to update household"
+  },
   "households": {
     "membersCount_one": "{{count}} member",
     "membersCount_other": "{{count}} members",
@@ -77,6 +83,7 @@
   "household": {
     "detail": {
       "title": "Household detail",
+      "edit": "Edit household",
       "subtitle": "Household info and members",
       "descriptionLabel": "Description",
       "membersTitle": "Members",

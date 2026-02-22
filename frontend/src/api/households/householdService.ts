@@ -9,6 +9,14 @@ export type NewHouseholdParams = {
     regionName: string; */
 }
 
+export type UpdateHouseholdParams = {
+    name: string;
+    description: string;
+    countryCode: string;
+    regionCode: string;
+    regionName: string;
+}
+
 export type Household = {
     id: number;
     name: string;
@@ -90,6 +98,22 @@ export const getHousehold = async(
 ) => {
 
     const options = await fetchConfig("GET");
+    return appFetch(
+        `/households/${householdId}`,
+        options,
+        onSuccess,
+        onError
+    );
+}
+
+export const updateHousehold = async(
+    householdId: number,
+    params: UpdateHouseholdParams,
+    onSuccess?: (household: Household) => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("PUT", params);
+
     return appFetch(
         `/households/${householdId}`,
         options,

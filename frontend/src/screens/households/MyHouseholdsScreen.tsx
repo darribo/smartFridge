@@ -1,6 +1,6 @@
 
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { getUserHouseholds, UserHouseholdListItem } from "../../api/households/householdService";
 import MyHouseholdsItemCard from "../../components/households/MyHouseholdsItem";
 import {THEME} from "../../theme/theme";
@@ -13,6 +13,7 @@ import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { AuthStackParamList } from "../../navigation/AuthStack";
+import { useFocusEffect } from "@react-navigation/native";
 
 
 type Props = NativeStackScreenProps<AuthStackParamList, "MyHouseholds">;
@@ -82,9 +83,11 @@ export default function MyHouseholdsScreen({navigation}: Props){
         );
     };
 
-    useEffect(() => {
-        loadFirstPage();
-    }, []);
+    useFocusEffect(
+        React.useCallback(() => {
+            loadFirstPage();
+        }, [])
+    );
 
     const onOpenHousehold = (householdId: number) => {
         navigation.navigate("HouseholdDetail", { householdId });

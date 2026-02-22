@@ -65,6 +65,12 @@
     "cancel": "Cancelar",
     "defaultError": "Se produjo un error"
   },
+  "updateHousehold": {
+    "title": "Editar hogar",
+    "subtitle": "Actualiza el nombre y la descripción de tu hogar.",
+    "submit": "Guardar cambios",
+    "defaultError": "No se pudo actualizar el hogar"
+  },
   "households": {
     "membersCount_one": "{{count}} miembro",
     "membersCount_other": "{{count}} miembros",
@@ -77,6 +83,7 @@
   "household": {
     "detail": {
       "title": "Detalle del hogar",
+      "edit": "Editar hogar",
       "subtitle": "Información y miembros del hogar",
       "descriptionLabel": "Descripción",
       "membersTitle": "Miembros",

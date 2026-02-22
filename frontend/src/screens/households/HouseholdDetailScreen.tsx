@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   View,
@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 
 import type { ApiError } from "../../api/appFetch";
 import type { Block } from "../../api/block";
@@ -20,6 +21,7 @@ import {
   Household,
   HouseholdUser,
 } from "../../api/households/householdService";
+import { getAuthenticatedUser } from "../../api/users/userService";
 import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
 import HouseholdMemberItem from "../../components/households/HouseholdMemberItem";
 import { THEME } from "../../theme/theme";
@@ -28,6 +30,7 @@ type Props = {
   householdId: number;
   navigation?: {
     goBack?: () => void;
+    navigate?: (screen: string, params?: any) => void;
   };
 };
 
@@ -45,6 +48,7 @@ export default function HouseholdDetailScreen({ householdId, navigation }: Props
   const [loadingMore, setLoadingMore] = useState(false);
   const [globalErrors, setGlobalErrors] = useState<string[]>([]);
   const [imageError, setImageError] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const householdNameLength = household?.name?.trim().length ?? 0;
   const householdNameStyle =
     householdNameLength > 30
@@ -77,6 +81,9 @@ export default function HouseholdDetailScreen({ householdId, navigation }: Props
     const errors: string[] = [];
 
     Promise.all([
+      getAuthenticatedUser().then((user) => {
+        setCurrentUserId(user?.id ?? null);
+      }),
       getHousehold(
         householdId,
         (householdData) => {
@@ -128,9 +135,18 @@ export default function HouseholdDetailScreen({ householdId, navigation }: Props
     });
   }, [hasMoreMembers, householdId, loadingFirst, loadingMore, page]);
 
-  useEffect(() => {
-    loadFirstData();
-  }, [loadFirstData]);
+  useFocusEffect(
+    useCallback(() => {
+      loadFirstData();
+    }, [loadFirstData])
+  );
+
+  const isCurrentUserAdmin = currentUserId !== null && household?.adminId === currentUserId;
+
+  const onEditHousehold = () => {
+    if (!household) return;
+    navigation?.navigate?.("UpdateHousehold", { household });
+  };
 
   if (loadingFirst) {
     return (
@@ -156,7 +172,19 @@ export default function HouseholdDetailScreen({ householdId, navigation }: Props
             <MaterialCommunityIcons name="arrow-left" size={28} color={THEME.text} />
           </Pressable>
           <Text style={styles.headerTitle}>{t("household.detail.title")}</Text>
-          <View style={styles.headerSpacer} />
+          {isCurrentUserAdmin ? (
+            <Pressable
+              onPress={onEditHousehold}
+              style={styles.editBtn}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel={t("household.detail.edit")}
+            >
+              <MaterialCommunityIcons name="pencil-outline" size={24} color={THEME.text} />
+            </Pressable>
+          ) : (
+            <View style={styles.headerSpacer} />
+          )}
         </View>
 
         <FlatList
@@ -259,6 +287,13 @@ const styles = StyleSheet.create({
     backgroundColor: THEME.bg,
   },
   backBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  editBtn: {
     width: 42,
     height: 42,
     borderRadius: 12,
