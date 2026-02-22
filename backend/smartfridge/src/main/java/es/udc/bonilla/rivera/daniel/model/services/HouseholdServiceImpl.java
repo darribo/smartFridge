@@ -81,6 +81,21 @@ public class HouseholdServiceImpl implements HouseholdService {
     }
 
     @Override
+    public void removeHouseholdMember(Long adminId, Long memberId, Long householdId) throws InstanceNotFoundException, PermissionException {
+
+        Household household = permissionChecker.checkHouseholdExists(householdId);
+
+        permissionChecker.checkUserHouseholdExists(adminId, householdId);
+        UserHousehold userHousehold = permissionChecker.checkUserHouseholdExists(memberId, householdId);
+
+        if(!Objects.equals(household.getAdmin().getId(), adminId)){
+            throw new PermissionException();
+        }
+
+        userHouseholdDao.delete(userHousehold);
+    }
+
+    @Override
     public Household getHousehold(Long userId, Long householdId) throws InstanceNotFoundException{
 
         permissionChecker.checkUserHouseholdExists(userId, householdId);

@@ -109,6 +109,13 @@ public class HouseholdController {
         return HouseholdConversor.toHouseholdDto(household);
     }
 
+
+    @DeleteMapping("/{householdId}/removeMember/{memberId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeHouseholdMember(@RequestAttribute Long userId, @PathVariable Long householdId, @PathVariable Long memberId) throws InstanceNotFoundException, PermissionException {
+        householdService.removeHouseholdMember(userId, memberId, householdId);
+    }
+
     @Operation(
         summary = "Cambiar administrador del hogar",
         description = "Asigna un nuevo administrador a un hogar existente. El nuevo administrador debe pertenecer previamente al hogar."

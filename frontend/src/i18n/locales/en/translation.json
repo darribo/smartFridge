@@ -94,6 +94,16 @@
       "admin": "ADMIN",
       "member": "MEMBER"
     },
+    "memberActions": {
+      "makeAdmin": "Make admin",
+      "removeMember": "Remove from household",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "confirmMakeAdminTitle": "Change admin",
+      "confirmMakeAdminMessage": "Are you sure you want to make this user an admin?",
+      "confirmRemoveTitle": "Remove from household",
+      "confirmRemoveMessage": "Are you sure you want to remove this user from the household?"
+    },
     "errors": {
       "missingId": "A valid household was not provided."
     }

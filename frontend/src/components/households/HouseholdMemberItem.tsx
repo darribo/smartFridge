@@ -1,21 +1,26 @@
 import { useTranslation } from "react-i18next";
 import { HouseholdUser } from "../../api/households/householdService";
 import { THEME } from "../../theme/theme";
-import { View, Text, Image, StyleSheet } from "react-native";
+import { View, Text, Image, StyleSheet, Pressable } from "react-native";
 
 
 type Props = {
     member: HouseholdUser;
+    onPress?: () => void;
 }
 
-export default function HouseholdMemberItem({ member }: Props) {
+export default function HouseholdMemberItem({ member, onPress }: Props) {
     
     const { t } = useTranslation();
     
     const isAdmin = member.isAdmin;
 
     return (
-    <View style={styles.card}>
+    <Pressable
+      onPress={onPress}
+      disabled={!onPress}
+      style={({ pressed }) => [styles.card, onPress && pressed && styles.cardPressed]}
+    >
       <View style={styles.left}>
         <View style={[styles.avatarWrap, isAdmin && styles.avatarWrapAdmin]}>
           {member.userAvatar ? (
@@ -40,7 +45,7 @@ export default function HouseholdMemberItem({ member }: Props) {
           {isAdmin ? t("household.member.admin") : t("household.member.member")}
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -63,6 +68,10 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 },
     elevation: 1,
+  },
+  cardPressed: {
+    opacity: 0.95,
+    transform: [{ scale: 0.995 }],
   },
   left: {
     flexDirection: "row",

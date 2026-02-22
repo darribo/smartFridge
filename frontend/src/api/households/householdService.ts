@@ -182,6 +182,38 @@ export const getHouseholdMembers = async(
     );
 }
 
+export const changeHouseholdAdmin = async(
+    householdId: number,
+    newAdminId: number,
+    onSuccess?: (household: Household) => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("POST", { newAdminId });
+
+    return appFetch(
+        `/households/${householdId}/newAdmin`,
+        options,
+        onSuccess,
+        onError
+    );
+}
+
+export const removeHouseholdMember = async(
+    householdId: number,
+    memberId: number,
+    onSuccess?: () => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("DELETE");
+
+    return appFetch(
+        `/households/${householdId}/removeMember/${memberId}`,
+        options,
+        onSuccess,
+        onError
+    );
+}
+
 /* export const getPendingInvitations = async(
     householdId: number,
     page: number,

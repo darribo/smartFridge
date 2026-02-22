@@ -94,6 +94,16 @@
       "admin": "ADMIN",
       "member": "MEMBRO"
     },
+    "memberActions": {
+      "makeAdmin": "Facer admin",
+      "removeMember": "Botar do fogar",
+      "confirm": "Confirmar",
+      "cancel": "Cancelar",
+      "confirmMakeAdminTitle": "Cambiar administrador",
+      "confirmMakeAdminMessage": "Seguro que queres facer administrador a este usuario?",
+      "confirmRemoveTitle": "Botar do fogar",
+      "confirmRemoveMessage": "Seguro que queres botar a este usuario do fogar?"
+    },
     "errors": {
       "missingId": "Non se indicou un fogar válido."
     }

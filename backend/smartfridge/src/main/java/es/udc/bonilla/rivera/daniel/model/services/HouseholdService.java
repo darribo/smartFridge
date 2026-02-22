@@ -44,6 +44,8 @@ public interface HouseholdService {
      */
     Household updateHousehold(Long householdId, Long userId, String name, String description, String countryCode, String regionCode, String regionName) throws InstanceNotFoundException, DuplicateInstanceException, PermissionException;
 
+    void removeHouseholdMember(Long adminId, Long memberId, Long householdId) throws InstanceNotFoundException, PermissionException;
+
     /**
      * Cambia el administrador de un hogar.
      *

@@ -16,13 +16,16 @@ import { useFocusEffect } from "@react-navigation/native";
 import type { ApiError } from "../../api/appFetch";
 import type { Block } from "../../api/block";
 import {
+  changeHouseholdAdmin,
   getHousehold,
   getHouseholdMembers,
   Household,
   HouseholdUser,
+  removeHouseholdMember,
 } from "../../api/households/householdService";
 import { getAuthenticatedUser } from "../../api/users/userService";
 import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
+import HouseholdMemberActionsSheet from "../../components/households/HouseholdMemberActionsSheet";
 import HouseholdMemberItem from "../../components/households/HouseholdMemberItem";
 import { THEME } from "../../theme/theme";
 
@@ -49,6 +52,9 @@ export default function HouseholdDetailScreen({ householdId, navigation }: Props
   const [globalErrors, setGlobalErrors] = useState<string[]>([]);
   const [imageError, setImageError] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const [selectedMember, setSelectedMember] = useState<HouseholdUser | null>(null);
+  const [memberActionLoading, setMemberActionLoading] = useState(false);
+  const [memberActionErrors, setMemberActionErrors] = useState<string[]>([]);
   const householdNameLength = household?.name?.trim().length ?? 0;
   const householdNameStyle =
     householdNameLength > 30
@@ -148,6 +154,61 @@ export default function HouseholdDetailScreen({ householdId, navigation }: Props
     navigation?.navigate?.("UpdateHousehold", { household });
   };
 
+  const canManageMember = (member: HouseholdUser) =>
+    Boolean(isCurrentUserAdmin && currentUserId !== null && member.userId !== currentUserId);
+
+  const onOpenMemberActions = (member: HouseholdUser) => {
+    if (!canManageMember(member)) return;
+    setMemberActionErrors([]);
+    setSelectedMember(member);
+  };
+
+  const onCloseMemberActions = () => {
+    if (memberActionLoading) return;
+    setSelectedMember(null);
+    setMemberActionErrors([]);
+  };
+
+  const onMakeAdmin = async () => {
+    if (!selectedMember) return;
+    setMemberActionLoading(true);
+    setMemberActionErrors([]);
+
+    await changeHouseholdAdmin(
+      householdId,
+      selectedMember.userId,
+      async () => {
+        onCloseMemberActions();
+        loadFirstData();
+      },
+      (err: ApiError) => {
+        setMemberActionErrors(extractErrorMessages(err));
+      }
+    );
+
+    setMemberActionLoading(false);
+  };
+
+  const onRemoveMember = async () => {
+    if (!selectedMember) return;
+    setMemberActionLoading(true);
+    setMemberActionErrors([]);
+
+    await removeHouseholdMember(
+      householdId,
+      selectedMember.userId,
+      async () => {
+        onCloseMemberActions();
+        loadFirstData();
+      },
+      (err: ApiError) => {
+        setMemberActionErrors(extractErrorMessages(err));
+      }
+    );
+
+    setMemberActionLoading(false);
+  };
+
   if (loadingFirst) {
     return (
       <SafeAreaView style={styles.safe}>
@@ -190,7 +251,12 @@ export default function HouseholdDetailScreen({ householdId, navigation }: Props
         <FlatList
           data={members}
           keyExtractor={(item) => String(item.userId)}
-          renderItem={({ item }) => <HouseholdMemberItem member={item} />}
+          renderItem={({ item }) => (
+            <HouseholdMemberItem
+              member={item}
+              onPress={canManageMember(item) ? () => onOpenMemberActions(item) : undefined}
+            />
+          )}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           onEndReached={loadMoreMembers}
@@ -263,6 +329,16 @@ export default function HouseholdDetailScreen({ householdId, navigation }: Props
             <Text style={styles.inviteBtnText}>{t("households.generateInviteLink")}</Text>
           </Pressable>
         </View>
+
+        <HouseholdMemberActionsSheet
+          visible={!!selectedMember}
+          member={selectedMember}
+          loading={memberActionLoading}
+          errors={memberActionErrors}
+          onClose={onCloseMemberActions}
+          onMakeAdmin={onMakeAdmin}
+          onRemoveMember={onRemoveMember}
+        />
       </View>
     </SafeAreaView>
   );

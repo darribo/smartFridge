@@ -94,6 +94,16 @@
       "admin": "ADMIN",
       "member": "MIEMBRO"
     },
+    "memberActions": {
+      "makeAdmin": "Hacer admin",
+      "removeMember": "Echar del hogar",
+      "confirm": "Confirmar",
+      "cancel": "Cancelar",
+      "confirmMakeAdminTitle": "Cambiar administrador",
+      "confirmMakeAdminMessage": "¿Seguro que quieres hacer administrador a este usuario?",
+      "confirmRemoveTitle": "Echar del hogar",
+      "confirmRemoveMessage": "¿Seguro que quieres echar a este usuario del hogar?"
+    },
     "errors": {
       "missingId": "No se ha indicado un hogar válido."
     }
