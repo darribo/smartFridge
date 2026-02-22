@@ -11,11 +11,11 @@ import { View, StyleSheet, Text, ActivityIndicator, FlatList, Pressable } from "
 import { t } from "i18next";
 import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import type { AuthStackParamList } from "../../navigation/AuthStack";
 
 
-type Props = {
-    navigation: any;
-}
+type Props = NativeStackScreenProps<AuthStackParamList, "MyHouseholds">;
 
 export default function MyHouseholdsScreen({navigation}: Props){
 
@@ -87,8 +87,7 @@ export default function MyHouseholdsScreen({navigation}: Props){
     }, []);
 
     const onOpenHousehold = (householdId: number) => {
-        // TODO: navega a detalle
-        // navigation.navigate("HouseholdDetail", { householdId });
+        navigation.navigate("HouseholdDetail", { householdId });
     };
 
     const onCreateHousehold = () => {

@@ -71,6 +71,24 @@
     "list": {
       "title": "Mis hogares",
       "subtitle": "Gestiona tus espacios de comida"
+    },
+    "generateInviteLink": "Generar enlace de invitación"
+  },
+  "household": {
+    "detail": {
+      "title": "Detalle del hogar",
+      "subtitle": "Información y miembros del hogar",
+      "descriptionLabel": "Descripción",
+      "membersTitle": "Miembros",
+      "membersEmpty": "Este hogar todavía no tiene miembros.",
+      "showMore": "Ver más miembros"
+    },
+    "member": {
+      "admin": "ADMIN",
+      "member": "MIEMBRO"
+    },
+    "errors": {
+      "missingId": "No se ha indicado un hogar válido."
     }
   }
 }

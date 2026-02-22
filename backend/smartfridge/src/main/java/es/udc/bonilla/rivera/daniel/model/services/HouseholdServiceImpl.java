@@ -55,7 +55,7 @@ public class HouseholdServiceImpl implements HouseholdService {
     }
 
     @Override
-    public Household updateUserHousehold(Long householdId, Long userId, String name, String description, String countryCode, String regionCode, String regionName) throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
+    public Household updateHousehold(Long householdId, Long userId, String name, String description, String countryCode, String regionCode, String regionName) throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
         
         User user = permissionChecker.checkUserExists(userId);
 
@@ -78,6 +78,14 @@ public class HouseholdServiceImpl implements HouseholdService {
         household.setRegionName(regionName);
 
         return household;
+    }
+
+    @Override
+    public Household getHousehold(Long userId, Long householdId) throws InstanceNotFoundException{
+
+        permissionChecker.checkUserHouseholdExists(userId, householdId);
+
+        return permissionChecker.checkHouseholdExists(householdId);
     }
 
     @Override

@@ -81,6 +81,12 @@ public class HouseholdController {
         return HouseholdConversor.toHouseholdDto(household);
     }
 
+    @GetMapping("/{householdId}")
+    public HouseholdDto getHousehold(@RequestAttribute Long userId, @PathVariable Long householdId) throws InstanceNotFoundException {
+        return HouseholdConversor.toHouseholdDto(householdService.getHousehold(userId, householdId));
+    }
+    
+
     @Operation(
         summary = "Actualizar un hogar",
         description = "Actualiza los datos de un hogar existente si el usuario autenticado es su administrador."
@@ -98,7 +104,7 @@ public class HouseholdController {
     @PutMapping("/{householdId}")
     public HouseholdDto updateHousehold(@RequestAttribute Long userId, @PathVariable Long householdId, @Validated @RequestBody NewHouseholdParamsDto params) throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
         
-        Household household = householdService.updateUserHousehold(householdId, userId, params.getName(), params.getDescription(), params.getCountryCode(), params.getRegionCode(), params.getRegionName());
+        Household household = householdService.updateHousehold(householdId, userId, params.getName(), params.getDescription(), params.getCountryCode(), params.getRegionCode(), params.getRegionName());
 
         return HouseholdConversor.toHouseholdDto(household);
     }
@@ -290,9 +296,10 @@ public class HouseholdController {
     @GetMapping("/{householdId}/users")
     public BlockDto<HouseholdUserDto> getHouseholdMembers(@RequestAttribute Long userId, @PathVariable Long householdId, @RequestParam(defaultValue="0") int page) throws InstanceNotFoundException {
         
+        Household household = householdService.getHousehold(userId, householdId);
         Block<User> householdUsers = householdService.getHouseholdMembers(userId, householdId, page, HOUSEHOLD_USER_AVATARS_SIZE);
 
-        return new BlockDto<>(HouseholdConversor.toHouseholdUserDtos(householdUsers.getItems()), householdUsers.getExistMoreItems());
+        return new BlockDto<>(HouseholdConversor.toHouseholdUserDtos(householdUsers.getItems(), household.getAdmin().getId()), householdUsers.getExistMoreItems());
     }
 
     /* @GetMapping("/{householdId}/pendingInvitations")

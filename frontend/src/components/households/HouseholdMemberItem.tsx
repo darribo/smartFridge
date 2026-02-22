@@ -12,7 +12,7 @@ export default function HouseholdMemberItem({ member }: Props) {
     
     const { t } = useTranslation();
     
-    const isAdmin = member.userRole === "ADMIN";
+    const isAdmin = member.isAdmin;
 
     return (
     <View style={styles.card}>
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     backgroundColor: THEME.mint,
   },
   avatarWrapAdmin: {
-    borderColor: "#6EE7B7", // un verde suave para resaltar admin
+    borderColor: "#6EE7B7", //un verde suave para resaltar admin
   },
   avatar: {
     width: "100%",

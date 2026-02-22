@@ -16,18 +16,18 @@ public class HouseholdUserDto {
     private String userEmail;
     @Schema(description = "URL o identificador del avatar del usuario", example = "avatar.png")
     private String userAvatar;
-    @Schema(description = "Rol del usuario en la aplicación", example = "USER")
-    private String userRole;
+    @Schema(description = "Indica si el usuario es administrador del hogar", example = "false")
+    private Boolean isAdmin;
 
     public HouseholdUserDto() {}
 
 
-    public HouseholdUserDto(Long userId, String fullName, String userEmail, String userAvatar, String userRole) {
+    public HouseholdUserDto(Long userId, String fullName, String userEmail, String userAvatar, Boolean isAdmin) {
         this.userId = userId;
         this.fullName = fullName;
         this.userEmail = userEmail;
         this.userAvatar = userAvatar;
-        this.userRole = userRole;
+        this.isAdmin = isAdmin;
     }
     
     public Long getUserId() {
@@ -58,11 +58,11 @@ public class HouseholdUserDto {
         this.userAvatar = userAvatar;
     }
     
-    public String getUserRole() {
-        return userRole;
+    public Boolean getIsAdmin() {
+        return isAdmin;
     }
-    public void setUserRole(String userRole) {
-        this.userRole = userRole;
+    public void setIsAdmin(Boolean isAdmin) {
+        this.isAdmin = isAdmin;
     }
 
 }

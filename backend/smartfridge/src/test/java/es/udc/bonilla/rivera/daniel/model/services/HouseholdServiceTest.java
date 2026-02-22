@@ -96,7 +96,7 @@ class HouseholdServiceTest {
         User admin = createUser("admin_update");
         Household household = createHousehold("Old name", admin);
 
-        Household updated = householdService.updateUserHousehold(
+        Household updated = householdService.updateHousehold(
             household.getId(), admin.getId(), "New name", "New desc", "PT", "01", "Norte");
 
         assertEquals(household.getId(), updated.getId());
@@ -115,7 +115,7 @@ class HouseholdServiceTest {
         Household household = createHousehold("Home", admin);
 
         assertThrows(PermissionException.class, () ->
-            householdService.updateUserHousehold(household.getId(), member.getId(), "X", "Y", "ES", "GA", "Galicia"));
+            householdService.updateHousehold(household.getId(), member.getId(), "X", "Y", "ES", "GA", "Galicia"));
     }
 
     @Test

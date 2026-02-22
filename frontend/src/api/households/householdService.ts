@@ -41,8 +41,16 @@ export type HouseholdUser = {
     userFullName: string;
     userEmail: string;
     userAvatar: string | null;
-    userRole: "ADMIN" | "USER";
+    isAdmin: boolean;
 }
+
+type ApiHouseholdUser = {
+    userId: number;
+    fullName: string;
+    userEmail: string;
+    userAvatar: string | null;
+    isAdmin: boolean;
+};
 
 /* export type HouseholdInvitation = {
     id: number,
@@ -68,6 +76,22 @@ export const createHousehold = async (params: NewHouseholdParams, onSuccess?: (h
 
     return appFetch(
         "/households",
+        options,
+        onSuccess,
+        onError
+    );
+}
+
+
+export const getHousehold = async(
+    householdId: number,
+    onSuccess?: (household: Household) => void,
+    onError?: (err: ApiError) => void
+) => {
+
+    const options = await fetchConfig("GET");
+    return appFetch(
+        `/households/${householdId}`,
         options,
         onSuccess,
         onError
@@ -114,9 +138,22 @@ export const getHouseholdMembers = async(
     const options = await fetchConfig("GET");
     
     return appFetch(
-        `/households/${householdId}/users`,
+        `/households/${householdId}/users?page=${page}`,
         options,
-        onSuccess,
+        (block: Block<ApiHouseholdUser>) => {
+            const mapped: Block<HouseholdUser> = {
+                ...block,
+                items: block.items.map((item) => ({
+                    userId: item.userId,
+                    userFullName: item.fullName,
+                    userEmail: item.userEmail,
+                    userAvatar: item.userAvatar,
+                    isAdmin: item.isAdmin,
+                })),
+            };
+
+            onSuccess?.(mapped);
+        },
         onError
     );
 }

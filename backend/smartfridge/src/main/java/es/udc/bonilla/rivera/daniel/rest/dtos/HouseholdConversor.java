@@ -2,6 +2,7 @@ package es.udc.bonilla.rivera.daniel.rest.dtos;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import es.udc.bonilla.rivera.daniel.model.entities.Household;
 import es.udc.bonilla.rivera.daniel.model.entities.User;
@@ -23,17 +24,18 @@ public class HouseholdConversor {
 
     }
 
-    public static final HouseholdUserDto toHouseholdUserDto(User user){
+    public static final HouseholdUserDto toHouseholdUserDto(User user, Long adminId){
 
-        return new HouseholdUserDto(user.getId(), user.getFirstName() + " " + user.getLastName(), user.getEmail(), user.getAvatar(), user.getRole().toString());
+        boolean isAdmin = Objects.equals(user.getId(), adminId);
+        return new HouseholdUserDto(user.getId(), user.getFirstName() + " " + user.getLastName(), user.getEmail(), user.getAvatar(), isAdmin);
     }
 
-    public static final List<HouseholdUserDto> toHouseholdUserDtos(List<User> users){
+    public static final List<HouseholdUserDto> toHouseholdUserDtos(List<User> users, Long adminId){
 
         List<HouseholdUserDto> dtos = new ArrayList<>();
 
         for(User user : users){
-            dtos.add(toHouseholdUserDto(user));
+            dtos.add(toHouseholdUserDto(user, adminId));
         }
 
         return dtos;

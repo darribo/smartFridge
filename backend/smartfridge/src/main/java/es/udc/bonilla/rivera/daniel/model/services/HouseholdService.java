@@ -25,6 +25,8 @@ public interface HouseholdService {
      */
     Household createHousehold(Long userId, String name, String description, String countryCode, String regionCode, String regionName) throws InstanceNotFoundException, DuplicateInstanceException;
 
+    Household getHousehold(Long userId, Long householdId) throws InstanceNotFoundException;
+
     /**
      * Actualiza la información de un hogar.
      *
@@ -40,7 +42,7 @@ public interface HouseholdService {
      * @throws DuplicateInstanceException Si el nuevo nombre ya existe en otro hogar del mismo administrador.
      * @throws PermissionException Si el usuario no es el administrador del hogar.
      */
-    Household updateUserHousehold(Long householdId, Long userId, String name, String description, String countryCode, String regionCode, String regionName) throws InstanceNotFoundException, DuplicateInstanceException, PermissionException;
+    Household updateHousehold(Long householdId, Long userId, String name, String description, String countryCode, String regionCode, String regionName) throws InstanceNotFoundException, DuplicateInstanceException, PermissionException;
 
     /**
      * Cambia el administrador de un hogar.

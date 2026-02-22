@@ -71,6 +71,24 @@
     "list": {
       "title": "Os meus fogares",
       "subtitle": "Xestiona os teus espazos de comida"
+    },
+    "generateInviteLink": "Xerar enlace de invitación"
+  },
+  "household": {
+    "detail": {
+      "title": "Detalle do fogar",
+      "subtitle": "Información e membros do fogar",
+      "descriptionLabel": "Descrición",
+      "membersTitle": "Membros",
+      "membersEmpty": "Este fogar aínda non ten membros.",
+      "showMore": "Ver máis membros"
+    },
+    "member": {
+      "admin": "ADMIN",
+      "member": "MEMBRO"
+    },
+    "errors": {
+      "missingId": "Non se indicou un fogar válido."
     }
   }
 }
