@@ -52,5 +52,25 @@
     "noAccount": "Non tes conta?",
     "goToRegister": "Crear conta",
     "failed": "Non se puido iniciar sesión"
+  },
+  "createHousehold": {
+    "title": "Novo espazo",
+    "subtitle": "Configura un novo fogar para xestionar as túas receitas e comidas coa túa familia ou compañeiros.",
+    "householdName": "Nome do fogar *",
+    "householdNamePlaceholder": "Ex: Casa de Madrid",
+    "description": "Descrición",
+    "optional": "opcional",
+    "descriptionPlaceholder": "Engade unha breve descrición sobre quen vive aquí ou o propósito deste fogar...",
+    "submit": "Crear fogar",
+    "cancel": "Cancelar",
+    "defaultError": "Produciuse un erro"
+  },
+  "households": {
+    "membersCount_one": "{{count}} membro",
+    "membersCount_other": "{{count}} membros",
+    "list": {
+      "title": "Os meus fogares",
+      "subtitle": "Xestiona os teus espazos de comida"
+    }
   }
 }

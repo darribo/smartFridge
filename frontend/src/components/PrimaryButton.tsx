@@ -1,12 +1,14 @@
 import { Pressable, StyleSheet, Text } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 type Props = {
     text: string;
     onPress: () => void;
     disabled?: boolean;
+    rightIcon?: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
 };
 
-export function PrimaryButton({text, onPress, disabled=false} : Props){
+export function PrimaryButton({text, onPress, disabled=false, rightIcon} : Props){
     return(
         <Pressable
             onPress={onPress}
@@ -18,6 +20,14 @@ export function PrimaryButton({text, onPress, disabled=false} : Props){
             ]}
         >
             <Text style={styles.text}>{text}</Text>
+            {rightIcon ? (
+              <MaterialCommunityIcons
+                name={rightIcon}
+                size={24}
+                color="#102218"
+                style={styles.icon}
+              />
+            ) : null}
         </Pressable>
     )
 }
@@ -29,6 +39,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#2bee7c",
     alignItems: "center",
     justifyContent: "center",
+    flexDirection: "row",
+    gap: 10,
     marginTop: 18,
     shadowColor: "#2bee7c",
     shadowOpacity: 0.35,
@@ -46,5 +58,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "900",
     color: "#102218",
+  },
+  icon: {
+    marginTop: 1,
   },
 });

@@ -62,6 +62,7 @@ export function LoginScreen({ navigation }: Props) {
       },
       (auth) => {
         console.log(`Login correcto para ${auth.user.userName}`);
+        navigation.replace("MyHouseholds");
       },
       (err: ApiError) => {
         setGlobalErrors(err.globalErrors ?? [t("login.failed")]);

@@ -52,5 +52,25 @@
     "noAccount": "Don't have an account?",
     "goToRegister": "Create account",
     "failed": "Unable to sign in"
+  },
+  "createHousehold": {
+    "title": "New space",
+    "subtitle": "Set up a new household to manage your recipes and meals with your family or roommates.",
+    "householdName": "Household name *",
+    "householdNamePlaceholder": "Ex: Madrid home",
+    "description": "Description",
+    "optional": "optional",
+    "descriptionPlaceholder": "Add a short description about who lives here or the purpose of this household...",
+    "submit": "Create household",
+    "cancel": "Cancel",
+    "defaultError": "An error occurred"
+  },
+  "households": {
+    "membersCount_one": "{{count}} member",
+    "membersCount_other": "{{count}} members",
+    "list": {
+      "title": "My households",
+      "subtitle": "Manage your food spaces"
+    }
   }
 }

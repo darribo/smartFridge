@@ -52,5 +52,25 @@
     "noAccount": "¿No tienes cuenta?",
     "goToRegister": "Crear cuenta",
     "failed": "No se pudo iniciar sesión"
+  },
+  "createHousehold": {
+    "title": "Nuevo espacio",
+    "subtitle": "Configura un nuevo hogar para gestionar tus recetas y comidas con tu familia o compañeros.",
+    "householdName": "Nombre del hogar *",
+    "householdNamePlaceholder": "Ej: Casa de Madrid",
+    "description": "Descripción",
+    "optional": "opcional",
+    "descriptionPlaceholder": "Añade una breve descripción sobre quiénes viven aquí o el propósito de este hogar...",
+    "submit": "Crear hogar",
+    "cancel": "Cancelar",
+    "defaultError": "Se produjo un error"
+  },
+  "households": {
+    "membersCount_one": "{{count}} miembro",
+    "membersCount_other": "{{count}} miembros",
+    "list": {
+      "title": "Mis hogares",
+      "subtitle": "Gestiona tus espacios de comida"
+    }
   }
 }
