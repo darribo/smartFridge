@@ -39,6 +39,9 @@ public class PermissionCheckerImpl implements PermissionChecker {
     @Autowired
     private UserHouseholdDao userHouseholdDao;
 
+    /* @Autowired
+    private HouseholdInvitationDao householdInvitationDao; */
+
     @Override
     public User checkUserExists(Long userId) throws InstanceNotFoundException {
 
@@ -98,5 +101,17 @@ public class PermissionCheckerImpl implements PermissionChecker {
 
         return optional.get();
     }
+
+    /* @Override
+    public HouseholdInvitation checkHouseholdInvitationExists(Long householdInvitationId) throws InstanceNotFoundException {
+        
+        Optional<HouseholdInvitation> optional = householdInvitationDao.findByIdAndStatus(householdInvitationId, HouseholdInvitation.Status.PENDING);
+
+        if (!optional.isPresent()) {
+            throw new InstanceNotFoundException("project.entities.householdinvitation", householdInvitationId);
+        }
+
+        return optional.get();
+    } */
 
 }

@@ -17,10 +17,8 @@ import es.udc.bonilla.rivera.daniel.model.daos.AllergyDao;
 import es.udc.bonilla.rivera.daniel.model.daos.HouseholdDao;
 import es.udc.bonilla.rivera.daniel.model.daos.UserDao;
 import es.udc.bonilla.rivera.daniel.model.entities.Allergy;
-import es.udc.bonilla.rivera.daniel.model.entities.Household;
 import es.udc.bonilla.rivera.daniel.model.entities.User;
 import es.udc.bonilla.rivera.daniel.model.entities.UserAllergy;
-import es.udc.bonilla.rivera.daniel.model.entities.UserHousehold;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.IncorrectLoginException;
 
 @SpringBootTest
@@ -58,12 +56,7 @@ class UserServiceTest {
         Allergy allergy = new Allergy(tag);
         return allergyDao.save(allergy);
     }
-
-    private Household createHousehold(String name) {
-        Household household = new Household(name, "ISO 3166-1", "ES-GA", "Galicia");
-        return householdDao.save(household);
-    }
-
+    
     // -------------------------------------------------------------------------
     // SignUp
     // -------------------------------------------------------------------------
@@ -222,130 +215,7 @@ class UserServiceTest {
         assertThrows(InstanceNotFoundException.class, () -> userService.removeUserAllergy(user.getId(), allergy.getId()));
     }
 
-    // -------------------------------------------------------------------------
-    // UserHousehold
-    // -------------------------------------------------------------------------
-
-    @Test
-    void addUserHouseholdValid() throws Exception {
-
-        User user = signUpUser("daniel", "daniel@example.com");
-        Household household = createHousehold("My home");
-
-        UserHousehold created = userService.addUserHousehold(user.getId(), household.getId());
-
-        assertNotNull(created, "El servicio debe devolver la relación creada");
-        assertNotNull(created.getId(), "La relación debe tener ID compuesto");
-        assertEquals(user.getId(), created.getId().getUserId());
-        assertEquals(household.getId(), created.getId().getHouseholdId());
-
-        UserHousehold found = userService.getUserHousehold(user.getId(), household.getId());
-
-        assertEquals(user, found.getUser());
-        assertEquals(household, found.getHousehold());
-
-        assertEquals(created, found);
-    }
-
-    @Test
-    void addUserHouseholdWithANonExistingUser() {
-
-        Household household = createHousehold("My home");
-
-        assertThrows(InstanceNotFoundException.class,
-            () -> userService.addUserHousehold(NON_EXISTING_ID, household.getId()));
-    }
-
-    @Test
-    void addUserHouseholdWithANonExistingHousehold() {
-
-        User user = signUpUser("daniel", "daniel@example.com");
-
-        assertThrows(InstanceNotFoundException.class,
-            () -> userService.addUserHousehold(user.getId(), NON_EXISTING_ID));
-    }
-
-    @Test
-    void addUserHouseholdDuplicate() throws Exception {
-
-        User user = signUpUser("daniel", "daniel@example.com");
-        Household household = createHousehold("My home");
-
-        userService.addUserHousehold(user.getId(), household.getId());
-
-        assertThrows(DuplicateInstanceException.class,
-            () -> userService.addUserHousehold(user.getId(), household.getId()));
-    }
-
-    @Test
-    void removeUserHouseholdValid() throws Exception {
-
-        User user = signUpUser("daniel", "daniel@example.com");
-        Household household = createHousehold("My home");
-
-        userService.addUserHousehold(user.getId(), household.getId());
-
-        userService.removeUserHousehold(user.getId(), household.getId());
-
-        assertThrows(InstanceNotFoundException.class,
-            () -> userService.getUserHousehold(user.getId(), household.getId()));
-    }
-
-    @Test
-    void removeUserHouseholdAllowsAddingAgain() throws Exception {
-
-        User user = signUpUser("daniel", "daniel@example.com");
-        Household household = createHousehold("My home");
-
-        userService.addUserHousehold(user.getId(), household.getId());
-
-        userService.removeUserHousehold(user.getId(), household.getId());
-
-        assertDoesNotThrow(() ->
-            userService.addUserHousehold(user.getId(), household.getId()));
-    }
-
-    @Test
-    void removeNonExistingUserHousehold() throws Exception {
-
-        User user = signUpUser("daniel", "daniel@example.com");
-        Household household = createHousehold("My home");
-
-        userService.addUserHousehold(user.getId(), household.getId());
-
-        userService.removeUserHousehold(user.getId(), household.getId());
-
-        assertThrows(InstanceNotFoundException.class,
-            () -> userService.removeUserHousehold(user.getId(), household.getId()));
-    }
-
-    @Test
-    void removeUserHouseholdWithANonExistingUser() {
-
-        Household household = createHousehold("My home");
-
-        assertThrows(InstanceNotFoundException.class,
-            () -> userService.removeUserHousehold(NON_EXISTING_ID, household.getId()));
-    }
-
-    @Test
-    void removeUserHouseholdWithANonExistingHousehold() {
-
-        User user = signUpUser("daniel", "daniel@example.com");
-
-        assertThrows(InstanceNotFoundException.class,
-            () -> userService.removeUserHousehold(user.getId(), NON_EXISTING_ID));
-    }
-
-    @Test
-    void removeUserHouseholdWhenNoneExists() {
-
-        User user = signUpUser("daniel", "daniel@example.com");
-        Household household = createHousehold("My home");
-
-        assertThrows(InstanceNotFoundException.class,
-            () -> userService.removeUserHousehold(user.getId(), household.getId()));
-    }
+    
 
     // -------------------------------------------------------------------------
     // Login

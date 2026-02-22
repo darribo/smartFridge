@@ -27,8 +27,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/docs/**").permitAll() //Se permite el acceso sin autenticar a la documentación Swagger
                 .requestMatchers("/swagger-ui/**").permitAll() //Se permite el acceso sin autenticar a la documentación Swagger
-                .requestMatchers("/users/signUp").permitAll() //Se permite el acceso sin autenticar a las rutas de login y refresh
+                .requestMatchers("/users/**").permitAll() //Se permite el acceso sin autenticar a las rutas de login y refresh
                 .requestMatchers("/allergies/getAll/**").permitAll()
+                .requestMatchers("/households/**").permitAll()
                 .anyRequest().authenticated() //El resto de rutas requieren autenticación
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); //Se añade el filtro JWT antes del filtro de autenticación por defecto

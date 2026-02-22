@@ -1,37 +1,41 @@
-package es.udc.bonilla.rivera.daniel.model.entities;
+package es.udc.bonilla.rivera.daniel.rest.dtos;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@Entity
-public class Household {
+@Schema(
+    name = "Household",
+    description = "Información de un hogar"
+)
+public class HouseholdDto {
 
+    @Schema(description = "Identificador único del hogar", example = "10")
     private Long id;
+    @Schema(description = "Nombre del hogar", example = "Casa principal")
     private String name;
+    @Schema(description = "Descripción del hogar", example = "Hogar familiar")
     private String description;
+    @Schema(description = "Código de país del hogar", example = "ES")
     private String countryCode;
+    @Schema(description = "Código de región del hogar", example = "GA")
     private String regionCode;
+    @Schema(description = "Nombre de la región del hogar", example = "Galicia")
     private String regionName;
-    private User admin;
+    @Schema(description = "Identificador del usuario administrador", example = "1")
+    private Long adminId;
 
-    public Household() {}
+    public HouseholdDto() {}
 
-    public Household(String name, String description, String countryCode, String regionCode, String regionName, User admin) {
+    public HouseholdDto(Long id, String name, String description, String countryCode, String regionCode, String regionName, Long adminId) {
+        this.id = id;
         this.name = name;
         this.description = description;
         this.countryCode = countryCode;
         this.regionCode = regionCode;
         this.regionName = regionName;
-        this.admin = admin;
+        this.adminId = adminId;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     public Long getId() {
         return id;
     }
@@ -74,12 +78,11 @@ public class Household {
         this.regionName = regionName;
     }
 
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name = "admin_id")
-    public User getAdmin(){
-        return admin;
+    public Long getAdminId() {
+        return adminId;
     }
-    public void setAdmin(User admin) {
-        this.admin = admin;
+    public void setAdminId(Long adminId) {
+        this.adminId = adminId;
     }
+
 }

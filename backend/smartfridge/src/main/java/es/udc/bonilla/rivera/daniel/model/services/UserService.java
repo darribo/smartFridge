@@ -4,7 +4,6 @@ import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.entities.User;
 import es.udc.bonilla.rivera.daniel.model.entities.UserAllergy;
-import es.udc.bonilla.rivera.daniel.model.entities.UserHousehold;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.IncorrectLoginException;
 
 public interface UserService {
@@ -44,28 +43,6 @@ public interface UserService {
      * @throws InstanceNotFoundException Si no se encuentra el usuario o la alergia especificada.
      */
     void removeUserAllergy(Long userId, Long allergyId) throws InstanceNotFoundException;
-
-    /**
-     * Añade un usuario a un hogar específico.
-     *
-     * @param userId        Identificador único del usuario que se desea añadir.
-     * @param householdId   Identificador único del hogar al que se añadirá el usuario.
-     * @return              La relación creada entre el usuario y el hogar.
-     * @throws InstanceNotFoundException   Si no se encuentra el usuario o el hogar especificado.
-     * @throws DuplicateInstanceException  Si el usuario ya pertenece al hogar indicado.
-     */
-    UserHousehold addUserHousehold(Long userId, Long householdId) throws InstanceNotFoundException, DuplicateInstanceException;
-
-    UserHousehold getUserHousehold(Long userId, Long householdId) throws InstanceNotFoundException;
-
-    /**
-     * Elimina la asociación entre un usuario y un hogar.
-     *
-     * @param userId       Identificador único del usuario.
-     * @param householdId  Identificador único del hogar.
-     * @throws InstanceNotFoundException Si no se encuentra el usuario o el hogar especificado.
-     */
-    void removeUserHousehold(Long userId, Long householdId) throws InstanceNotFoundException;
 
     /**
      * Autentica a un usuario con su nombre de usuario y contraseña.

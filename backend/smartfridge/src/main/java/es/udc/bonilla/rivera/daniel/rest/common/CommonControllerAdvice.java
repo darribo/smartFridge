@@ -17,6 +17,7 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
+import es.udc.bonilla.rivera.daniel.model.common.PermissionException;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,6 +28,7 @@ public class CommonControllerAdvice {
 
     private static final String INSTANCE_NOT_FOUND_EXCEPTION_CODE = "project.exceptions.InstanceNotFoundException";
     private static final String DUPLICATE_INSTANCE_EXCEPTION_CODE = "project.exceptions.DuplicateInstanceException";
+    private static final String PERMISSION_EXCEPTION_CODE = "project.exceptions.PermissionException";
 
     @Autowired
     private MessageSource messageSource;
@@ -163,6 +165,18 @@ public class CommonControllerAdvice {
 		});
 
 		return new ErrorsDto(fieldErrors);
+	}
+
+    @ExceptionHandler(PermissionException.class)
+	@ResponseStatus(HttpStatus.FORBIDDEN)
+	@ResponseBody
+	public ErrorsDto handlePermissionException(PermissionException exception, Locale locale) {
+
+		String errorMessage = messageSource.getMessage(PERMISSION_EXCEPTION_CODE, null, PERMISSION_EXCEPTION_CODE,
+				locale);
+
+		return new ErrorsDto(errorMessage);
+
 	}
 
 

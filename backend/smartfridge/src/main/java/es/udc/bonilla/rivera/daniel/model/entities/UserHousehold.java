@@ -1,5 +1,7 @@
 package es.udc.bonilla.rivera.daniel.model.entities;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -13,12 +15,14 @@ public class UserHousehold {
     private UserHouseholdId id;
     private User user;
     private Household household;
+    private LocalDateTime joinedAt;
 
     public UserHousehold() {}
 
-    public UserHousehold(User user, Household household) {
+    public UserHousehold(User user, Household household, LocalDateTime joinedAt) {
         this.user = user;
         this.household = household;
+        this.joinedAt = joinedAt;
         this.id = new UserHouseholdId(user.getId(), household.getId());
     }
 
@@ -49,6 +53,14 @@ public class UserHousehold {
 
     public void setHousehold(Household household) {
         this.household = household;
+    }
+
+    
+    public LocalDateTime getJoinedAt() {
+        return joinedAt;
+    }
+    public void setJoinedAt(LocalDateTime joinedAt) {
+        this.joinedAt = joinedAt;
     }
 
     @Override

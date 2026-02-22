@@ -11,14 +11,10 @@ import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.daos.UserAllergyDao;
 import es.udc.bonilla.rivera.daniel.model.daos.UserDao;
-import es.udc.bonilla.rivera.daniel.model.daos.UserHouseholdDao;
 import es.udc.bonilla.rivera.daniel.model.entities.Allergy;
-import es.udc.bonilla.rivera.daniel.model.entities.Household;
 import es.udc.bonilla.rivera.daniel.model.entities.User;
 import es.udc.bonilla.rivera.daniel.model.entities.UserAllergy;
 import es.udc.bonilla.rivera.daniel.model.entities.UserAllergyId;
-import es.udc.bonilla.rivera.daniel.model.entities.UserHousehold;
-import es.udc.bonilla.rivera.daniel.model.entities.UserHouseholdId;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.IncorrectLoginException;
 
 @Service
@@ -36,9 +32,6 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserAllergyDao userAllergyDao;
-
-    @Autowired
-    private UserHouseholdDao userHouseholdDao;
 
     @Override
     public User signUp(String userName, String password, String email, String firstName, String lastName, String avatar) throws DuplicateInstanceException {
@@ -95,46 +88,6 @@ public class UserServiceImpl implements UserService {
         }
 
         userAllergyDao.deleteById(userAllergyId);
-    }
-
-    @Override
-    public UserHousehold addUserHousehold(Long userId, Long householdId) throws InstanceNotFoundException, DuplicateInstanceException {
-
-        User user = permissionChecker.checkUserExists(userId);
-
-        Household household = permissionChecker.checkHouseholdExists(householdId);
-
-        if(userHouseholdDao.existsByUserIdAndHouseholdId(userId, householdId)){
-            throw new DuplicateInstanceException("project.entities.userhousehold", "(" + userId + ", " + householdId + ")");
-        }
-
-        UserHousehold userHousehold = new UserHousehold(user, household);
-
-        userHouseholdDao.save(userHousehold);
-
-        return userHousehold;
-        
-    }
-
-    @Override
-    public UserHousehold getUserHousehold(Long userId, Long householdId) throws InstanceNotFoundException {
-        return permissionChecker.checkUserHouseholdExists(userId, householdId);
-    }
-
-    @Override
-    public void removeUserHousehold(Long userId, Long householdId) throws InstanceNotFoundException {
-        
-        permissionChecker.checkUserExists(userId);
-
-        permissionChecker.checkHouseholdExists(householdId);
-
-        UserHouseholdId userHouseholdId = new UserHouseholdId(userId, householdId);
-
-        if(!userHouseholdDao.existsByUserIdAndHouseholdId(userId, householdId)){
-            throw new InstanceNotFoundException("project.entities.userhousehold", "(" + userId + ", " + householdId + ")");
-        }
-
-        userHouseholdDao.deleteById(userHouseholdId);
     }
 
     @Override

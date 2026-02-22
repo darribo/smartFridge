@@ -19,4 +19,6 @@ public interface PermissionChecker {
 
     UserHousehold checkUserHouseholdExists(Long userId, Long householdId) throws InstanceNotFoundException;
 
+    /* HouseholdInvitation checkHouseholdInvitationExists(Long householdInvitationId) throws InstanceNotFoundException; */
+
 }
