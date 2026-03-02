@@ -1,0 +1,167 @@
+package es.udc.bonilla.rivera.daniel.model.services;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
+import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
+import es.udc.bonilla.rivera.daniel.model.daos.ProductDao;
+import es.udc.bonilla.rivera.daniel.model.daos.ProductItemDao;
+import es.udc.bonilla.rivera.daniel.model.entities.Household;
+import es.udc.bonilla.rivera.daniel.model.entities.Product;
+import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationDateException;
+
+@Service
+@Transactional
+public class ProductServiceImpl implements ProductService {
+
+    @Autowired
+    private ProductDao productDao;
+
+    @Autowired
+    private ProductItemDao productItemDao;
+
+    @Autowired
+    private PermissionChecker permissionChecker;
+
+    @Override
+    public Product createProduct(Long userId, String barcode, String name, String brand, String defaultPrice, String image,
+            String quantity, Product.Unit unit, boolean isVegetarian, boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
+            Product.NovaGroup novaGroup, Long householdId) throws InstanceNotFoundException, DuplicateInstanceException {
+
+        permissionChecker.checkUserHouseholdExists(userId, householdId);
+
+        if (productDao.existsByHouseholdIdAndName(householdId, name)) {
+            throw new DuplicateInstanceException("project.entities.product", "(" + householdId + ", " + name + ")");
+        }
+
+        if (barcode != null && productDao.existsByBarcode(barcode)) {
+            throw new DuplicateInstanceException("project.entities.product", "barcode: " + barcode);
+        }
+
+        Household household = permissionChecker.checkHouseholdExists(householdId);
+
+        Product product = new Product(barcode, name, brand, defaultPrice != null ? new BigDecimal(defaultPrice) : null, image,
+                quantity != null ? new BigDecimal(quantity) : null, unit, isVegetarian, isVegan, nutriScoreGrade, novaGroup,
+                LocalDateTime.now().withNano(0), household);
+
+        return productDao.save(product);
+    }
+
+    @Override
+    public Product updateProduct(Long userId, Long productId, String name, String defaultPrice, String image, String quantity)
+            throws InstanceNotFoundException, DuplicateInstanceException {
+
+        Product product = permissionChecker.checkProductExists(productId);
+
+        Long householdId = product.getHousehold().getId();
+
+        permissionChecker.checkUserHouseholdExists(userId, householdId);
+
+        if (!Objects.equals(product.getName(), name) && productDao.existsByHouseholdIdAndNameAndIdNot(householdId, name, productId)) {
+            throw new DuplicateInstanceException("project.entities.product", "(" + householdId + ", " + name + ")");
+        }
+
+        product.setName(name);
+        product.setDefaultPrice(defaultPrice != null ? new BigDecimal(defaultPrice) : null);
+        product.setImage(image);
+        product.setQuantity(quantity != null ? new BigDecimal(quantity) : null);
+
+        return product;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Product getProduct(Long userId, Long productId) throws InstanceNotFoundException {
+
+        Product product = permissionChecker.checkProductExists(productId);
+
+        permissionChecker.checkUserHouseholdExists(userId, product.getHousehold().getId());
+
+        return product;
+    }
+
+    @Override
+    public void deleteProduct(Long userId, Long productId) throws InstanceNotFoundException {
+
+        Product product = permissionChecker.checkProductExists(productId);
+
+        permissionChecker.checkUserHouseholdExists(userId, product.getHousehold().getId());
+
+        productDao.delete(product);
+    }
+
+    @Override
+    public ProductItem createProductItem(Long userId, Long productId, String purchaseDate, String expirationDate, String pricePaid)
+            throws InstanceNotFoundException, InvalidExpirationDateException {
+
+        Product product = permissionChecker.checkProductExists(productId);
+
+        permissionChecker.checkUserHouseholdExists(userId, product.getHousehold().getId());
+
+        LocalDateTime parsedPurchaseDate = purchaseDate != null ? LocalDateTime.parse(purchaseDate) : null;
+        LocalDateTime parsedExpirationDate = expirationDate != null ? LocalDateTime.parse(expirationDate) : null;
+
+        validateDates(parsedPurchaseDate, parsedExpirationDate);
+
+        ProductItem productItem = new ProductItem(product, parsedPurchaseDate, parsedExpirationDate,
+                pricePaid != null ? new BigDecimal(pricePaid) : null);
+
+        return productItemDao.save(productItem);
+    }
+
+    @Override
+    public ProductItem updateProductItem(Long userId, Long productItemId, String purchaseDate, String expirationDate, String pricePaid)
+            throws InstanceNotFoundException, InvalidExpirationDateException {
+
+        ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
+
+        permissionChecker.checkUserHouseholdExists(userId, productItem.getProduct().getHousehold().getId());
+
+        LocalDateTime parsedPurchaseDate = purchaseDate != null ? LocalDateTime.parse(purchaseDate) : null;
+        LocalDateTime parsedExpirationDate = expirationDate != null ? LocalDateTime.parse(expirationDate) : null;
+
+        validateDates(parsedPurchaseDate, parsedExpirationDate);
+
+        productItem.setPurchaseDate(parsedPurchaseDate);
+        productItem.setExpirationDate(parsedExpirationDate);
+        productItem.setPricePaid(pricePaid != null ? new BigDecimal(pricePaid) : null);
+
+        return productItem;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProductItem getProductItem(Long userId, Long productItemId) throws InstanceNotFoundException {
+
+        ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
+
+        permissionChecker.checkUserHouseholdExists(userId, productItem.getProduct().getHousehold().getId());
+
+        return productItem;
+    }
+
+    @Override
+    public void deleteProductItem(Long userId, Long productItemId) throws InstanceNotFoundException {
+
+        ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
+
+        permissionChecker.checkUserHouseholdExists(userId, productItem.getProduct().getHousehold().getId());
+
+        productItemDao.delete(productItem);
+    }
+
+    private void validateDates(LocalDateTime purchaseDate, LocalDateTime expirationDate) throws InvalidExpirationDateException {
+
+        if (purchaseDate != null && expirationDate != null && expirationDate.isBefore(purchaseDate)) {
+            throw new InvalidExpirationDateException();
+        }
+    }
+
+}

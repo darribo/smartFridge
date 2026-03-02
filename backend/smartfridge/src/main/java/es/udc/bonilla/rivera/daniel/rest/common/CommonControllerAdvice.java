@@ -1,12 +1,15 @@
 package es.udc.bonilla.rivera.daniel.rest.common;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -14,6 +17,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+
+import com.fasterxml.jackson.databind.JsonMappingException.Reference;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
@@ -167,6 +173,34 @@ public class CommonControllerAdvice {
 		return new ErrorsDto(fieldErrors);
 	}
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ResponseBody
+	public ErrorsDto handleHttpMessageNotReadableException(HttpMessageNotReadableException exception) {
+
+        Throwable cause = exception.getMostSpecificCause();
+
+        if (cause instanceof InvalidFormatException invalidFormatException
+                && invalidFormatException.getTargetType() != null
+                && invalidFormatException.getTargetType().isEnum()) {
+
+            String fieldName = invalidFormatException.getPath().stream()
+                    .map(Reference::getFieldName)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.joining("."));
+
+            String allowedValues = Arrays.stream(invalidFormatException.getTargetType().getEnumConstants())
+                    .map(Object::toString)
+                    .collect(Collectors.joining(", "));
+
+            String message = "Valor no válido. Valores permitidos: " + allowedValues;
+
+            return new ErrorsDto(List.of(new FieldErrorDto(fieldName, message)));
+        }
+
+        return new ErrorsDto(List.of(new FieldErrorDto("body", "Cuerpo JSON inválido")));
+	}
+
     @ExceptionHandler(PermissionException.class)
 	@ResponseStatus(HttpStatus.FORBIDDEN)
 	@ResponseBody
@@ -178,6 +212,5 @@ public class CommonControllerAdvice {
 		return new ErrorsDto(errorMessage);
 
 	}
-
 
 }

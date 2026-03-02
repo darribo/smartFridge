@@ -1,4 +1,6 @@
 /* DROP TABLE IF EXISTS HouseholdInvitation; */
+DROP TABLE IF EXISTS ProductItem;
+DROP TABLE IF EXISTS Product;
 DROP TABLE IF EXISTS UserHousehold;
 DROP TABLE IF EXISTS UserAllergy;
 DROP TABLE IF EXISTS RefreshToken;
@@ -60,3 +62,37 @@ CREATE TABLE UserAllergy (
     responseDate DATETIME,
     status TINYINT NOT NULL
 ); */
+
+
+CREATE TABLE Product (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    householdId BIGINT NOT NULL,
+    barcode VARCHAR(13),
+    name VARCHAR(100) NOT NULL,
+    brand VARCHAR(50),
+    image VARCHAR(255),
+    quantity DECIMAL(5,2) NOT NULL,
+    unit TINYINT NOT NULL,
+    vegetarian BOOLEAN,
+    vegan BOOLEAN,
+    nutriScoreGrade TINYINT,
+    novaGroup TINYINT,
+    createdAt DATETIME NOT NULL,
+    defaultPrice DECIMAL(5,2),
+    --isFavorite BOOLEAN NOT NULL,
+    FOREIGN KEY (householdId) REFERENCES Household(id) ON DELETE CASCADE
+);
+
+CREATE TABLE ProductItem (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    productId BIGINT NOT NULL,
+    purchaseDate DATETIME NOT NULL,
+    expirationDate DATETIME,
+    -- openedAt DATETIME,
+    -- daysSinceProductWasOpened INTEGER,
+    pricePaid DECIMAL(5,2), --TODO: Si es diferente actualizar el por defecto del producto o dejarlo?
+    FOREIGN KEY (productId) REFERENCES Product(id) ON DELETE CASCADE
+)
+
+--TODO: ALERGIAS
+--TODO: CATEGORY TAGS

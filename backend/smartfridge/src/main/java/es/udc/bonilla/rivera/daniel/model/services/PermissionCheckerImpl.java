@@ -9,11 +9,15 @@ import org.springframework.transaction.annotation.Transactional;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.daos.AllergyDao;
 import es.udc.bonilla.rivera.daniel.model.daos.HouseholdDao;
+import es.udc.bonilla.rivera.daniel.model.daos.ProductDao;
+import es.udc.bonilla.rivera.daniel.model.daos.ProductItemDao;
 import es.udc.bonilla.rivera.daniel.model.daos.UserAllergyDao;
 import es.udc.bonilla.rivera.daniel.model.daos.UserDao;
 import es.udc.bonilla.rivera.daniel.model.daos.UserHouseholdDao;
 import es.udc.bonilla.rivera.daniel.model.entities.Allergy;
 import es.udc.bonilla.rivera.daniel.model.entities.Household;
+import es.udc.bonilla.rivera.daniel.model.entities.Product;
+import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
 import es.udc.bonilla.rivera.daniel.model.entities.User;
 import es.udc.bonilla.rivera.daniel.model.entities.UserAllergy;
 import es.udc.bonilla.rivera.daniel.model.entities.UserAllergyId;
@@ -32,6 +36,12 @@ public class PermissionCheckerImpl implements PermissionChecker {
 
     @Autowired
     private HouseholdDao householdDao;
+
+    @Autowired
+    private ProductDao productDao;
+
+    @Autowired
+    private ProductItemDao productItemDao;
 
     @Autowired
     private UserAllergyDao userAllergyDao;
@@ -73,6 +83,42 @@ public class PermissionCheckerImpl implements PermissionChecker {
 
         if (!optional.isPresent()) {
             throw new InstanceNotFoundException("project.entities.household", householdId);
+        }
+
+        return optional.get();
+    }
+
+    @Override
+    public Product checkProductExists(Long productId) throws InstanceNotFoundException {
+
+        Optional<Product> optional = productDao.findById(productId);
+
+        if (!optional.isPresent()) {
+            throw new InstanceNotFoundException("project.entities.product", productId);
+        }
+
+        return optional.get();
+    }
+
+    @Override
+    public Product checkProductExistsInHousehold(Long productId, Long householdId) throws InstanceNotFoundException {
+
+        Optional<Product> optional = productDao.findByIdAndHouseholdId(productId, householdId);
+
+        if (!optional.isPresent()) {
+            throw new InstanceNotFoundException("project.entities.product", "(" + productId + ", " + householdId + ")");
+        }
+
+        return optional.get();
+    }
+
+    @Override
+    public ProductItem checkProductItemExists(Long productItemId) throws InstanceNotFoundException {
+
+        Optional<ProductItem> optional = productItemDao.findById(productItemId);
+
+        if (!optional.isPresent()) {
+            throw new InstanceNotFoundException("project.entities.productitem", productItemId);
         }
 
         return optional.get();
