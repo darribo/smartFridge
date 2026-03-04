@@ -45,20 +45,20 @@ public class Product {
     private String image;
     private BigDecimal quantity;
     private Unit unit;
-    private boolean vegetarian;
-    private boolean vegan;
+    private Boolean vegetarian;
+    private Boolean vegan;
     private NutriScoreGrade nutriScoreGrade;
     private NovaGroup novaGroup;
     private LocalDateTime createdAt;
-    /* private boolean isFavorite; */
+    /* private Boolean isFavorite; */
     private Household household;
     
 
     public Product() {}
 
     public Product(String barcode, String name, String brand, BigDecimal defaultPrice, String image,
-            BigDecimal quantity, Unit unit, boolean isVegetarian, boolean isVegan, NutriScoreGrade nutriScoreGrade,
-            NovaGroup novaGroup, LocalDateTime createdAt, /* boolean isFavorite, */ Household household) {
+            BigDecimal quantity, Unit unit, Boolean isVegetarian, Boolean isVegan, NutriScoreGrade nutriScoreGrade,
+            NovaGroup novaGroup, LocalDateTime createdAt, /* Boolean isFavorite, */ Household household) {
 
 
         this.barcode = barcode;
@@ -136,17 +136,17 @@ public class Product {
         this.unit = unit;
     }
 
-    public boolean isVegetarian() {
+    public Boolean isVegetarian() {
         return vegetarian;
     }
-    public void setVegetarian(boolean vegetarian) {
+    public void setVegetarian(Boolean vegetarian) {
         this.vegetarian = vegetarian;
     }
 
-    public boolean isVegan() {
+    public Boolean isVegan() {
         return vegan;
     }
-    public void setVegan(boolean vegan) {
+    public void setVegan(Boolean vegan) {
         this.vegan = vegan;
     }
 
@@ -171,10 +171,10 @@ public class Product {
         this.createdAt = createdAt;
     }
 
-    /* public boolean isFavorite() {
+    /* public Boolean isFavorite() {
         return isFavorite;
     }
-    public void setFavorite(boolean isFavorite) {
+    public void setFavorite(Boolean isFavorite) {
         this.isFavorite = isFavorite;
     } */
 

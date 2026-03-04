@@ -9,6 +9,7 @@ import type { NewUserParams } from "../api/users/userService";
 import type { Household } from "../api/households/householdService";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ApiError } from "../api/appFetch";
+import AddProductScreen from "../screens/products/AddProductScreen";
 
 export type AuthStackParamList = {
   Register: { backendError?: ApiError } | undefined;
@@ -18,6 +19,7 @@ export type AuthStackParamList = {
   UpdateHousehold: { household: Household };
   MyHouseholds: undefined;
   HouseholdDetail: { householdId: number };
+  AddProduct: { householdId: number } | undefined;
 };
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
@@ -31,6 +33,7 @@ export function AuthStack() {
       <Stack.Screen name="CreateHousehold" component={CreateHouseholdScreen} />
       <Stack.Screen name="UpdateHousehold" component={UpdateHouseholdScreen} />
       <Stack.Screen name="MyHouseholds" component={MyHouseholdsScreen} />
+      <Stack.Screen name="AddProduct" component={AddProductScreen} />
       <Stack.Screen name="HouseholdDetail">
         {({ route, navigation }) => (
           <HouseholdDetailScreen

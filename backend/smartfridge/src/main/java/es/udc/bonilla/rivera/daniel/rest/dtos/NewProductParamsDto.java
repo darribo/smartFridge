@@ -129,7 +129,6 @@ public class NewProductParamsDto {
         this.unit = unit;
     }
 
-    @NotNull
     public Boolean getIsVegetarian() {
         return isVegetarian;
     }
@@ -138,7 +137,6 @@ public class NewProductParamsDto {
         this.isVegetarian = isVegetarian;
     }
 
-    @NotNull
     public Boolean getIsVegan() {
         return isVegan;
     }

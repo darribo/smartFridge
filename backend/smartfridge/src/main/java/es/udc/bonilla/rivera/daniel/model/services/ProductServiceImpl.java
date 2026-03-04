@@ -32,7 +32,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product createProduct(Long userId, String barcode, String name, String brand, String defaultPrice, String image,
-            String quantity, Product.Unit unit, boolean isVegetarian, boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
+            String quantity, Product.Unit unit, Boolean isVegetarian, Boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
             Product.NovaGroup novaGroup, Long householdId) throws InstanceNotFoundException, DuplicateInstanceException {
 
         permissionChecker.checkUserHouseholdExists(userId, householdId);
@@ -46,9 +46,11 @@ public class ProductServiceImpl implements ProductService {
         }
 
         Household household = permissionChecker.checkHouseholdExists(householdId);
+        boolean safeIsVegetarian = Boolean.TRUE.equals(isVegetarian);
+        boolean safeIsVegan = Boolean.TRUE.equals(isVegan);
 
         Product product = new Product(barcode, name, brand, defaultPrice != null ? new BigDecimal(defaultPrice) : null, image,
-                quantity != null ? new BigDecimal(quantity) : null, unit, isVegetarian, isVegan, nutriScoreGrade, novaGroup,
+                quantity != null ? new BigDecimal(quantity) : null, unit, safeIsVegetarian, safeIsVegan, nutriScoreGrade, novaGroup,
                 LocalDateTime.now().withNano(0), household);
 
         return productDao.save(product);

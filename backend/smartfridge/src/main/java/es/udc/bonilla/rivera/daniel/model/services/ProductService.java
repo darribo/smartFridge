@@ -30,7 +30,7 @@ public interface ProductService {
      * o si ya existe un producto con el mismo código de barras.
      */
     Product createProduct(Long userId, String barcode, String name, String brand, String defaultPrice, String image,
-            String quantity, Product.Unit unit, boolean isVegetarian, boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
+            String quantity, Product.Unit unit, Boolean isVegetarian, Boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
             Product.NovaGroup novaGroup, Long householdId) throws InstanceNotFoundException, DuplicateInstanceException;
 
     /**
