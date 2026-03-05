@@ -7,11 +7,13 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,9 +21,11 @@ import org.springframework.web.bind.annotation.RestController;
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
+import es.udc.bonilla.rivera.daniel.model.services.Block;
 import es.udc.bonilla.rivera.daniel.model.services.ProductService;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationDateException;
 import es.udc.bonilla.rivera.daniel.rest.common.ErrorsDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.BlockDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewProductItemParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewProductParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductConversor;
@@ -44,6 +48,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class ProductController {
 
     private static final String INVALID_EXPIRATION_DATE_EXCEPTION_CODE = "project.exceptions.InvalidExpirationDateException";
+
+    private static final int SEARCH_PRODUCTS_SIZE = 5;
 
     @Autowired
     private MessageSource messageSource;
@@ -108,5 +114,13 @@ public class ProductController {
         return ProductItemConversor.toProductItemDto(productService.createProductItem(userId, productId,
                 params.getPurchaseDate(), params.getExpirationDate(), params.getPricePaid()));
     }
-    
+
+    @GetMapping("/{householdId}/search")
+    public BlockDto<ProductDto> findProductsByName(@RequestAttribute Long userId, @PathVariable Long householdId, @RequestParam String name, @RequestParam int page) throws InstanceNotFoundException {
+
+        Block<Product> block = productService.findProductsByName(userId, householdId, name, page, SEARCH_PRODUCTS_SIZE);
+
+        
+        return new BlockDto<>(ProductConversor.toProductDtos(block.getItems()), block.getExistMoreItems());
+    }
 }

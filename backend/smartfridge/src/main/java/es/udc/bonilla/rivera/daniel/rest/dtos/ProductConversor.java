@@ -1,5 +1,8 @@
 package es.udc.bonilla.rivera.daniel.rest.dtos;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
 
 public class ProductConversor {
@@ -24,5 +27,16 @@ public class ProductConversor {
                 product.getNovaGroup(),
                 product.getCreatedAt(),
                 product.getHousehold().getId());
+    }
+
+    public static List<ProductDto> toProductDtos(List<Product> products) {
+        
+        List<ProductDto> productDtos = new ArrayList<>();
+
+        for (Product product : products) {
+            productDtos.add(toProductDto(product));
+        }
+
+        return productDtos;
     }
 }

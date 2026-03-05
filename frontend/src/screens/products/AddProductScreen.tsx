@@ -18,7 +18,7 @@ import { InputLabel } from "../../components/users/InputLabel";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
 import type { AuthStackParamList } from "../../navigation/AuthStack";
-import { createProduct } from "../../api/products/productService";
+import { createProduct, searchProductsByName } from "../../api/products/productService";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "AddProduct">;
 
@@ -37,27 +37,6 @@ type ProductFormErrors = Partial<{
   name: string;
   quantity: string;
 }>;
-
-const MOCK_PRODUCTS: ExistingProduct[] = [
-  {
-    id: 1,
-    barcode: "8437015942011",
-    name: "Leche Entera",
-    image: "https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: 2,
-    barcode: "8410000000123",
-    name: "Arroz Redondo",
-    image: null,
-  },
-  {
-    id: 3,
-    barcode: "8420000000456",
-    name: "Tomate Triturado",
-    image: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80",
-  },
-];
 
 const GENERIC_FOOD_IMAGE =
   "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=600&q=80";
@@ -115,29 +94,8 @@ const NOVA_SELECTED_COLORS: Record<NovaGroup, string> = {
   GROUP_4: "#D38787",
 };
 
-function mockDelay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-async function mockSearchProducts(query: string): Promise<ExistingProduct[]> {
-  await mockDelay(300);
-  const normalized = query.trim().toLowerCase();
-  if (!normalized) return [];
-
-  return MOCK_PRODUCTS.filter((item) => {
-    return (
-      item.name.toLowerCase().includes(normalized) ||
-      item.barcode.includes(normalized)
-    );
-  });
-}
-
-async function mockCreateProduct() {
-  await mockDelay(600);
-}
-
 async function mockAddItemToPantry() {
-  await mockDelay(600);
+  await new Promise((resolve) => setTimeout(resolve, 600));
 }
 
 type DropdownFieldProps<T extends string> = {
@@ -230,6 +188,7 @@ function OptionalBooleanField({
 }
 
 export default function AddProductScreen({ navigation, route }: Props) {
+  const householdId = route.params?.householdId ?? 10;
   const [isFirstTime, setIsFirstTime] = useState(true);
 
   const [barcode, setBarcode] = useState("");
@@ -266,14 +225,33 @@ export default function AddProductScreen({ navigation, route }: Props) {
   const onSearchChange = async (value: string) => {
     setSearch(value);
     setSelectedProduct(null);
+    setGlobalErrors([]);
+
     if (!value.trim()) {
       setSearchResults([]);
+      setSearching(false);
       return;
     }
 
     setSearching(true);
-    const result = await mockSearchProducts(value);
-    setSearchResults(result);
+    await searchProductsByName(
+      householdId,
+      value.trim(),
+      0,
+      (block) => {
+        const mappedResults: ExistingProduct[] = block.items.map((item) => ({
+          id: item.id,
+          barcode: item.barcode ?? "",
+          name: item.name,
+          image: item.image ?? null,
+        }));
+        setSearchResults(mappedResults);
+      },
+      (err) => {
+        setSearchResults([]);
+        setGlobalErrors(err.globalErrors ?? ["No se han podido buscar productos."]);
+      }
+    );
     setSearching(false);
   };
 
@@ -312,7 +290,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
     };
 
     await createProduct(
-      10,
+      householdId,
       product,
       () => {
         navigation.goBack();
@@ -364,9 +342,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
           <MaterialCommunityIcons name="arrow-left" size={26} color={THEME.text} />
         </Pressable>
         <Text style={styles.headerTitle}>Nuevo Producto</Text>
-        <Pressable hitSlop={10}>
-          <MaterialCommunityIcons name="help-circle" size={24} color={THEME.text} />
-        </Pressable>
+        <View style={styles.headerSpacer} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -677,6 +653,10 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: THEME.text,
     lineHeight: 22,
+  },
+  headerSpacer: {
+    width: 24,
+    height: 24,
   },
   content: {
     paddingHorizontal: 16,

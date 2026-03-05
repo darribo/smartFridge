@@ -1,4 +1,5 @@
 import { ApiError, appFetch, fetchConfig } from "../appFetch";
+import { Block } from "../block";
 
 export type NewProductParams = {
     barcode?: string | null;
@@ -53,3 +54,21 @@ export const createProduct = async (householdId: number, params: NewProductParam
         onError
     );
 }
+
+export const searchProductsByName = async (
+    householdId: number,
+    name: string,
+    page: number,
+    onSuccess?: (block: Block<Product>) => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("GET");
+
+    return appFetch(
+        `/products/${householdId}/search?name=${encodeURIComponent(name)}&page=${page}`,
+        options,
+        onSuccess,
+        onError
+    );
+};
+

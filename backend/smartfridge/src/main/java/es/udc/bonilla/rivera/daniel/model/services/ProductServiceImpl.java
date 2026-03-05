@@ -5,11 +5,14 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
+import es.udc.bonilla.rivera.daniel.model.common.PermissionException;
 import es.udc.bonilla.rivera.daniel.model.daos.ProductDao;
 import es.udc.bonilla.rivera.daniel.model.daos.ProductItemDao;
 import es.udc.bonilla.rivera.daniel.model.entities.Household;
@@ -164,6 +167,16 @@ public class ProductServiceImpl implements ProductService {
         if (purchaseDate != null && expirationDate != null && expirationDate.isBefore(purchaseDate)) {
             throw new InvalidExpirationDateException();
         }
+    }
+
+    @Override
+    public Block<Product> findProductsByName(Long userId, Long householdId, String name, int page, int size) throws InstanceNotFoundException {
+        
+        permissionChecker.checkUserHouseholdExists(userId, householdId);
+
+        Slice<Product> productSlice = productDao.findByName(name, householdId, PageRequest.of(page, size));
+
+        return new Block<>(productSlice.getContent(), productSlice.hasNext());
     }
 
 }
