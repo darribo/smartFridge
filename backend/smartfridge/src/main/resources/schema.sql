@@ -22,7 +22,7 @@ CREATE TABLE users (
 
 CREATE TABLE Household (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
+    name VARCHAR(30) NOT NULL,
     description VARCHAR(500),
     countryCode VARCHAR(10) NOT NULL,
     regionCode VARCHAR(10) NOT NULL,
@@ -68,7 +68,7 @@ CREATE TABLE Product (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     householdId BIGINT NOT NULL,
     barcode VARCHAR(13),
-    name VARCHAR(100) NOT NULL,
+    name VARCHAR(30) NOT NULL,
     brand VARCHAR(50),
     image VARCHAR(255),
     quantity DECIMAL(5,2) NOT NULL,

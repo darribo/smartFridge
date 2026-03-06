@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Size;
 )
 public class NewHouseholdParamsDto {
 
-    @Schema(description = "Nombre del hogar", example = "Casa principal", minLength = 1, maxLength = 100)
+    @Schema(description = "Nombre del hogar", example = "Casa principal", minLength = 1, maxLength = 30)
     private String name;
     @Schema(description = "Descripción del hogar", example = "Hogar familiar", maxLength = 500, nullable = true)
     private String description;
@@ -33,7 +33,7 @@ public class NewHouseholdParamsDto {
     }
 
     @NotNull
-    @Size(min=1, max=100)
+    @Size(min=1, max=30)
     public String getName() {
         return name;
     }

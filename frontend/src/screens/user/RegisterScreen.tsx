@@ -41,15 +41,19 @@ export const RegisterScreen = ({ navigation, route }: Props) => {
         const e: RegisterErrors = {};
 
         if (!firstName.trim()) e.firstName = t("genericErrors.requiredField");
+        else if (firstName.trim().length < 2) e.firstName = t("genericErrors.min", { min: 2 });
         else if (firstName.trim().length > 50) e.firstName = t("genericErrors.max", { max: 50 });
 
         if (!lastName.trim()) e.lastName = t("genericErrors.requiredField");
+        else if (lastName.trim().length < 2) e.lastName = t("genericErrors.min", { min: 2 });
         else if (lastName.trim().length > 50) e.lastName = t("genericErrors.max", { max: 50 });
 
         if (!username.trim()) e.username = t("genericErrors.requiredField");
+        else if (username.trim().length < 3) e.username = t("genericErrors.min", { min: 3 });
         else if (username.trim().length > 50) e.username = t("genericErrors.max", { max: 50 });
 
         if (!email.trim()) e.email = t("genericErrors.requiredField");
+        else if (email.trim().length < 6) e.email = t("genericErrors.min", { min: 6 });
         else if (email.trim().length > 100) e.email = t("genericErrors.max", { max: 100 });
         else if (!isEmail(email)) e.email = t("genericErrors.emailInvalid");
 
@@ -124,6 +128,7 @@ export const RegisterScreen = ({ navigation, route }: Props) => {
                         placeholder={t("register.firstNamePlaceholder")}
                         value={firstName}
                         onChangeText={(v) => { setFirstName(v); clearError("firstName"); }}
+                        maxLength={50}
                         returnKeyType="next"
                         errorText={errors.firstName}
                     />
@@ -137,6 +142,7 @@ export const RegisterScreen = ({ navigation, route }: Props) => {
                         placeholder={t("register.lastNamePlaceholder")}
                         value={lastName}
                         onChangeText={(v) => { setLastName(v); clearError("lastName"); }}
+                        maxLength={50}
                         returnKeyType="next"
                         errorText={errors.lastName}
                     />
@@ -150,6 +156,7 @@ export const RegisterScreen = ({ navigation, route }: Props) => {
                     autoCapitalize="none"
                     value={username}
                     onChangeText={(v) => { setUsername(v); clearError("username"); }}
+                    maxLength={50}
                     returnKeyType="next"
                     errorText={errors.username}
                 />
@@ -162,6 +169,7 @@ export const RegisterScreen = ({ navigation, route }: Props) => {
                     keyboardType="email-address"
                     value={email}
                     onChangeText={(v) => { setEmail(v); clearError("email"); }}
+                    maxLength={100}
                     returnKeyType="next"
                     errorText={errors.email}
                 />

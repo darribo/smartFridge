@@ -41,8 +41,8 @@ export default function CreateHouseholdScreen({ navigation }: Props) {
     const next: HouseholdErrors = {};
 
     if (!name.trim()) next.name = t("genericErrors.requiredField");
-    else if (name.trim().length > 100)
-      next.name = t("genericErrors.max", { max: 100 });
+    else if (name.trim().length > 30)
+      next.name = t("genericErrors.max", { max: 30 });
 
     if (description.length > 500)
       next.description = t("genericErrors.max", { max: 500 });
@@ -131,6 +131,7 @@ export default function CreateHouseholdScreen({ navigation }: Props) {
               clearError("name");
               if (globalErrors.length) setGlobalErrors([]);
             }}
+            maxLength={30}
             returnKeyType="next"
             errorText={errors.name}
           />

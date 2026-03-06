@@ -107,5 +107,79 @@
     "errors": {
       "missingId": "Non se indicou un fogar válido."
     }
+  },
+  "addProduct": {
+    "title": "Novo Produto",
+    "firstTimeQuestion": "É a primeira vez que engades este produto?",
+    "firstTimeYes": "Si, é a primeira vez",
+    "firstTimeNo": "Non",
+    "imageSelected": "Imaxe seleccionada",
+    "addImage": "Engadir imaxe do produto",
+    "emptySearch": "Non se atopou ningún produto",
+    "selectedProductHint": "Produto seleccionado",
+    "common": {
+      "yes": "Si",
+      "no": "Non"
+    },
+    "units": {
+      "g": "g",
+      "kg": "kg",
+      "ml": "ml",
+      "l": "l",
+      "unit": "ud"
+    },
+    "fields": {
+      "barcode": "Código de barras",
+      "productNameRequired": "Nome do produto *",
+      "brand": "Marca",
+      "quantityRequired": "Cantidade *",
+      "unitRequired": "Unidade *",
+      "defaultPrice": "Prezo por defecto (€)",
+      "vegetarian": "Vexetariano",
+      "vegan": "Vegano",
+      "nutriScore": "NutriScore",
+      "novaGroup": "Grao NOVA",
+      "purchaseDateRequired": "Data de compra *",
+      "expirationDate": "Data de caducidade",
+      "pricePaid": "Prezo pagado (€)",
+      "itemsCount": "Número de items"
+    },
+    "placeholders": {
+      "barcode": "Escanea ou escribe o código",
+      "productName": "Ex. Leite desnatado",
+      "brand": "Ex. Marca",
+      "searchProduct": "Buscar produto",
+      "date": "AAAA-MM-DD",
+      "decimal": "0.00"
+    },
+    "moreInfo": {
+      "title": "Queres engadir máis información?",
+      "subtitle": "Complétaa só se coñeces estes datos."
+    },
+    "actions": {
+      "saveProduct": "Gardar produto",
+      "addToPantry": "Engadir á despensa",
+      "cancel": "Cancelar",
+      "decrease": "Reducir cantidade",
+      "increase": "Aumentar cantidade"
+    },
+    "errors": {
+      "searchFailed": "Non se puideron buscar produtos.",
+      "invalidDecimal": "Formato inválido (máx 2 decimais)",
+      "maxDecimal": "Máximo permitido: 999.99",
+      "saveFailed": "Non se puido gardar o produto.",
+      "addToPantryFailed": "Non se puido engadir á despensa. Téntao de novo.",
+      "invalidItemCount": "A cantidade de items debe ser polo menos 1."
+    },
+    "help": {
+      "nutriScore": {
+        "title": "Que é o NutriScore?",
+        "description": "NutriScore clasifica a calidade nutricional dun alimento de A (mellor) a E (peor), segundo a composición por 100g ou 100ml."
+      },
+      "novaGroup": {
+        "title": "Que é o grao NOVA?",
+        "description": "NOVA clasifica o nivel de procesado dos alimentos do 1 ao 4: 1 (minimamente procesado) a 4 (ultraprocesado)."
+      }
+    }
   }
 }

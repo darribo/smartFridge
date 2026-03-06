@@ -1,6 +1,7 @@
 package es.udc.bonilla.rivera.daniel.rest.dtos;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public class LoginParamsDto {
 
@@ -15,6 +16,7 @@ public class LoginParamsDto {
     public LoginParamsDto() {}
 
     @NotNull
+    @Size(min=3, max=50)
     public String getUserName() {
         return userName;
     }
@@ -24,6 +26,7 @@ public class LoginParamsDto {
     }
 
     @NotNull
+    @Size(min=8, max=100)
     public String getPassword() {
         return password;
     }

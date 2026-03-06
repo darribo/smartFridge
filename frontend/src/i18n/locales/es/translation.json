@@ -107,5 +107,79 @@
     "errors": {
       "missingId": "No se ha indicado un hogar válido."
     }
+  },
+  "addProduct": {
+    "title": "Nuevo Producto",
+    "firstTimeQuestion": "¿Es la primera vez que añades este producto?",
+    "firstTimeYes": "Sí, es la primera vez",
+    "firstTimeNo": "No",
+    "imageSelected": "Imagen seleccionada",
+    "addImage": "Añadir imagen del producto",
+    "emptySearch": "No se encontró ningún producto",
+    "selectedProductHint": "Producto seleccionado",
+    "common": {
+      "yes": "Sí",
+      "no": "No"
+    },
+    "units": {
+      "g": "g",
+      "kg": "kg",
+      "ml": "ml",
+      "l": "l",
+      "unit": "ud"
+    },
+    "fields": {
+      "barcode": "Código de barras",
+      "productNameRequired": "Nombre del producto *",
+      "brand": "Marca",
+      "quantityRequired": "Cantidad *",
+      "unitRequired": "Unidad *",
+      "defaultPrice": "Precio por defecto (€)",
+      "vegetarian": "Vegetariano",
+      "vegan": "Vegano",
+      "nutriScore": "NutriScore",
+      "novaGroup": "Grado NOVA",
+      "purchaseDateRequired": "Fecha de Compra *",
+      "expirationDate": "Fecha de Caducidad",
+      "pricePaid": "Precio Pagado (€)",
+      "itemsCount": "Número de items"
+    },
+    "placeholders": {
+      "barcode": "Escanea o escribe el código",
+      "productName": "Ej. Leche desnatada",
+      "brand": "Ej. Pascual",
+      "searchProduct": "Buscar producto",
+      "date": "YYYY-MM-DD",
+      "decimal": "0.00"
+    },
+    "moreInfo": {
+      "title": "¿Quieres añadir más información?",
+      "subtitle": "Complétala solo si conoces estos datos."
+    },
+    "actions": {
+      "saveProduct": "Guardar producto",
+      "addToPantry": "Añadir a despensa",
+      "cancel": "Cancelar",
+      "decrease": "Reducir cantidad",
+      "increase": "Aumentar cantidad"
+    },
+    "errors": {
+      "searchFailed": "No se han podido buscar productos.",
+      "invalidDecimal": "Formato inválido (máx 2 decimales)",
+      "maxDecimal": "Máximo permitido: 999.99",
+      "saveFailed": "No se ha podido guardar el producto.",
+      "addToPantryFailed": "No se ha podido añadir a despensa. Inténtalo de nuevo.",
+      "invalidItemCount": "La cantidad de items debe ser al menos 1."
+    },
+    "help": {
+      "nutriScore": {
+        "title": "¿Qué es el NutriScore?",
+        "description": "NutriScore clasifica la calidad nutricional de un alimento desde A (mejor) hasta E (peor), basándose en su composición por 100g o 100ml."
+      },
+      "novaGroup": {
+        "title": "¿Qué es el grado NOVA?",
+        "description": "NOVA clasifica el nivel de procesamiento de los alimentos del 1 al 4: 1 (mínimamente procesado) a 4 (ultraprocesado)."
+      }
+    }
   }
 }

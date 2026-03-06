@@ -72,3 +72,26 @@ export const searchProductsByName = async (
     );
 };
 
+export const createProductItem = async (
+    productId: number,
+    purchaseDate: string | null,
+    expirationDate: string | null,
+    pricePaid: string | null,
+    onSuccess?: () => void,
+    onError?: (err: ApiError) => void
+) => {
+    const body = {
+        purchaseDate,
+        expirationDate,
+        pricePaid
+    };
+
+    const options = await fetchConfig("POST", body);
+
+    return appFetch(
+        `/products/${productId}/items`,
+        options,
+        onSuccess,
+        onError
+    );
+};

@@ -2,6 +2,8 @@ package es.udc.bonilla.rivera.daniel.rest.dtos;
 
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -14,7 +16,7 @@ public class NewProductParamsDto {
     @Schema(description = "Código de barras del producto (único en el sistema)", example = "8437015942011", nullable = true)
     private String barcode;
 
-    @Schema(description = "Nombre del producto", example = "Leche Entera", minLength = 1, maxLength = 100)
+    @Schema(description = "Nombre del producto", example = "Leche Entera", minLength = 1, maxLength = 30)
     private String name;
 
     @Schema(description = "Marca del producto", example = "Marca Blanca", nullable = true)
@@ -77,7 +79,7 @@ public class NewProductParamsDto {
     }
 
     @NotNull
-    @Size(min = 1, max = 100)
+    @Size(min = 1, max = 30)
     public String getName() {
         return name;
     }
@@ -95,6 +97,8 @@ public class NewProductParamsDto {
         this.brand = brand;
     }
 
+    @DecimalMin(value = "0.00")
+    @DecimalMax(value = "999.99")
     public String getDefaultPrice() {
         return defaultPrice;
     }
@@ -112,6 +116,9 @@ public class NewProductParamsDto {
         this.image = image;
     }
 
+    @NotNull
+    @DecimalMin(value = "0.00")
+    @DecimalMax(value = "999.99")
     public String getQuantity() {
         return quantity;
     }

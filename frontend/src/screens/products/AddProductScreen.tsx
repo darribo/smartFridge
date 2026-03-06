@@ -2,10 +2,12 @@ import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,8 +19,11 @@ import { FormLabel } from "../../components/FormLabel";
 import { InputLabel } from "../../components/users/InputLabel";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
+import { DatePickerField } from "../../components/common/DatePickerField";
 import type { AuthStackParamList } from "../../navigation/AuthStack";
-import { createProduct, searchProductsByName } from "../../api/products/productService";
+import { createProduct, createProductItem, searchProductsByName } from "../../api/products/productService";
+import { useTranslation } from "react-i18next";
+import type { ApiError } from "../../api/appFetch";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "AddProduct">;
 
@@ -31,38 +36,21 @@ type ExistingProduct = {
   barcode: string;
   name: string;
   image?: string | null;
+  defaultPrice?: string | null;
 };
 
 type ProductFormErrors = Partial<{
   name: string;
   quantity: string;
+  defaultPrice: string;
+  pricePaid: string;
+  purchaseDate: string;
 }>;
+
+type InfoCardKey = "nutriScore" | "novaGroup" | null;
 
 const GENERIC_FOOD_IMAGE =
   "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=600&q=80";
-
-const UNIT_OPTIONS: Array<{ label: string; value: ProductUnit }> = [
-  { label: "g", value: "G" },
-  { label: "kg", value: "KG" },
-  { label: "ml", value: "ML" },
-  { label: "l", value: "L" },
-  { label: "ud", value: "UNIT" },
-];
-
-const NUTRI_OPTIONS: Array<{ label: string; value: NutriScore }> = [
-  { label: "A", value: "A" },
-  { label: "B", value: "B" },
-  { label: "C", value: "C" },
-  { label: "D", value: "D" },
-  { label: "E", value: "E" },
-];
-
-const NOVA_OPTIONS: Array<{ label: string; value: NovaGroup }> = [
-  { label: "1", value: "GROUP_1" },
-  { label: "2", value: "GROUP_2" },
-  { label: "3", value: "GROUP_3" },
-  { label: "4", value: "GROUP_4" },
-];
 
 const NUTRI_COLORS: Record<NutriScore, string> = {
   A: "#39D27A",
@@ -94,9 +82,31 @@ const NOVA_SELECTED_COLORS: Record<NovaGroup, string> = {
   GROUP_4: "#D38787",
 };
 
-async function mockAddItemToPantry() {
-  await new Promise((resolve) => setTimeout(resolve, 600));
-}
+const toIsoDateTimeOrNull = (value: Date | null): string | null => {
+  if (!value) return null;
+  const year = value.getFullYear();
+  const month = `${value.getMonth() + 1}`.padStart(2, "0");
+  const day = `${value.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}T00:00:00`;
+};
+
+const getTomorrowDate = () => {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  return tomorrow;
+};
+
+const DECIMAL_LIMIT = 999.99;
+
+const parseNonNegativeDecimal = (raw: string): number => {
+  const value = raw.trim();
+  if (!value) return Number.NaN;
+  const normalized = value.replace(",", ".");
+  if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return Number.NaN;
+  const parsed = Number(normalized);
+  if (!Number.isFinite(parsed)) return Number.NaN;
+  return parsed;
+};
 
 type DropdownFieldProps<T extends string> = {
   label: string;
@@ -154,11 +164,15 @@ function DropdownField<T extends string>({
 function OptionalBooleanField({
   label,
   icon,
+  yesText,
+  noText,
   value,
   onChange,
 }: {
   label: string;
   icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+  yesText: string;
+  noText: string;
   value: boolean | null;
   onChange: (value: boolean | null) => void;
 }) {
@@ -174,20 +188,40 @@ function OptionalBooleanField({
           style={[styles.boolBtn, value === true && styles.boolBtnActive]}
           onPress={() => onChange(value === true ? null : true)}
         >
-          <Text style={[styles.boolBtnText, value === true && styles.boolBtnTextActive]}>Sí</Text>
+          <Text style={[styles.boolBtnText, value === true && styles.boolBtnTextActive]}>{yesText}</Text>
         </Pressable>
         <Pressable
           style={[styles.boolBtn, value === false && styles.boolBtnActive]}
           onPress={() => onChange(value === false ? null : false)}
         >
-          <Text style={[styles.boolBtnText, value === false && styles.boolBtnTextActive]}>No</Text>
+          <Text style={[styles.boolBtnText, value === false && styles.boolBtnTextActive]}>{noText}</Text>
         </Pressable>
       </View>
     </View>
   );
 }
 
+function InfoFieldLabel({
+  text,
+  onPress,
+  style,
+}: {
+  text: string;
+  onPress: () => void;
+  style?: object;
+}) {
+  return (
+    <View style={[styles.infoLabelRow, style]}>
+      <FormLabel text={text} />
+      <Pressable onPress={onPress} hitSlop={10} style={styles.infoLabelBtn}>
+        <MaterialCommunityIcons name="help-circle" size={20} color={THEME.muted} />
+      </Pressable>
+    </View>
+  );
+}
+
 export default function AddProductScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
   const householdId = route.params?.householdId ?? 10;
   const [isFirstTime, setIsFirstTime] = useState(true);
 
@@ -209,14 +243,53 @@ export default function AddProductScreen({ navigation, route }: Props) {
   const [selectedProduct, setSelectedProduct] = useState<ExistingProduct | null>(null);
   const [searching, setSearching] = useState(false);
 
-  const [purchaseDate, setPurchaseDate] = useState("2026-03-04");
-  const [expirationDate, setExpirationDate] = useState("");
+  const [purchaseDate, setPurchaseDate] = useState<Date | null>(new Date());
+  const [expirationDate, setExpirationDate] = useState<Date | null>(null);
+  const tomorrowDate = useMemo(() => getTomorrowDate(), []);
   const [pricePaid, setPricePaid] = useState("");
+  const [itemCount, setItemCount] = useState(1);
+
 
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<ProductFormErrors>({});
   const [globalErrors, setGlobalErrors] = useState<string[]>([]);
   const [showAdditionalInfo, setShowAdditionalInfo] = useState(false);
+  const [infoCard, setInfoCard] = useState<InfoCardKey>(null);
+
+  const unitOptions = useMemo(
+    () => [
+      { label: t("addProduct.units.g"), value: "G" as ProductUnit },
+      { label: t("addProduct.units.kg"), value: "KG" as ProductUnit },
+      { label: t("addProduct.units.ml"), value: "ML" as ProductUnit },
+      { label: t("addProduct.units.l"), value: "L" as ProductUnit },
+      { label: t("addProduct.units.unit"), value: "UNIT" as ProductUnit },
+    ],
+    [t]
+  );
+
+  const nutriOptions = useMemo(
+    () => [
+      { label: "A", value: "A" as NutriScore },
+      { label: "B", value: "B" as NutriScore },
+      { label: "C", value: "C" as NutriScore },
+      { label: "D", value: "D" as NutriScore },
+      { label: "E", value: "E" as NutriScore },
+    ],
+    []
+  );
+
+  const novaOptions = useMemo(
+    () => [
+      { label: "1", value: "GROUP_1" as NovaGroup },
+      { label: "2", value: "GROUP_2" as NovaGroup },
+      { label: "3", value: "GROUP_3" as NovaGroup },
+      { label: "4", value: "GROUP_4" as NovaGroup },
+    ],
+    []
+  );
+
+  const decrementCount = () => setItemCount((prev) => Math.max(1, prev - 1));
+  const incrementCount = () => setItemCount((prev) => Math.min(99, prev + 1));
 
   const isFirstFlowValid = useMemo(() => {
     return name.trim().length > 0 && quantity.trim().length > 0;
@@ -244,12 +317,13 @@ export default function AddProductScreen({ navigation, route }: Props) {
           barcode: item.barcode ?? "",
           name: item.name,
           image: item.image ?? null,
+          defaultPrice: item.defaultPrice ?? null,
         }));
         setSearchResults(mappedResults);
       },
       (err) => {
         setSearchResults([]);
-        setGlobalErrors(err.globalErrors ?? ["No se han podido buscar productos."]);
+        setGlobalErrors(err.globalErrors ?? [t("addProduct.errors.searchFailed")]);
       }
     );
     setSearching(false);
@@ -258,8 +332,21 @@ export default function AddProductScreen({ navigation, route }: Props) {
   const validateFirstFlow = (): ProductFormErrors => {
     const next: ProductFormErrors = {};
 
-    if (!name.trim()) next.name = "Campo obligatorio";
-    if (!quantity.trim()) next.quantity = "Campo obligatorio";
+    if (!name.trim()) next.name = t("genericErrors.requiredField");
+    else if (name.trim().length > 30) next.name = t("genericErrors.max", { max: 30 });
+    if (!quantity.trim()) {
+      next.quantity = t("genericErrors.requiredField");
+    } else {
+      const parsedQuantity = parseNonNegativeDecimal(quantity);
+      if (Number.isNaN(parsedQuantity)) next.quantity = t("addProduct.errors.invalidDecimal");
+      else if (parsedQuantity > DECIMAL_LIMIT) next.quantity = t("addProduct.errors.maxDecimal");
+    }
+
+    if (defaultPrice.trim()) {
+      const parsedDefaultPrice = parseNonNegativeDecimal(defaultPrice);
+      if (Number.isNaN(parsedDefaultPrice)) next.defaultPrice = t("addProduct.errors.invalidDecimal");
+      else if (parsedDefaultPrice > DECIMAL_LIMIT) next.defaultPrice = t("addProduct.errors.maxDecimal");
+    }
 
     return next;
   };
@@ -292,8 +379,19 @@ export default function AddProductScreen({ navigation, route }: Props) {
     await createProduct(
       householdId,
       product,
-      () => {
-        navigation.goBack();
+      (createdProduct) => {
+        setIsFirstTime(false);
+        setSelectedProduct({
+          id: createdProduct.id,
+          barcode: createdProduct.barcode ?? "",
+          name: createdProduct.name,
+          image: createdProduct.image ?? null,
+          defaultPrice: createdProduct.defaultPrice ?? null,
+        });
+        setSearch(createdProduct.name);
+        setPricePaid(createdProduct.defaultPrice ?? "");
+        setItemCount(1);
+        setGlobalErrors([]);
       },
       (err) => {
         if (err.fieldErrors) {
@@ -310,10 +408,15 @@ export default function AddProductScreen({ navigation, route }: Props) {
                 ? fieldErrors.quantity[0]
                 : fieldErrors.quantity
               : prev.quantity,
+            defaultPrice: fieldErrors.defaultPrice
+              ? Array.isArray(fieldErrors.defaultPrice)
+                ? fieldErrors.defaultPrice[0]
+                : fieldErrors.defaultPrice
+              : prev.defaultPrice,
           }));
         }
 
-        setGlobalErrors(err.globalErrors ?? ["No se ha podido guardar el producto."]);
+        setGlobalErrors(err.globalErrors ?? [t("addProduct.errors.saveFailed")]);
       }
     );
 
@@ -322,17 +425,67 @@ export default function AddProductScreen({ navigation, route }: Props) {
 
   const onSubmitExistingFlow = async () => {
     if (!selectedProduct || submitting) return;
-
-    try {
-      setSubmitting(true);
-      setGlobalErrors([]);
-      await mockAddItemToPantry();
-      navigation.goBack();
-    } catch {
-      setGlobalErrors(["No se ha podido añadir a despensa. Inténtalo de nuevo."]);
-    } finally {
-      setSubmitting(false);
+    if (itemCount < 1) {
+      setGlobalErrors([t("addProduct.errors.invalidItemCount")]);
+      return;
     }
+
+    const nextErrors: ProductFormErrors = {};
+    if (!purchaseDate) nextErrors.purchaseDate = t("genericErrors.requiredField");
+    if (pricePaid.trim()) {
+      const parsedPricePaid = parseNonNegativeDecimal(pricePaid);
+      if (Number.isNaN(parsedPricePaid)) nextErrors.pricePaid = t("addProduct.errors.invalidDecimal");
+      else if (parsedPricePaid > DECIMAL_LIMIT) nextErrors.pricePaid = t("addProduct.errors.maxDecimal");
+    }
+
+    setErrors((prev) => ({
+      ...prev,
+      purchaseDate: nextErrors.purchaseDate,
+      pricePaid: nextErrors.pricePaid,
+    }));
+    if (Object.keys(nextErrors).length > 0) return;
+
+    setSubmitting(true);
+    setGlobalErrors([]);
+    let firstError: ApiError | null = null;
+
+    const createSingleItem = () =>
+      new Promise<ApiError | null>((resolve) => {
+        createProductItem(
+          selectedProduct.id,
+          toIsoDateTimeOrNull(purchaseDate),
+          toIsoDateTimeOrNull(expirationDate),
+          pricePaid.trim() || null,
+          () => resolve(null),
+          (err) => resolve(err)
+        );
+      });
+
+    for (let i = 0; i < itemCount; i++) {
+      // eslint-disable-next-line no-await-in-loop
+      const requestError = await createSingleItem();
+      if (requestError) {
+        firstError = requestError;
+        break;
+      }
+    }
+
+    if (firstError) {
+      const fieldErrors = firstError.fieldErrors;
+      if (fieldErrors?.pricePaid) {
+        setErrors((prev) => ({
+          ...prev,
+          pricePaid: Array.isArray(fieldErrors.pricePaid) ? fieldErrors.pricePaid[0] : fieldErrors.pricePaid,
+        }));
+      }
+      setGlobalErrors(firstError.globalErrors ?? [t("addProduct.errors.addToPantryFailed")]);
+      setSubmitting(false);
+      return;
+    }
+
+    navigation.goBack();
+
+    setSubmitting(false);
   };
 
   return (
@@ -341,12 +494,12 @@ export default function AddProductScreen({ navigation, route }: Props) {
         <Pressable onPress={() => navigation.goBack()} hitSlop={10}>
           <MaterialCommunityIcons name="arrow-left" size={26} color={THEME.text} />
         </Pressable>
-        <Text style={styles.headerTitle}>Nuevo Producto</Text>
+        <Text style={styles.headerTitle}>{t("addProduct.title")}</Text>
         <View style={styles.headerSpacer} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Text style={styles.question}>¿Es la primera vez que añades este producto?</Text>
+        <Text style={styles.question}>{t("addProduct.firstTimeQuestion")}</Text>
 
         <View style={styles.segmentedWrap}>
           <Pressable
@@ -357,7 +510,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
             }}
           >
             <Text style={[styles.segmentText, isFirstTime && styles.segmentTextActive]}>
-              Sí, es la primera vez
+              {t("addProduct.firstTimeYes")}
             </Text>
           </Pressable>
 
@@ -365,7 +518,9 @@ export default function AddProductScreen({ navigation, route }: Props) {
             style={[styles.segmentBtn, !isFirstTime && styles.segmentBtnActive]}
             onPress={() => setIsFirstTime(false)}
           >
-            <Text style={[styles.segmentText, !isFirstTime && styles.segmentTextActive]}>No</Text>
+            <Text style={[styles.segmentText, !isFirstTime && styles.segmentTextActive]}>
+              {t("addProduct.firstTimeNo")}
+            </Text>
           </Pressable>
         </View>
 
@@ -379,46 +534,47 @@ export default function AddProductScreen({ navigation, route }: Props) {
             >
               <MaterialCommunityIcons name="camera-plus" size={34} color={THEME.primary} />
               <Text style={styles.imageUploadText}>
-                {image ? "Imagen seleccionada" : "Añadir imagen del producto"}
+                {image ? t("addProduct.imageSelected") : t("addProduct.addImage")}
               </Text>
             </Pressable>
 
-            <FormLabel text="Código de barras" />
+            <FormLabel text={t("addProduct.fields.barcode")} />
             <InputLabel
               value={barcode}
               onChangeText={setBarcode}
-              placeholder="Escanea o escribe el código"
+              placeholder={t("addProduct.placeholders.barcode")}
               rightIcon="barcode-outline"
             />
 
-            <FormLabel text="Nombre del producto *" />
+            <FormLabel text={t("addProduct.fields.productNameRequired")} />
             <InputLabel
               value={name}
               onChangeText={(value) => {
                 setName(value);
                 setErrors((prev) => ({ ...prev, name: undefined }));
               }}
-              placeholder="Ej. Leche desnatada"
+              maxLength={30}
+              placeholder={t("addProduct.placeholders.productName")}
               errorText={errors.name}
             />
 
-            <FormLabel text="Marca" />
+            <FormLabel text={t("addProduct.fields.brand")} />
             <InputLabel
               value={brand}
               onChangeText={setBrand}
-              placeholder="Ej. Pascual"
+              placeholder={t("addProduct.placeholders.brand")}
             />
 
             <View style={styles.rowFields}>
               <View style={styles.rowFieldLeft}>
-                <FormLabel text="Cantidad" />
+                <FormLabel text={t("addProduct.fields.quantityRequired")} />
                 <InputLabel
                   value={quantity}
                   onChangeText={(value) => {
                     setQuantity(value);
                     setErrors((prev) => ({ ...prev, quantity: undefined }));
                   }}
-                  placeholder="0.00"
+                  placeholder={t("addProduct.placeholders.decimal")}
                   keyboardType="decimal-pad"
                   errorText={errors.quantity}
                 />
@@ -426,20 +582,24 @@ export default function AddProductScreen({ navigation, route }: Props) {
 
               <View style={styles.rowFieldRight}>
                 <DropdownField
-                  label="Unidad"
+                  label={t("addProduct.fields.unitRequired")}
                   value={unit}
-                  options={UNIT_OPTIONS}
+                  options={unitOptions}
                   onChange={setUnit}
                 />
               </View>
             </View>
 
-            <FormLabel text="Precio pagado (€)" />
+            <FormLabel text={t("addProduct.fields.defaultPrice")} />
             <InputLabel
               value={defaultPrice}
-              onChangeText={setDefaultPrice}
-              placeholder="0.00"
+              onChangeText={(value) => {
+                setDefaultPrice(value);
+                setErrors((prev) => ({ ...prev, defaultPrice: undefined }));
+              }}
+              placeholder={t("addProduct.placeholders.decimal")}
               keyboardType="decimal-pad"
+              errorText={errors.defaultPrice}
             />
 
             <View style={styles.moreInfoBox}>
@@ -447,7 +607,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
                 style={styles.moreInfoHeader}
                 onPress={() => setShowAdditionalInfo((prev) => !prev)}
               >
-                <Text style={styles.moreInfoTitle}>¿Quieres añadir más información?</Text>
+                <Text style={styles.moreInfoTitle}>{t("addProduct.moreInfo.title")}</Text>
                 <MaterialCommunityIcons
                   name={showAdditionalInfo ? "chevron-up" : "chevron-down"}
                   size={22}
@@ -455,28 +615,36 @@ export default function AddProductScreen({ navigation, route }: Props) {
                 />
               </Pressable>
               <Text style={styles.moreInfoText}>
-                Complétala solo si conoces estos datos.
+                {t("addProduct.moreInfo.subtitle")}
               </Text>
 
               {showAdditionalInfo ? (
                 <>
                   <OptionalBooleanField
-                    label="Vegetariano"
+                    label={t("addProduct.fields.vegetarian")}
                     icon="leaf"
+                    yesText={t("addProduct.common.yes")}
+                    noText={t("addProduct.common.no")}
                     value={vegetarian}
                     onChange={setVegetarian}
                   />
 
                   <OptionalBooleanField
-                    label="Vegano"
+                    label={t("addProduct.fields.vegan")}
                     icon="leaf-circle"
+                    yesText={t("addProduct.common.yes")}
+                    noText={t("addProduct.common.no")}
                     value={vegan}
                     onChange={setVegan}
                   />
 
-                  <FormLabel text="NutriScore" />
+                  <InfoFieldLabel
+                    text={t("addProduct.fields.nutriScore")}
+                    onPress={() => setInfoCard("nutriScore")}
+                    style={styles.nutriInfoLabel}
+                  />
                   <View style={styles.gradeRow}>
-                    {NUTRI_OPTIONS.map((option) => {
+                    {nutriOptions.map((option) => {
                       const selected = nutriScoreGrade === option.value;
                       return (
                         <Pressable
@@ -501,9 +669,9 @@ export default function AddProductScreen({ navigation, route }: Props) {
                     })}
                   </View>
 
-                  <FormLabel text="Grado NOVA" />
+                  <InfoFieldLabel text={t("addProduct.fields.novaGroup")} onPress={() => setInfoCard("novaGroup")} />
                   <View style={styles.gradeRow}>
-                    {NOVA_OPTIONS.map((option) => {
+                    {novaOptions.map((option) => {
                       const selected = novaGroup === option.value;
                       return (
                         <Pressable
@@ -532,7 +700,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
             </View>
 
             <PrimaryButton
-              text="Guardar producto"
+              text={t("addProduct.actions.saveProduct")}
               onPress={onSubmitFirstFlow}
               disabled={submitting || !isFirstFlowValid}
             />
@@ -544,7 +712,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
                 leftIcon="search"
                 value={search}
                 onChangeText={onSearchChange}
-                placeholder="Buscar producto"
+                placeholder={t("addProduct.placeholders.searchProduct")}
               />
             </View>
 
@@ -561,16 +729,18 @@ export default function AddProductScreen({ navigation, route }: Props) {
                     <Pressable
                       key={item.id}
                       style={styles.searchResultItem}
-                      onPress={() => {
-                        setSelectedProduct(item);
-                        setSearch(item.name);
-                      }}
-                    >
+                    onPress={() => {
+                      setSelectedProduct(item);
+                      setSearch(item.name);
+                      setPricePaid(item.defaultPrice ?? "");
+                      setItemCount(1);
+                    }}
+                  >
                       <Text style={styles.searchResultText}>{item.name}</Text>
                     </Pressable>
                   ))
                 ) : (
-                  <Text style={styles.emptySearchText}>No se encontró ningún producto</Text>
+                  <Text style={styles.emptySearchText}>{t("addProduct.emptySearch")}</Text>
                 )}
               </View>
             ) : null}
@@ -584,41 +754,67 @@ export default function AddProductScreen({ navigation, route }: Props) {
                       style={styles.selectedProductImage}
                     />
                     <View style={styles.cardSingleInfo}>
-                      <Text style={styles.cardName}>{selectedProduct.name}</Text>
-                      <Text style={styles.cardHint}>Producto seleccionado</Text>
+                      <Text style={styles.cardName} numberOfLines={2}>
+                        {selectedProduct.name}
+                      </Text>
+                      <Text style={styles.cardHint}>{t("addProduct.selectedProductHint")}</Text>
+                    </View>
+                    <View style={styles.itemStepper}>
+                      <Pressable
+                        style={styles.itemCountBtn}
+                        onPress={decrementCount}
+                        accessibilityLabel={t("addProduct.actions.decrease")}
+                      >
+                        <MaterialCommunityIcons name="minus" size={18} color={THEME.text} />
+                      </Pressable>
+                      <Text style={styles.itemCountValue}>{itemCount}</Text>
+                      <Pressable
+                        style={styles.itemCountBtn}
+                        onPress={incrementCount}
+                        accessibilityLabel={t("addProduct.actions.increase")}
+                      >
+                        <MaterialCommunityIcons name="plus" size={18} color={THEME.text} />
+                      </Pressable>
                     </View>
                   </View>
                 </View>
 
-                <FormLabel text="Fecha de Compra" />
-                <InputLabel
-                  leftIcon="calendar-outline"
-                  rightIcon="calendar-outline"
+                <DatePickerField
+                  label={t("addProduct.fields.purchaseDateRequired")}
                   value={purchaseDate}
-                  onChangeText={setPurchaseDate}
-                  placeholder="YYYY-MM-DD"
+                  onChange={(value) => {
+                    setPurchaseDate(value);
+                    setErrors((prev) => ({ ...prev, purchaseDate: undefined }));
+                  }}
+                  placeholder={t("addProduct.placeholders.date")}
+                  errorText={errors.purchaseDate}
+                  maximumDate={new Date()}
                 />
 
-                <FormLabel text="Fecha de Caducidad" />
-                <InputLabel
-                  leftIcon="calendar-clear-outline"
-                  rightIcon="calendar-outline"
+                <DatePickerField
+                  label={t("addProduct.fields.expirationDate")}
                   value={expirationDate}
-                  onChangeText={setExpirationDate}
-                  placeholder="YYYY-MM-DD"
+                  onChange={setExpirationDate}
+                  placeholder={t("addProduct.placeholders.date")}
+                  initialPickerDate={tomorrowDate}
+                  clearable
                 />
 
-                <FormLabel text="Precio Pagado (€)" />
+                <FormLabel text={t("addProduct.fields.pricePaid")} />
                 <InputLabel
                   leftIcon="cash-outline"
                   value={pricePaid}
-                  onChangeText={setPricePaid}
-                  placeholder="0.00"
+                  onChangeText={(value) => {
+                    setPricePaid(value);
+                    setErrors((prev) => ({ ...prev, pricePaid: undefined }));
+                  }}
+                  placeholder={t("addProduct.placeholders.decimal")}
                   keyboardType="decimal-pad"
+                  errorText={errors.pricePaid}
                 />
 
                 <PrimaryButton
-                  text="Añadir a despensa"
+                  text={t("addProduct.actions.addToPantry")}
                   onPress={onSubmitExistingFlow}
                   disabled={submitting || !selectedProduct}
                   rightIcon="cart-plus"
@@ -629,9 +825,37 @@ export default function AddProductScreen({ navigation, route }: Props) {
         )}
 
         <Pressable onPress={() => navigation.goBack()} style={styles.cancelBtn}>
-          <Text style={styles.cancelText}>Cancelar</Text>
+          <Text style={styles.cancelText}>{t("addProduct.actions.cancel")}</Text>
         </Pressable>
       </ScrollView>
+
+      <Modal
+        visible={infoCard !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setInfoCard(null)}
+      >
+        <TouchableWithoutFeedback onPress={() => setInfoCard(null)}>
+          <View style={styles.modalBackdrop} />
+        </TouchableWithoutFeedback>
+
+        <View style={styles.sheetWrap}>
+          <View style={styles.sheet}>
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetTitle}>
+              {infoCard === "nutriScore"
+                ? t("addProduct.help.nutriScore.title")
+                : t("addProduct.help.novaGroup.title")}
+            </Text>
+            <Text style={styles.sheetBody}>
+              {infoCard === "nutriScore"
+                ? t("addProduct.help.nutriScore.description")
+                : t("addProduct.help.novaGroup.description")}
+            </Text>
+            <PrimaryButton text={t("common.understood")} onPress={() => setInfoCard(null)} />
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -790,6 +1014,17 @@ const styles = StyleSheet.create({
   dropdownWrap: {
     marginBottom: 12,
   },
+  infoLabelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  infoLabelBtn: {
+    marginTop: -8,
+  },
+  nutriInfoLabel: {
+    marginTop: 8,
+  },
   gradeRow: {
     flexDirection: "row",
     gap: 8,
@@ -915,6 +1150,7 @@ const styles = StyleSheet.create({
   },
   cardSingleInfo: {
     flex: 1,
+    minWidth: 0,
   },
   cardName: {
     fontSize: 18,
@@ -926,6 +1162,34 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: THEME.muted,
   },
+  itemStepper: {
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#DCE5EC",
+    backgroundColor: "#F6FAF8",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 4,
+    gap: 4,
+  },
+  itemCountBtn: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    borderWidth: 1,
+    borderColor: "#CFE0D6",
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  itemCountValue: {
+    minWidth: 24,
+    textAlign: "center",
+    fontSize: 15,
+    fontWeight: "700",
+    color: THEME.text,
+  },
   cancelBtn: {
     marginTop: 14,
     alignSelf: "center",
@@ -934,5 +1198,40 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#5E7388",
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.35)",
+  },
+  sheetWrap: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  sheet: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 18,
+    gap: 12,
+    borderTopWidth: 1,
+    borderColor: THEME.border,
+  },
+  sheetHandle: {
+    width: 44,
+    height: 5,
+    borderRadius: 4,
+    backgroundColor: "#D5DCE2",
+    alignSelf: "center",
+    marginBottom: 4,
+  },
+  sheetTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: THEME.text,
+  },
+  sheetBody: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: THEME.muted,
   },
 });

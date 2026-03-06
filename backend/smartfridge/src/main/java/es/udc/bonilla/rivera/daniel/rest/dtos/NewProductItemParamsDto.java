@@ -1,6 +1,8 @@
 package es.udc.bonilla.rivera.daniel.rest.dtos;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 
 @Schema(
@@ -44,6 +46,8 @@ public class NewProductItemParamsDto {
         this.expirationDate = expirationDate;
     }
 
+    @DecimalMin(value = "0.00")
+    @DecimalMax(value = "999.99")
     public String getPricePaid() {
         return pricePaid;
     }

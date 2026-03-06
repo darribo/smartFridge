@@ -17,7 +17,7 @@ public class NewUserParamsDto {
     @Schema(
         description = "Nombre de usuario único",
         example = "darribo1501",
-        minLength = 1,
+        minLength = 3,
         maxLength = 50
     )
     private String userName;
@@ -32,14 +32,16 @@ public class NewUserParamsDto {
 
     @Schema(
         description = "Correo electrónico del usuario",
-        example = "joaquin@email.com"
+        example = "joaquin@email.com",
+        minLength = 6,
+        maxLength = 100
     )
     private String email;
 
     @Schema(
         description = "Nombre real del usuario",
         example = "Daniel",
-        minLength = 1,
+        minLength = 2,
         maxLength = 50
     )
     private String firstName;
@@ -47,7 +49,7 @@ public class NewUserParamsDto {
     @Schema(
         description = "Apellidos del usuario",
         example = "Rivera Bonilla",
-        minLength = 1,
+        minLength = 2,
         maxLength = 50
     )
     private String lastName;
@@ -78,7 +80,7 @@ public class NewUserParamsDto {
     }
 
     @NotNull
-    @Size(min=1, max=50)
+    @Size(min=3, max=50)
     public String getUserName() {
         return userName;
     }
@@ -98,7 +100,7 @@ public class NewUserParamsDto {
     }
 
     @NotNull
-    @Size(min=1, max=100)
+    @Size(min=6, max=100)
     @Email(message = "{validation.email.invalid}")
     public String getEmail() {
         return email;
@@ -109,7 +111,7 @@ public class NewUserParamsDto {
     }
 
     @NotNull
-    @Size(min=1, max=50)
+    @Size(min=2, max=50)
     public String getFirstName() {
         return firstName;
     }
@@ -119,7 +121,7 @@ public class NewUserParamsDto {
     }
 
     @NotNull
-    @Size(min=1, max=50)
+    @Size(min=2, max=50)
     public String getLastName() {
         return lastName;
     }

@@ -112,11 +112,19 @@ public class ProductServiceImpl implements ProductService {
 
         LocalDateTime parsedPurchaseDate = purchaseDate != null ? LocalDateTime.parse(purchaseDate) : null;
         LocalDateTime parsedExpirationDate = expirationDate != null ? LocalDateTime.parse(expirationDate) : null;
+        BigDecimal parsedPricePaid = pricePaid != null ? new BigDecimal(pricePaid) : null;
 
         validateDates(parsedPurchaseDate, parsedExpirationDate);
 
+        if (parsedPricePaid != null) {
+            BigDecimal currentDefaultPrice = product.getDefaultPrice();
+            if (currentDefaultPrice == null || currentDefaultPrice.compareTo(parsedPricePaid) != 0) {
+                product.setDefaultPrice(parsedPricePaid);
+            }
+        }
+
         ProductItem productItem = new ProductItem(product, parsedPurchaseDate, parsedExpirationDate,
-                pricePaid != null ? new BigDecimal(pricePaid) : null);
+                parsedPricePaid);
 
         return productItemDao.save(productItem);
     }

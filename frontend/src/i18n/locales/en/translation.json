@@ -107,5 +107,79 @@
     "errors": {
       "missingId": "A valid household was not provided."
     }
+  },
+  "addProduct": {
+    "title": "New Product",
+    "firstTimeQuestion": "Is this the first time you add this product?",
+    "firstTimeYes": "Yes, first time",
+    "firstTimeNo": "No",
+    "imageSelected": "Image selected",
+    "addImage": "Add product image",
+    "emptySearch": "No product found",
+    "selectedProductHint": "Selected product",
+    "common": {
+      "yes": "Yes",
+      "no": "No"
+    },
+    "units": {
+      "g": "g",
+      "kg": "kg",
+      "ml": "ml",
+      "l": "l",
+      "unit": "unit"
+    },
+    "fields": {
+      "barcode": "Barcode",
+      "productNameRequired": "Product name *",
+      "brand": "Brand",
+      "quantityRequired": "Quantity *",
+      "unitRequired": "Unit *",
+      "defaultPrice": "Default price (€)",
+      "vegetarian": "Vegetarian",
+      "vegan": "Vegan",
+      "nutriScore": "NutriScore",
+      "novaGroup": "NOVA group",
+      "purchaseDateRequired": "Purchase date *",
+      "expirationDate": "Expiration date",
+      "pricePaid": "Price paid (€)",
+      "itemsCount": "Number of items"
+    },
+    "placeholders": {
+      "barcode": "Scan or type barcode",
+      "productName": "Ex. Skimmed milk",
+      "brand": "Ex. Brand",
+      "searchProduct": "Search product",
+      "date": "YYYY-MM-DD",
+      "decimal": "0.00"
+    },
+    "moreInfo": {
+      "title": "Do you want to add more information?",
+      "subtitle": "Complete it only if you know these values."
+    },
+    "actions": {
+      "saveProduct": "Save product",
+      "addToPantry": "Add to pantry",
+      "cancel": "Cancel",
+      "decrease": "Decrease count",
+      "increase": "Increase count"
+    },
+    "errors": {
+      "searchFailed": "Unable to search products.",
+      "invalidDecimal": "Invalid format (max 2 decimals)",
+      "maxDecimal": "Maximum allowed: 999.99",
+      "saveFailed": "Unable to save product.",
+      "addToPantryFailed": "Unable to add to pantry. Please try again.",
+      "invalidItemCount": "Item count must be at least 1."
+    },
+    "help": {
+      "nutriScore": {
+        "title": "What is NutriScore?",
+        "description": "NutriScore ranks nutritional quality from A (best) to E (worst), based on composition per 100g or 100ml."
+      },
+      "novaGroup": {
+        "title": "What is NOVA group?",
+        "description": "NOVA classifies food processing level from 1 to 4: 1 (minimally processed) to 4 (ultra-processed)."
+      }
+    }
   }
 }

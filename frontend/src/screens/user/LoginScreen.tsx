@@ -33,9 +33,11 @@ export function LoginScreen({ navigation }: Props) {
     const e: LoginErrors = {};
 
     if (!username.trim()) e.username = t("genericErrors.requiredField");
+    else if (username.trim().length < 3) e.username = t("genericErrors.min", { min: 3 });
     else if (username.trim().length > 50) e.username = t("genericErrors.max", { max: 50 });
 
     if (!password) e.password = t("genericErrors.requiredField");
+    else if (password.length < 8) e.password = t("genericErrors.min", { min: 8 });
     else if (password.length > 100) e.password = t("genericErrors.max", { max: 100 });
 
     return e;
@@ -99,6 +101,7 @@ export function LoginScreen({ navigation }: Props) {
             clearError("username");
             if (globalErrors.length) setGlobalErrors([]);
           }}
+          maxLength={50}
           returnKeyType="next"
           errorText={errors.username}
         />
@@ -116,6 +119,7 @@ export function LoginScreen({ navigation }: Props) {
             clearError("password");
             if (globalErrors.length) setGlobalErrors([]);
           }}
+          maxLength={100}
           returnKeyType="done"
           errorText={errors.password}
         />
