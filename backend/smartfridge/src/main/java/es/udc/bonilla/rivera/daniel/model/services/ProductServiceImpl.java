@@ -3,6 +3,7 @@ package es.udc.bonilla.rivera.daniel.model.services;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -12,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
-import es.udc.bonilla.rivera.daniel.model.common.PermissionException;
 import es.udc.bonilla.rivera.daniel.model.daos.ProductDao;
 import es.udc.bonilla.rivera.daniel.model.daos.ProductItemDao;
 import es.udc.bonilla.rivera.daniel.model.entities.Household;
@@ -32,6 +32,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private PermissionChecker permissionChecker;
+
+    @Autowired
+    private OpenFoodFactsClient openFoodFactsClient;
 
     @Override
     public Product createProduct(Long userId, String barcode, String name, String brand, String defaultPrice, String image,
@@ -185,6 +188,21 @@ public class ProductServiceImpl implements ProductService {
         Slice<Product> productSlice = productDao.findByName(name, householdId, PageRequest.of(page, size));
 
         return new Block<>(productSlice.getContent(), productSlice.hasNext());
+    }
+
+    @Override
+    public BarcodeProduct findProductByBarcode(Long userId, Long householdId, String barcode) throws InstanceNotFoundException {
+
+        permissionChecker.checkUserHouseholdExists(userId, householdId);
+
+        Optional<Product> optionalProduct = productDao.findByBarcodeAndHouseholdId(barcode, householdId);
+
+        if (optionalProduct.isPresent()) {
+            Product product = optionalProduct.get();
+            return new BarcodeProduct(product.getId(), product.getBarcode(), product.getName(), product.getBrand(), product.getDefaultPrice(), product.getImage(), product.getQuantity(), product.getUnit(), product.isVegetarian(), product.isVegan(), product.getNutriScoreGrade(), product.getNovaGroup(), true);
+        } else {
+            return openFoodFactsClient.getProductByBarcode(barcode);
+        }
     }
 
 }

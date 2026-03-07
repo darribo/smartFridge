@@ -21,9 +21,11 @@ import org.springframework.web.bind.annotation.RestController;
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
+import es.udc.bonilla.rivera.daniel.model.services.BarcodeProduct;
 import es.udc.bonilla.rivera.daniel.model.services.Block;
 import es.udc.bonilla.rivera.daniel.model.services.ProductService;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationDateException;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.ProductIsNotFoodException;
 import es.udc.bonilla.rivera.daniel.rest.common.ErrorsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.BlockDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewProductItemParamsDto;
@@ -48,6 +50,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class ProductController {
 
     private static final String INVALID_EXPIRATION_DATE_EXCEPTION_CODE = "project.exceptions.InvalidExpirationDateException";
+    private static final String PRODUCT_IS_NOT_FOOD_EXCEPTION_CODE = "project.exceptions.ProductIsNotFoodException";
 
     private static final int SEARCH_PRODUCTS_SIZE = 5;
 
@@ -64,6 +67,17 @@ public class ProductController {
 
         String errorMessage = messageSource.getMessage(INVALID_EXPIRATION_DATE_EXCEPTION_CODE, null,
                 INVALID_EXPIRATION_DATE_EXCEPTION_CODE, locale);
+
+        return new ErrorsDto(errorMessage);
+    }
+
+    @ExceptionHandler(ProductIsNotFoodException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ErrorsDto handleProductIsNotFoodException(ProductIsNotFoodException exception, Locale locale) {
+
+        String errorMessage = messageSource.getMessage(PRODUCT_IS_NOT_FOOD_EXCEPTION_CODE, null,
+                PRODUCT_IS_NOT_FOOD_EXCEPTION_CODE, locale);
 
         return new ErrorsDto(errorMessage);
     }
@@ -123,4 +137,10 @@ public class ProductController {
         
         return new BlockDto<>(ProductConversor.toProductDtos(block.getItems()), block.getExistMoreItems());
     }
+
+    @GetMapping("/{householdId}/barcode")
+    public BarcodeProduct getProductByBarcode(@RequestAttribute Long userId, @PathVariable Long householdId, @RequestParam String barcode) throws InstanceNotFoundException {
+        return productService.findProductByBarcode(userId, householdId, barcode);
+    }
+    
 }

@@ -25,8 +25,7 @@ public class ProductConversor {
                 Boolean.TRUE.equals(product.isVegan()),
                 product.getNutriScoreGrade(),
                 product.getNovaGroup(),
-                product.getCreatedAt(),
-                product.getHousehold().getId());
+                product.getCreatedAt());
     }
 
     public static List<ProductDto> toProductDtos(List<Product> products) {

@@ -50,15 +50,12 @@ public class ProductDto {
     @Schema(description = "Fecha de creación del producto", example = "2026-03-02T14:15:00")
     private LocalDateTime createdAt;
 
-    @Schema(description = "Identificador del hogar al que pertenece el producto", example = "10")
-    private Long householdId;
-
     public ProductDto() {
     }
 
     public ProductDto(Long id, String barcode, String name, String brand, String defaultPrice, String image, String quantity,
             Product.Unit unit, boolean isVegetarian, boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
-            Product.NovaGroup novaGroup, LocalDateTime createdAt, Long householdId) {
+            Product.NovaGroup novaGroup, LocalDateTime createdAt) {
         this.id = id;
         this.barcode = barcode;
         this.name = name;
@@ -72,7 +69,6 @@ public class ProductDto {
         this.nutriScoreGrade = nutriScoreGrade;
         this.novaGroup = novaGroup;
         this.createdAt = createdAt;
-        this.householdId = householdId;
     }
 
     public Long getId() {
@@ -177,13 +173,5 @@ public class ProductDto {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public Long getHouseholdId() {
-        return householdId;
-    }
-
-    public void setHouseholdId(Long householdId) {
-        this.householdId = householdId;
     }
 }
