@@ -37,6 +37,21 @@ export type ProductNutriScoreGrade = 'A' | 'B' | 'C' | 'D' | 'E';
 
 export type ProductNovaGroup = 1 | 2 | 3 | 4 | "GROUP_1" | "GROUP_2" | "GROUP_3" | "GROUP_4";
 
+export type BarcodeProduct = {
+    id: number | null;
+    barcode: string;
+    name: string;
+    brand?: string | null;
+    defaultPrice?: number | string | null;
+    image?: string | null;
+    quantity?: number | string | null;
+    unit?: ProductUnit | null;
+    vegetarian?: boolean | null;
+    vegan?: boolean | null;
+    nutriScoreGrade?: ProductNutriScoreGrade | null;
+    novaGroup?: ProductNovaGroup | null;
+}
+
 
 export const createProduct = async (householdId: number, params: NewProductParams, onSuccess?: (product: Product) => void, onError?: (err: ApiError) => void) => {
 
@@ -90,6 +105,22 @@ export const createProductItem = async (
 
     return appFetch(
         `/products/${productId}/items`,
+        options,
+        onSuccess,
+        onError
+    );
+};
+
+export const getProductByBarcode = async (
+    householdId: number,
+    barcode: string,
+    onSuccess?: (product: BarcodeProduct) => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("GET");
+
+    return appFetch(
+        `/products/${householdId}/barcode?barcode=${encodeURIComponent(barcode)}`,
         options,
         onSuccess,
         onError

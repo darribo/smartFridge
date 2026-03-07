@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -223,6 +223,7 @@ function InfoFieldLabel({
 export default function AddProductScreen({ navigation, route }: Props) {
   const { t } = useTranslation();
   const householdId = route.params?.householdId ?? 10;
+  const barcodeProduct = route.params?.barcodeProduct;
   const [isFirstTime, setIsFirstTime] = useState(true);
 
   const [barcode, setBarcode] = useState("");
@@ -290,6 +291,55 @@ export default function AddProductScreen({ navigation, route }: Props) {
 
   const decrementCount = () => setItemCount((prev) => Math.max(1, prev - 1));
   const incrementCount = () => setItemCount((prev) => Math.min(99, prev + 1));
+
+  const normalizeUnit = (value?: string | null): ProductUnit => {
+    const allowedUnits: ProductUnit[] = ["G", "KG", "ML", "L", "UNIT"];
+    if (value && allowedUnits.includes(value as ProductUnit)) {
+      return value as ProductUnit;
+    }
+    return "ML";
+  };
+
+  useEffect(() => {
+    if (!barcodeProduct) {
+      setIsFirstTime(true);
+      return;
+    }
+
+    const barcodeValue = barcodeProduct.barcode ?? "";
+
+    if (barcodeProduct.id !== null) {
+      setIsFirstTime(false);
+      setSelectedProduct({
+        id: barcodeProduct.id,
+        barcode: barcodeValue,
+        name: barcodeProduct.name ?? "",
+        image: barcodeProduct.image ?? null,
+        defaultPrice: barcodeProduct.defaultPrice != null ? String(barcodeProduct.defaultPrice) : null,
+      });
+      setSearch(barcodeProduct.name ?? "");
+      setPricePaid(barcodeProduct.defaultPrice != null ? String(barcodeProduct.defaultPrice) : "");
+      setItemCount(1);
+      setGlobalErrors([]);
+      return;
+    }
+
+    setIsFirstTime(true);
+    setSelectedProduct(null);
+    setSearch("");
+    setBarcode(barcodeValue);
+    setName(barcodeProduct.name ?? "");
+    setBrand(barcodeProduct.brand ?? "");
+    setImage(barcodeProduct.image ?? null);
+    setDefaultPrice(barcodeProduct.defaultPrice != null ? String(barcodeProduct.defaultPrice) : "");
+    setQuantity(barcodeProduct.quantity != null ? String(barcodeProduct.quantity) : "");
+    setUnit(normalizeUnit(barcodeProduct.unit ?? null));
+    setVegetarian(barcodeProduct.vegetarian ?? null);
+    setVegan(barcodeProduct.vegan ?? null);
+    setNutriScoreGrade((barcodeProduct.nutriScoreGrade as NutriScore | null) ?? null);
+    setNovaGroup((barcodeProduct.novaGroup as NovaGroup | null) ?? null);
+    setGlobalErrors([]);
+  }, [barcodeProduct]);
 
   const isFirstFlowValid = useMemo(() => {
     return name.trim().length > 0 && quantity.trim().length > 0;

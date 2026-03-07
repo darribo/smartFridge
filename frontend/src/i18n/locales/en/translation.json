@@ -181,5 +181,24 @@
         "description": "NOVA classifies food processing level from 1 to 4: 1 (minimally processed) to 4 (ultra-processed)."
       }
     }
+  },
+  "scanProduct": {
+    "title": "Scan product",
+    "subtitle": "Place the barcode inside the frame",
+    "permission": {
+      "title": "Camera permission is required",
+      "description": "You need to enable camera access to scan barcodes.",
+      "cta": "Grant permission",
+      "openSettings": "Open settings"
+    },
+    "actions": {
+      "switchCamera": "Switch camera",
+      "retry": "Retry"
+    },
+    "errors": {
+      "invalidBarcode": "Invalid barcode.",
+      "notFound": "No product was found for this barcode.",
+      "default": "Unable to scan the product."
+    }
   }
 }

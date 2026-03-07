@@ -21,11 +21,12 @@ import org.springframework.web.bind.annotation.RestController;
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
-import es.udc.bonilla.rivera.daniel.model.services.BarcodeProduct;
 import es.udc.bonilla.rivera.daniel.model.services.Block;
 import es.udc.bonilla.rivera.daniel.model.services.ProductService;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationDateException;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.ProductIsNotFoodException;
+import es.udc.bonilla.rivera.daniel.rest.dtos.BarcodeProductConversor;
+import es.udc.bonilla.rivera.daniel.rest.dtos.BarcodeProductDto;
 import es.udc.bonilla.rivera.daniel.rest.common.ErrorsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.BlockDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewProductItemParamsDto;
@@ -139,8 +140,10 @@ public class ProductController {
     }
 
     @GetMapping("/{householdId}/barcode")
-    public BarcodeProduct getProductByBarcode(@RequestAttribute Long userId, @PathVariable Long householdId, @RequestParam String barcode) throws InstanceNotFoundException {
-        return productService.findProductByBarcode(userId, householdId, barcode);
+    public BarcodeProductDto getProductByBarcode(@RequestAttribute Long userId, @PathVariable Long householdId, @RequestParam String barcode)
+            throws InstanceNotFoundException, ProductIsNotFoodException {
+        Product product = productService.findProductByBarcode(userId, householdId, barcode);
+        return BarcodeProductConversor.toBarcodeProductDto(product);
     }
     
 }

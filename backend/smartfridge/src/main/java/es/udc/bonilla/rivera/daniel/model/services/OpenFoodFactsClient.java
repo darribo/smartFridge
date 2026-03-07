@@ -19,6 +19,7 @@ import es.udc.bonilla.rivera.daniel.model.entities.Product;
 import es.udc.bonilla.rivera.daniel.model.entities.Product.NovaGroup;
 import es.udc.bonilla.rivera.daniel.model.entities.Product.NutriScoreGrade;
 import es.udc.bonilla.rivera.daniel.model.entities.Product.Unit;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.ProductIsNotFoodException;
 
 @Service
 @Transactional
@@ -47,7 +48,7 @@ public class OpenFoodFactsClient {
                 .build();
     }
 
-    public BarcodeProduct getProductByBarcode(String barcode) throws InstanceNotFoundException {
+    public Product getProductByBarcode(String barcode) throws InstanceNotFoundException, ProductIsNotFoodException {
         if (barcode == null || barcode.isBlank()) {
             throw new InstanceNotFoundException("project.entities.product", "barcode");
         }
@@ -73,23 +74,31 @@ public class OpenFoodFactsClient {
         } catch (IOException exception) {
             throw new InstanceNotFoundException("project.entities.product", "barcode: " + barcode);
         } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
             throw new InstanceNotFoundException("project.entities.product", "barcode: " + barcode);
-        } catch (Exception exception) {
+        } catch (ProductIsNotFoodException exception) {
+            throw exception;
+        } catch (RuntimeException exception) {
             throw new InstanceNotFoundException("project.entities.product", "barcode: " + barcode);
         }
     }
 
-    private BarcodeProduct parseProduct(String responseBody) throws IOException, InstanceNotFoundException {
+    private Product parseProduct(String responseBody)
+            throws IOException, InstanceNotFoundException, ProductIsNotFoodException {
         JsonNode root = objectMapper.readTree(responseBody);
 
         int status = root.path("status").asInt(0);
+        String statusVerbose = root.path("status_verbose").asText("").toLowerCase();
+        if (status == 0 && statusVerbose.contains("different product type")) {
+            throw new ProductIsNotFoodException();
+        }
         if (status != 1) {
             throw new InstanceNotFoundException("project.entities.product", "barcode");
         }
 
         JsonNode product = root.path("product");
         if (product.isMissingNode() || product.isNull()) {
-            //Lanzar excepcion de que no es un producto
+            throw new ProductIsNotFoodException();
         }
 
         String barcode = root.path("code").asText("");
@@ -122,9 +131,23 @@ public class OpenFoodFactsClient {
             novaGroup = null; // NovaGroup no reconocido
         }
 
-        boolean foundInLocal = false;
+        Product parsedProduct = new Product();
+        parsedProduct.setId(null);
+        parsedProduct.setBarcode(barcode);
+        parsedProduct.setName(name);
+        parsedProduct.setBrand(brand);
+        parsedProduct.setDefaultPrice(defaultPrice);
+        parsedProduct.setImage(image);
+        parsedProduct.setQuantity(quantity);
+        parsedProduct.setUnit(unit);
+        parsedProduct.setVegetarian(vegetarian);
+        parsedProduct.setVegan(vegan);
+        parsedProduct.setNutriScoreGrade(nutriScoreGrade);
+        parsedProduct.setNovaGroup(novaGroup);
+        parsedProduct.setCreatedAt(null);
+        parsedProduct.setHousehold(null);
 
-        return new BarcodeProduct(null, barcode, name, brand, defaultPrice, image, quantity, unit, vegetarian, vegan, nutriScoreGrade, novaGroup, foundInLocal);
+        return parsedProduct;
     }
 
     private Boolean inferDietFromIngredients(JsonNode productNode, String fieldName) {

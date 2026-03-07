@@ -19,6 +19,7 @@ import es.udc.bonilla.rivera.daniel.model.entities.Household;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationDateException;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.ProductIsNotFoodException;
 
 @Service
 @Transactional
@@ -191,15 +192,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public BarcodeProduct findProductByBarcode(Long userId, Long householdId, String barcode) throws InstanceNotFoundException {
+    public Product findProductByBarcode(Long userId, Long householdId, String barcode)
+            throws InstanceNotFoundException, ProductIsNotFoodException {
 
         permissionChecker.checkUserHouseholdExists(userId, householdId);
 
         Optional<Product> optionalProduct = productDao.findByBarcodeAndHouseholdId(barcode, householdId);
 
         if (optionalProduct.isPresent()) {
-            Product product = optionalProduct.get();
-            return new BarcodeProduct(product.getId(), product.getBarcode(), product.getName(), product.getBrand(), product.getDefaultPrice(), product.getImage(), product.getQuantity(), product.getUnit(), product.isVegetarian(), product.isVegan(), product.getNutriScoreGrade(), product.getNovaGroup(), true);
+            return optionalProduct.get();
         } else {
             return openFoodFactsClient.getProductByBarcode(barcode);
         }

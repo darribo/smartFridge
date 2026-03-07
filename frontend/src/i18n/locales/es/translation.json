@@ -181,5 +181,24 @@
         "description": "NOVA clasifica el nivel de procesamiento de los alimentos del 1 al 4: 1 (mínimamente procesado) a 4 (ultraprocesado)."
       }
     }
+  },
+  "scanProduct": {
+    "title": "Escanear producto",
+    "subtitle": "Coloca el código de barras dentro del recuadro",
+    "permission": {
+      "title": "Se necesita permiso de cámara",
+      "description": "Para escanear códigos de barras necesitas habilitar la cámara.",
+      "cta": "Conceder permiso",
+      "openSettings": "Abrir ajustes"
+    },
+    "actions": {
+      "switchCamera": "Cambiar cámara",
+      "retry": "Reintentar"
+    },
+    "errors": {
+      "invalidBarcode": "Código de barras inválido.",
+      "notFound": "No se encontró ningún producto con ese código.",
+      "default": "No se pudo escanear el producto."
+    }
   }
 }

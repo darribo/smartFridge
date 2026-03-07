@@ -5,6 +5,7 @@ import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationDateException;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.ProductIsNotFoodException;
 
 public interface ProductService {
 
@@ -120,6 +121,7 @@ public interface ProductService {
 
     Block<Product> findProductsByName(Long userId, Long householdId, String name, int page, int size) throws InstanceNotFoundException;
 
-    BarcodeProduct findProductByBarcode(Long userId, Long householdId, String barcode) throws InstanceNotFoundException;
+    Product findProductByBarcode(Long userId, Long householdId, String barcode)
+            throws InstanceNotFoundException, ProductIsNotFoodException;
 
 }
