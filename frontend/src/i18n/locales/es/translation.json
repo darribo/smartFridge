@@ -163,11 +163,18 @@
       "decrease": "Reducir cantidad",
       "increase": "Aumentar cantidad"
     },
+    "status": {
+      "savingProduct": "Guardando producto...",
+      "uploadingImage": "Subiendo imagen...",
+      "loadingImage": "Cargando imagen..."
+    },
     "errors": {
       "searchFailed": "No se han podido buscar productos.",
       "invalidDecimal": "Formato inválido (máx 2 decimales)",
       "maxDecimal": "Máximo permitido: 999.99",
+      "maxQuantity": "Cantidad máxima permitida: 99999.99",
       "saveFailed": "No se ha podido guardar el producto.",
+      "imageUploadFailed": "No se ha podido subir la imagen del producto.",
       "addToPantryFailed": "No se ha podido añadir a despensa. Inténtalo de nuevo.",
       "invalidItemCount": "La cantidad de items debe ser al menos 1."
     },

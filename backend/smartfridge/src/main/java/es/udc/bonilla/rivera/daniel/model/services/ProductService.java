@@ -1,5 +1,9 @@
 package es.udc.bonilla.rivera.daniel.model.services;
 
+import java.io.IOException;
+
+import org.springframework.web.multipart.MultipartFile;
+
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
@@ -121,7 +125,29 @@ public interface ProductService {
 
     Block<Product> findProductsByName(Long userId, Long householdId, String name, int page, int size) throws InstanceNotFoundException;
 
-    Product findProductByBarcode(Long userId, Long householdId, String barcode)
-            throws InstanceNotFoundException, ProductIsNotFoodException;
+    /**
+     * Busca un producto por código de barras dentro de un hogar.
+     * Si no existe localmente, intenta resolverlo mediante OpenFoodFacts.
+     *
+     * @param userId Identificador del usuario que realiza la consulta.
+     * @param householdId Identificador del hogar donde se busca el producto.
+     * @param barcode Código de barras del producto.
+     * @return La entidad {@code Product} encontrada o construida desde OpenFoodFacts.
+     * @throws InstanceNotFoundException Si el usuario no pertenece al hogar o no se encuentra el producto.
+     * @throws ProductIsNotFoodException Si el código corresponde a un producto no alimenticio.
+     */
+    Product findProductByBarcode(Long userId, Long householdId, String barcode) throws InstanceNotFoundException, ProductIsNotFoodException;
+
+    /**
+     * Sube una imagen asociada a un producto y actualiza su URL en base de datos.
+     *
+     * @param userId Identificador del usuario que realiza la operación.
+     * @param productId Identificador del producto al que se asocia la imagen.
+     * @param file Archivo de imagen en formato multipart.
+     * @return La entidad {@code Product} actualizada con la nueva URL de imagen.
+     * @throws InstanceNotFoundException Si el producto no existe o el usuario no pertenece al hogar del producto.
+     * @throws IOException Si ocurre un error durante el almacenamiento físico del archivo.
+     */
+    Product uploadProductImage(Long userId, Long productId, MultipartFile file) throws InstanceNotFoundException, IOException;
 
 }

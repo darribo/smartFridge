@@ -28,6 +28,7 @@ public class SecurityConfig {
                 .requestMatchers("/docs/**").permitAll() //Se permite el acceso sin autenticar a la documentación Swagger
                 .requestMatchers("/swagger-ui/**").permitAll() //Se permite el acceso sin autenticar a la documentación Swagger
                 .requestMatchers("/users/**").permitAll() //Se permite el acceso sin autenticar a las rutas de login y refresh
+                .requestMatchers("/files/**").permitAll() //Se permite acceso público a los archivos estáticos servidos por el backend
                 .requestMatchers("/allergies/getAll/**").permitAll()
                 .requestMatchers("/households/*").permitAll()
                 .requestMatchers("/households/**").permitAll()

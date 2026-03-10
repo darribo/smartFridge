@@ -21,9 +21,10 @@ import { PrimaryButton } from "../../components/PrimaryButton";
 import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
 import { DatePickerField } from "../../components/common/DatePickerField";
 import type { AuthStackParamList } from "../../navigation/AuthStack";
-import { createProduct, createProductItem, searchProductsByName } from "../../api/products/productService";
+import { createProduct, createProductItem, searchProductsByName, uploadProductImage } from "../../api/products/productService";
 import { useTranslation } from "react-i18next";
 import type { ApiError } from "../../api/appFetch";
+import { GENERIC_PRODUCT_IMAGE, resolveProductImage } from "../../utils/image";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "AddProduct">;
 
@@ -48,9 +49,6 @@ type ProductFormErrors = Partial<{
 }>;
 
 type InfoCardKey = "nutriScore" | "novaGroup" | null;
-
-const GENERIC_FOOD_IMAGE =
-  "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=600&q=80";
 
 const NUTRI_COLORS: Record<NutriScore, string> = {
   A: "#39D27A",
@@ -83,6 +81,7 @@ const NOVA_SELECTED_COLORS: Record<NovaGroup, string> = {
 };
 
 const toIsoDateTimeOrNull = (value: Date | null): string | null => {
+  //Se hace la conversión de Date a string ISO sin hora real para enviarlo al backend.
   if (!value) return null;
   const year = value.getFullYear();
   const month = `${value.getMonth() + 1}`.padStart(2, "0");
@@ -91,14 +90,17 @@ const toIsoDateTimeOrNull = (value: Date | null): string | null => {
 };
 
 const getTomorrowDate = () => {
+  //Se hace el cálculo de la fecha de mañana para abrir el selector de caducidad en ese día.
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   return tomorrow;
 };
 
-const DECIMAL_LIMIT = 999.99;
+const PRICE_LIMIT = 999.99;
+const QUANTITY_LIMIT = 99999.99;
 
 const parseNonNegativeDecimal = (raw: string): number => {
+  //Se hace la validación de decimal no negativo con hasta 2 decimales.
   const value = raw.trim();
   if (!value) return Number.NaN;
   const normalized = value.replace(",", ".");
@@ -121,6 +123,7 @@ function DropdownField<T extends string>({
   value,
   onChange,
 }: DropdownFieldProps<T>) {
+  //Se hace la gestión local del desplegable para abrir, cerrar y seleccionar una opción.
   const [open, setOpen] = useState(false);
   const selectedLabel = options.find((option) => option.value === value)?.label ?? "";
 
@@ -176,6 +179,7 @@ function OptionalBooleanField({
   value: boolean | null;
   onChange: (value: boolean | null) => void;
 }) {
+  //Se hace un selector ternario para booleanos opcionales: true, false o null.
   return (
     <View style={styles.optionalBoolWrap}>
       <View style={styles.switchLabelWrap}>
@@ -210,6 +214,7 @@ function InfoFieldLabel({
   onPress: () => void;
   style?: object;
 }) {
+  //Se hace la etiqueta con icono de ayuda para mostrar información contextual.
   return (
     <View style={[styles.infoLabelRow, style]}>
       <FormLabel text={text} />
@@ -221,6 +226,7 @@ function InfoFieldLabel({
 }
 
 export default function AddProductScreen({ navigation, route }: Props) {
+  //Se hace la inicialización de estados del formulario y de navegación.
   const { t } = useTranslation();
   const householdId = route.params?.householdId ?? 10;
   const barcodeProduct = route.params?.barcodeProduct;
@@ -252,6 +258,9 @@ export default function AddProductScreen({ navigation, route }: Props) {
 
 
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreviewLoading, setImagePreviewLoading] = useState(false);
+  const [selectedCardImageLoading, setSelectedCardImageLoading] = useState(false);
   const [errors, setErrors] = useState<ProductFormErrors>({});
   const [globalErrors, setGlobalErrors] = useState<string[]>([]);
   const [showAdditionalInfo, setShowAdditionalInfo] = useState(false);
@@ -293,6 +302,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
   const incrementCount = () => setItemCount((prev) => Math.min(99, prev + 1));
 
   const normalizeUnit = (value?: string | null): ProductUnit => {
+    //Se hace la normalización de unidad para mantener solo valores soportados.
     const allowedUnits: ProductUnit[] = ["G", "KG", "ML", "L", "UNIT"];
     if (value && allowedUnits.includes(value as ProductUnit)) {
       return value as ProductUnit;
@@ -300,7 +310,16 @@ export default function AddProductScreen({ navigation, route }: Props) {
     return "ML";
   };
 
+  const isLocalImage = (value?: string | null) => !!value && value.startsWith("file://");
+  const imageForCreatePayload = (value?: string | null) => {
+    //Se hace la preparación del campo image para createProduct: si es local se envía null y luego se sube por multipart.
+    if (!value) return null;
+    if (isLocalImage(value)) return null;
+    return value;
+  };
+
   useEffect(() => {
+    //Se hace la precarga de datos cuando llega barcodeProduct desde el escaneo.
     if (!barcodeProduct) {
       setIsFirstTime(true);
       return;
@@ -341,11 +360,18 @@ export default function AddProductScreen({ navigation, route }: Props) {
     setGlobalErrors([]);
   }, [barcodeProduct]);
 
+  useEffect(() => {
+    //Se hace el control visual de carga/error cada vez que cambia la imagen seleccionada.
+    setImagePreviewLoading(Boolean(image));
+  }, [image]);
+
   const isFirstFlowValid = useMemo(() => {
+    //Se hace una validación mínima para habilitar el botón principal del flujo de alta.
     return name.trim().length > 0 && quantity.trim().length > 0;
   }, [name, quantity]);
 
   const onSearchChange = async (value: string) => {
+    //Se hace la búsqueda en backend cada vez que el usuario escribe en el buscador.
     setSearch(value);
     setSelectedProduct(null);
     setGlobalErrors([]);
@@ -362,6 +388,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
       value.trim(),
       0,
       (block) => {
+        //Se hace el mapeo de respuesta del backend al shape que usa esta pantalla.
         const mappedResults: ExistingProduct[] = block.items.map((item) => ({
           id: item.id,
           barcode: item.barcode ?? "",
@@ -380,6 +407,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
   };
 
   const validateFirstFlow = (): ProductFormErrors => {
+    //Se hace la validación de todos los campos del flujo de creación de producto nuevo.
     const next: ProductFormErrors = {};
 
     if (!name.trim()) next.name = t("genericErrors.requiredField");
@@ -389,19 +417,20 @@ export default function AddProductScreen({ navigation, route }: Props) {
     } else {
       const parsedQuantity = parseNonNegativeDecimal(quantity);
       if (Number.isNaN(parsedQuantity)) next.quantity = t("addProduct.errors.invalidDecimal");
-      else if (parsedQuantity > DECIMAL_LIMIT) next.quantity = t("addProduct.errors.maxDecimal");
+      else if (parsedQuantity > QUANTITY_LIMIT) next.quantity = t("addProduct.errors.maxQuantity");
     }
 
     if (defaultPrice.trim()) {
       const parsedDefaultPrice = parseNonNegativeDecimal(defaultPrice);
       if (Number.isNaN(parsedDefaultPrice)) next.defaultPrice = t("addProduct.errors.invalidDecimal");
-      else if (parsedDefaultPrice > DECIMAL_LIMIT) next.defaultPrice = t("addProduct.errors.maxDecimal");
+      else if (parsedDefaultPrice > PRICE_LIMIT) next.defaultPrice = t("addProduct.errors.maxDecimal");
     }
 
     return next;
   };
 
   const onSubmitFirstFlow = async () => {
+    //Se hace la creación del producto y opcionalmente la subida de imagen local.
     if (submitting) return;
 
     const nextErrors = validateFirstFlow();
@@ -415,7 +444,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
     const product = {
       barcode: barcode.trim() || null,
       name: name.trim(),
-      image,
+      image: imageForCreatePayload(image),
       quantity: quantity.trim(),
       unit,
       defaultPrice: defaultPrice.trim() || null,
@@ -429,13 +458,31 @@ export default function AddProductScreen({ navigation, route }: Props) {
     await createProduct(
       householdId,
       product,
-      (createdProduct) => {
+      async (createdProduct) => {
+        //Se hace la transición al flujo de producto existente una vez creado.
+        let finalImage = createdProduct.image ?? null;
+
+        if (isLocalImage(image)) {
+          setUploadingImage(true);
+          await uploadProductImage(
+            createdProduct.id,
+            image!,
+            (updatedProduct) => {
+              finalImage = updatedProduct.image ?? finalImage;
+            },
+            (err) => {
+              setGlobalErrors(err.globalErrors ?? [t("addProduct.errors.imageUploadFailed")]);
+            }
+          );
+          setUploadingImage(false);
+        }
+
         setIsFirstTime(false);
         setSelectedProduct({
           id: createdProduct.id,
           barcode: createdProduct.barcode ?? "",
           name: createdProduct.name,
-          image: createdProduct.image ?? null,
+          image: finalImage,
           defaultPrice: createdProduct.defaultPrice ?? null,
         });
         setSearch(createdProduct.name);
@@ -471,9 +518,11 @@ export default function AddProductScreen({ navigation, route }: Props) {
     );
 
     setSubmitting(false);
+    setUploadingImage(false);
   };
 
   const onSubmitExistingFlow = async () => {
+    //Se hace la creación de uno o varios ProductItem para un producto ya seleccionado.
     if (!selectedProduct || submitting) return;
     if (itemCount < 1) {
       setGlobalErrors([t("addProduct.errors.invalidItemCount")]);
@@ -485,7 +534,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
     if (pricePaid.trim()) {
       const parsedPricePaid = parseNonNegativeDecimal(pricePaid);
       if (Number.isNaN(parsedPricePaid)) nextErrors.pricePaid = t("addProduct.errors.invalidDecimal");
-      else if (parsedPricePaid > DECIMAL_LIMIT) nextErrors.pricePaid = t("addProduct.errors.maxDecimal");
+      else if (parsedPricePaid > PRICE_LIMIT) nextErrors.pricePaid = t("addProduct.errors.maxDecimal");
     }
 
     setErrors((prev) => ({
@@ -501,6 +550,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
 
     const createSingleItem = () =>
       new Promise<ApiError | null>((resolve) => {
+        //Se hace una petición individual para reutilizarla en el bucle de itemCount.
         createProductItem(
           selectedProduct.id,
           toIsoDateTimeOrNull(purchaseDate),
@@ -512,6 +562,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
       });
 
     for (let i = 0; i < itemCount; i++) {
+      //Se hace la repetición secuencial para cortar en el primer error y mostrarlo.
       // eslint-disable-next-line no-await-in-loop
       const requestError = await createSingleItem();
       if (requestError) {
@@ -579,13 +630,36 @@ export default function AddProductScreen({ navigation, route }: Props) {
         {isFirstTime ? (
           <>
             <Pressable
-              style={styles.imageUploadBox}
-              onPress={() => setImage((prev) => (prev ? null : "mock://product-image"))}
+              style={[styles.imageUploadBox, image ? styles.imageUploadBoxFilled : null]}
+              onPress={() => setImage((prev) => (prev ? null : GENERIC_PRODUCT_IMAGE))}
             >
-              <MaterialCommunityIcons name="camera-plus" size={34} color={THEME.primary} />
-              <Text style={styles.imageUploadText}>
-                {image ? t("addProduct.imageSelected") : t("addProduct.addImage")}
-              </Text>
+              {image ? (
+                <>
+                  <Image
+                    source={{ uri: resolveProductImage(image) }}
+                    style={styles.imagePreview}
+                    resizeMode="contain"
+                    onLoadStart={() => setImagePreviewLoading(true)}
+                    onLoadEnd={() => setImagePreviewLoading(false)}
+                    onError={() => setImagePreviewLoading(false)}
+                  />
+                  {imagePreviewLoading ? (
+                    <View style={styles.imageLoadingOverlay}>
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                      <Text style={styles.imageLoadingText}>{t("addProduct.status.loadingImage")}</Text>
+                    </View>
+                  ) : null}
+                  <View style={styles.imageOverlay}>
+                    <MaterialCommunityIcons name="camera-plus" size={22} color="#FFFFFF" />
+                    <Text style={styles.imageOverlayText}>{t("addProduct.imageSelected")}</Text>
+                  </View>
+                </>
+              ) : (
+                <>
+                  <MaterialCommunityIcons name="camera-plus" size={34} color={THEME.primary} />
+                  <Text style={styles.imageUploadText}>{t("addProduct.addImage")}</Text>
+                </>
+              )}
             </Pressable>
 
             <FormLabel text={t("addProduct.fields.barcode")} />
@@ -624,6 +698,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
                     setQuantity(value);
                     setErrors((prev) => ({ ...prev, quantity: undefined }));
                   }}
+                  maxLength={8}
                   placeholder={t("addProduct.placeholders.decimal")}
                   keyboardType="decimal-pad"
                   errorText={errors.quantity}
@@ -754,6 +829,17 @@ export default function AddProductScreen({ navigation, route }: Props) {
               onPress={onSubmitFirstFlow}
               disabled={submitting || !isFirstFlowValid}
             />
+
+            {submitting ? (
+              <View style={styles.submitStatusRow}>
+                <ActivityIndicator size="small" color={THEME.primary} />
+                <Text style={styles.submitStatusText}>
+                  {uploadingImage
+                    ? t("addProduct.status.uploadingImage")
+                    : t("addProduct.status.savingProduct")}
+                </Text>
+              </View>
+            ) : null}
           </>
         ) : (
           <>
@@ -786,7 +872,13 @@ export default function AddProductScreen({ navigation, route }: Props) {
                       setItemCount(1);
                     }}
                   >
-                      <Text style={styles.searchResultText}>{item.name}</Text>
+                      <View style={styles.searchResultRow}>
+                        <Image
+                          source={{ uri: resolveProductImage(item.image) }}
+                          style={styles.searchResultImage}
+                        />
+                        <Text style={styles.searchResultText}>{item.name}</Text>
+                      </View>
                     </Pressable>
                   ))
                 ) : (
@@ -799,10 +891,20 @@ export default function AddProductScreen({ navigation, route }: Props) {
               <>
                 <View style={styles.productCard}>
                   <View style={styles.selectedProductRow}>
-                    <Image
-                      source={{ uri: selectedProduct.image || GENERIC_FOOD_IMAGE }}
-                      style={styles.selectedProductImage}
-                    />
+                    <View style={styles.selectedProductImageWrap}>
+                      <Image
+                        source={{ uri: resolveProductImage(selectedProduct.image) }}
+                        style={styles.selectedProductImage}
+                        onLoadStart={() => setSelectedCardImageLoading(true)}
+                        onLoadEnd={() => setSelectedCardImageLoading(false)}
+                        onError={() => setSelectedCardImageLoading(false)}
+                      />
+                      {selectedCardImageLoading ? (
+                        <View style={styles.cardImageLoader}>
+                          <ActivityIndicator size="small" color={THEME.primary} />
+                        </View>
+                      ) : null}
+                    </View>
                     <View style={styles.cardSingleInfo}>
                       <Text style={styles.cardName} numberOfLines={2}>
                         {selectedProduct.name}
@@ -981,11 +1083,66 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 10,
     marginBottom: 18,
+    overflow: "hidden",
+    position: "relative",
+  },
+  imageUploadBoxFilled: {
+    borderStyle: "solid",
+    borderColor: "#D7E2EF",
+    backgroundColor: "#FFFFFF",
+    padding: 0,
   },
   imageUploadText: {
     color: "#223348",
     fontSize: 16,
     fontWeight: "500",
+  },
+  imagePreview: {
+    width: "100%",
+    height: "100%",
+  },
+  imageOverlay: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    paddingVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+    borderBottomLeftRadius: 22,
+    borderBottomRightRadius: 22,
+  },
+  imageOverlayText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  imageLoadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.32)",
+    gap: 8,
+  },
+  imageLoadingText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  submitStatusRow: {
+    marginTop: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  submitStatusText: {
+    fontSize: 13,
+    color: THEME.muted,
+    fontWeight: "600",
   },
   rowFields: {
     flexDirection: "row",
@@ -1170,10 +1327,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
+  searchResultRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  searchResultImage: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    backgroundColor: "#EEF3F7",
+  },
   searchResultText: {
     fontSize: 16,
     color: THEME.text,
     fontWeight: "600",
+    flexShrink: 1,
   },
   emptySearchText: {
     fontSize: 14,
@@ -1197,6 +1366,20 @@ const styles = StyleSheet.create({
     height: 72,
     borderRadius: 14,
     backgroundColor: "#EEF3F7",
+  },
+  selectedProductImageWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: 14,
+    overflow: "hidden",
+    backgroundColor: "#EEF3F7",
+    position: "relative",
+  },
+  cardImageLoader: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.7)",
   },
   cardSingleInfo: {
     flex: 1,

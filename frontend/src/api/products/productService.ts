@@ -126,3 +126,27 @@ export const getProductByBarcode = async (
         onError
     );
 };
+
+export const uploadProductImage = async (
+  productId: number,
+  localUri: string,
+  onSuccess?: (product: Product) => void,
+  onError?: (err: ApiError) => void
+) => {
+  const form = new FormData();
+
+  form.append("file", {
+    uri: localUri,
+    name: `product_${productId}.jpg`,
+    type: "image/jpeg",
+  } as any);
+
+  const options = await fetchConfig("POST", form);
+
+  return appFetch(
+    `/products/${productId}/images`,
+    options,
+    onSuccess,
+    onError
+  );
+};

@@ -71,7 +71,7 @@ CREATE TABLE Product (
     name VARCHAR(30) NOT NULL,
     brand VARCHAR(50),
     image VARCHAR(255),
-    quantity DECIMAL(5,2) NOT NULL,
+    quantity DECIMAL(7,2) NOT NULL,
     unit TINYINT NOT NULL,
     vegetarian BOOLEAN,
     vegan BOOLEAN,

@@ -28,7 +28,7 @@ public class NewProductParamsDto {
     @Schema(description = "Imagen del producto", example = "https://example.com/milk.png", nullable = true)
     private String image;
 
-    @Schema(description = "Cantidad del producto", example = "1.00", nullable = true)
+    @Schema(description = "Cantidad del producto (0.00 - 99999.99)", example = "1.00", nullable = true)
     private String quantity;
 
     @Schema(description = "Unidad de medida", example = "L", allowableValues = { "G", "KG", "ML", "L", "UNIT" })
@@ -118,7 +118,7 @@ public class NewProductParamsDto {
 
     @NotNull
     @DecimalMin(value = "0.00")
-    @DecimalMax(value = "999.99")
+    @DecimalMax(value = "99999.99")
     public String getQuantity() {
         return quantity;
     }

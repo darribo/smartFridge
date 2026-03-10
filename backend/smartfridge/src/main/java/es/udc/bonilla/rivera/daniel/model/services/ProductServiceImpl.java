@@ -1,5 +1,6 @@
 package es.udc.bonilla.rivera.daniel.model.services;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
@@ -36,6 +38,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private OpenFoodFactsClient openFoodFactsClient;
+
+    @Autowired
+    private LocalStorageService localStorageService;
 
     @Override
     public Product createProduct(Long userId, String barcode, String name, String brand, String defaultPrice, String image,
@@ -192,8 +197,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product findProductByBarcode(Long userId, Long householdId, String barcode)
-            throws InstanceNotFoundException, ProductIsNotFoodException {
+    public Product findProductByBarcode(Long userId, Long householdId, String barcode) throws InstanceNotFoundException, ProductIsNotFoodException {
 
         permissionChecker.checkUserHouseholdExists(userId, householdId);
 
@@ -204,6 +208,20 @@ public class ProductServiceImpl implements ProductService {
         } else {
             return openFoodFactsClient.getProductByBarcode(barcode);
         }
+    }
+
+    @Override
+    public Product uploadProductImage(Long userId, Long productId, MultipartFile file) throws InstanceNotFoundException, IOException {
+        
+        Product product = permissionChecker.checkProductExists(productId);
+
+        permissionChecker.checkUserHouseholdExists(userId, product.getHousehold().getId());
+
+        String imageUrl = localStorageService.saveImage(productId, "products", file);
+
+        product.setImage(imageUrl);
+
+        return productDao.save(product);
     }
 
 }

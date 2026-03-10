@@ -163,11 +163,18 @@
       "decrease": "Decrease count",
       "increase": "Increase count"
     },
+    "status": {
+      "savingProduct": "Saving product...",
+      "uploadingImage": "Uploading image...",
+      "loadingImage": "Loading image..."
+    },
     "errors": {
       "searchFailed": "Unable to search products.",
       "invalidDecimal": "Invalid format (max 2 decimals)",
       "maxDecimal": "Maximum allowed: 999.99",
+      "maxQuantity": "Maximum quantity allowed: 99999.99",
       "saveFailed": "Unable to save product.",
+      "imageUploadFailed": "Unable to upload product image.",
       "addToPantryFailed": "Unable to add to pantry. Please try again.",
       "invalidItemCount": "Item count must be at least 1."
     },

@@ -1,10 +1,12 @@
 package es.udc.bonilla.rivera.daniel.rest.controllers;
 
+import java.io.IOException;
 import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
@@ -131,6 +134,16 @@ public class ProductController {
     }
 
     @GetMapping("/{householdId}/search")
+    @Operation(
+        summary = "Buscar productos por nombre",
+        description = "Devuelve una lista paginada de productos de un hogar filtrados por nombre."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Búsqueda realizada correctamente",
+            content = @Content(schema = @Schema(implementation = BlockDto.class))),
+        @ApiResponse(responseCode = "404", description = "Usuario fuera del hogar o hogar no encontrado",
+            content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
+    })
     public BlockDto<ProductDto> findProductsByName(@RequestAttribute Long userId, @PathVariable Long householdId, @RequestParam String name, @RequestParam int page) throws InstanceNotFoundException {
 
         Block<Product> block = productService.findProductsByName(userId, householdId, name, page, SEARCH_PRODUCTS_SIZE);
@@ -140,10 +153,42 @@ public class ProductController {
     }
 
     @GetMapping("/{householdId}/barcode")
+    @Operation(
+        summary = "Buscar producto por código de barras",
+        description = "Busca primero en el hogar local y, si no existe, consulta OpenFoodFacts."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Producto encontrado",
+            content = @Content(schema = @Schema(implementation = BarcodeProductDto.class))),
+        @ApiResponse(responseCode = "400", description = "El código corresponde a un producto no alimenticio",
+            content = @Content(schema = @Schema(implementation = ErrorsDto.class))),
+        @ApiResponse(responseCode = "404", description = "Producto no encontrado o usuario fuera del hogar",
+            content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
+    })
     public BarcodeProductDto getProductByBarcode(@RequestAttribute Long userId, @PathVariable Long householdId, @RequestParam String barcode)
             throws InstanceNotFoundException, ProductIsNotFoodException {
         Product product = productService.findProductByBarcode(userId, householdId, barcode);
         return BarcodeProductConversor.toBarcodeProductDto(product);
+    }
+
+    @Operation(
+        summary = "Subir imagen de producto",
+        description = "Guarda una imagen para el producto y actualiza su URL en base de datos."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Imagen subida correctamente",
+            content = @Content(schema = @Schema(implementation = ProductDto.class))),
+        @ApiResponse(responseCode = "404", description = "Producto no encontrado o usuario fuera del hogar",
+            content = @Content(schema = @Schema(implementation = ErrorsDto.class))),
+        @ApiResponse(responseCode = "400", description = "Archivo inválido",
+            content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
+    })
+    @PostMapping(value = "/{productId}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ProductDto uploadProductImage(@RequestAttribute Long userId, @PathVariable Long productId, @RequestParam("file") MultipartFile file) throws InstanceNotFoundException, IOException {
+            
+        Product product = productService.uploadProductImage(userId, productId, file);
+
+        return ProductConversor.toProductDto(product);
     }
     
 }

@@ -48,6 +48,15 @@ public class OpenFoodFactsClient {
                 .build();
     }
 
+    /**
+     * Consulta OpenFoodFacts por código de barras y construye un {@code Product} no persistido
+     * con los datos disponibles.
+     *
+     * @param barcode Código de barras a consultar.
+     * @return Producto construido a partir de la respuesta de OpenFoodFacts.
+     * @throws InstanceNotFoundException Si el código no existe o la API no devuelve un producto válido.
+     * @throws ProductIsNotFoodException Si el código corresponde a un producto no alimenticio.
+     */
     public Product getProductByBarcode(String barcode) throws InstanceNotFoundException, ProductIsNotFoodException {
         if (barcode == null || barcode.isBlank()) {
             throw new InstanceNotFoundException("project.entities.product", "barcode");

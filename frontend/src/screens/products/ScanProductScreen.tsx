@@ -11,8 +11,10 @@ import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "ScanProduct">;
+const isLikelyBarcode = (value: string) => /^\d{8,14}$/.test(value);
 
 export default function ScanProductScreen({ navigation, route }: Props) {
+  //Se hace la inicialización de permisos, estados de cámara y control de errores.
   const { t } = useTranslation();
   const householdId = route.params?.householdId ?? 10;
 
@@ -25,6 +27,7 @@ export default function ScanProductScreen({ navigation, route }: Props) {
   const handledRef = useRef(false);
 
   const onBarcodeScanned = useCallback(({ data }: { data: string }) => {
+    //Se hace el bloqueo de re-disparos para evitar múltiples peticiones por el mismo escaneo.
 
     if (handledRef.current || isProcessing || paused) return;
     
@@ -34,20 +37,22 @@ export default function ScanProductScreen({ navigation, route }: Props) {
 
     const barcode = data?.trim();
 
-    if (!barcode) {
-        setGlobalErrors([t("scanProduct.errors.invalidBarcode")]);
-        setIsProcessing(false);
-        setPaused(true);
-        return;
+    if (!barcode || !isLikelyBarcode(barcode)) {
+      //Se hace el descarte de lecturas no válidas sin mostrar error para no ensuciar la UX.
+      handledRef.current = false;
+      setIsProcessing(false);
+      return;
     }
 
     getProductByBarcode(
         householdId,
         barcode,
         (product) => {
+          //Se hace la navegación al formulario de alta con los datos del producto resuelto.
           navigation.replace("AddProduct", { householdId, barcodeProduct: product });
         },
         (err) => {
+          //Se hace la traducción del error backend a mensajes de UI y se pausa el escaneo.
           const has404 = (err.globalErrors ?? []).some((m) => m.includes("404"));
           if (has404) {
             setGlobalErrors([t("scanProduct.errors.notFound")]);
@@ -64,6 +69,7 @@ export default function ScanProductScreen({ navigation, route }: Props) {
     [householdId, isProcessing, navigation, paused, t]
   );
   const onRetry = () => {
+    //Se hace el reseteo completo de flags para volver a escanear.
     handledRef.current = false;
     setPaused(false);
     setIsProcessing(false);
@@ -71,11 +77,13 @@ export default function ScanProductScreen({ navigation, route }: Props) {
   };
 
   const onToggleCamera = () => {
+    //Se hace el cambio de cámara frontal/trasera.
     setFacing((prev) => (prev === "back" ? "front" : "back"));
   };
 
   if (!permission) return <SafeAreaView style={styles.safe} />;
 
+  //En caso de no tener permisos, se muestra una pantalla explicativa con opción a solicitar permisos o abrir configuración.
   if (!permission?.granted) {
     const canAskAgain = permission?.canAskAgain ?? true;
 

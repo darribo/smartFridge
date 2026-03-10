@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Column;
 
 @Entity
 public class Product {
@@ -122,6 +123,7 @@ public class Product {
         this.image = image;
     }
 
+    @Column(precision = 7, scale = 2, nullable = false)
     public BigDecimal getQuantity() {
         return quantity;
     }
