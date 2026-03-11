@@ -219,9 +219,9 @@ export default function MyHouseholdsScreen({navigation}: Props){
         alignItems: "center",
         justifyContent: "center",
         shadowColor: "#000",
-        shadowOpacity: 0.12,
-        shadowRadius: 10,
-        shadowOffset: { width: 0, height: 6 },
-        elevation: 4,
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 5,
     },
 });

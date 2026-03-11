@@ -156,6 +156,10 @@
       "title": "Do you want to add more information?",
       "subtitle": "Complete it only if you know these values."
     },
+    "imagePicker": {
+      "permissionTitle": "Permission required",
+      "permissionMessage": "You need gallery access to choose an image."
+    },
     "actions": {
       "saveProduct": "Save product",
       "addToPantry": "Add to pantry",

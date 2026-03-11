@@ -3,5 +3,5 @@ export const config = {
   BASE_URL: "http://192.168.68.53:8080/smartFridge",
   SERVICE_TOKEN_KEY: "smartfridge_service_token",
   AUTH_USER_KEY: "smartfridge_auth_user",
-  REQUEST_TIMEOUT_MS: 10_000,
+  REQUEST_TIMEOUT_MS: 30_000,
 };

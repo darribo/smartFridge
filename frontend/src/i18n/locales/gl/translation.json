@@ -156,6 +156,10 @@
       "title": "Queres engadir máis información?",
       "subtitle": "Complétaa só se coñeces estes datos."
     },
+    "imagePicker": {
+      "permissionTitle": "Permiso necesario",
+      "permissionMessage": "Necesitas acceso á galería para escoller unha imaxe."
+    },
     "actions": {
       "saveProduct": "Gardar produto",
       "addToPantry": "Engadir á despensa",
