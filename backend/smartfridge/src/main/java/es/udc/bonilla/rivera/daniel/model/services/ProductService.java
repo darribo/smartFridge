@@ -36,7 +36,7 @@ public interface ProductService {
      */
     Product createProduct(Long userId, String barcode, String name, String brand, String defaultPrice, String image,
             String quantity, Product.Unit unit, Boolean isVegetarian, Boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
-            Product.NovaGroup novaGroup, Long householdId) throws InstanceNotFoundException, DuplicateInstanceException;
+            Product.NovaGroup novaGroup, Long householdId) throws InstanceNotFoundException, DuplicateInstanceException, IOException;
 
     /**
      * Actualiza los datos editables de un producto.

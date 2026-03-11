@@ -107,7 +107,7 @@ public class NewProductParamsDto {
         this.defaultPrice = defaultPrice;
     }
 
-    @Size(max = 255)
+    @Size(max = 1000)
     public String getImage() {
         return image;
     }

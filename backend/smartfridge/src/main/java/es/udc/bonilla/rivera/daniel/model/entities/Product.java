@@ -116,6 +116,7 @@ public class Product {
         this.defaultPrice = defaultPrice;
     }
 
+    @Column(length = 1000)
     public String getImage() {
         return image;
     }

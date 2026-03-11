@@ -101,7 +101,7 @@ public class ProductController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ProductDto createProduct(@RequestAttribute Long userId, @Validated @RequestBody NewProductParamsDto params)
-            throws InstanceNotFoundException, DuplicateInstanceException {
+            throws InstanceNotFoundException, DuplicateInstanceException, IOException {
 
         Product product = productService.createProduct(userId, params.getBarcode(), params.getName(), params.getBrand(),
                 params.getDefaultPrice(), params.getImage(), params.getQuantity(), params.getUnit(),

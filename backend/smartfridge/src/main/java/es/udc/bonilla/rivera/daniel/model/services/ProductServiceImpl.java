@@ -45,7 +45,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product createProduct(Long userId, String barcode, String name, String brand, String defaultPrice, String image,
             String quantity, Product.Unit unit, Boolean isVegetarian, Boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
-            Product.NovaGroup novaGroup, Long householdId) throws InstanceNotFoundException, DuplicateInstanceException {
+            Product.NovaGroup novaGroup, Long householdId) throws InstanceNotFoundException, DuplicateInstanceException, IOException {
 
         permissionChecker.checkUserHouseholdExists(userId, householdId);
 
@@ -61,9 +61,19 @@ public class ProductServiceImpl implements ProductService {
         boolean safeIsVegetarian = Boolean.TRUE.equals(isVegetarian);
         boolean safeIsVegan = Boolean.TRUE.equals(isVegan);
 
-        Product product = new Product(barcode, name, brand, defaultPrice != null ? new BigDecimal(defaultPrice) : null, image,
+        Product product = new Product(barcode, name, brand, defaultPrice != null ? new BigDecimal(defaultPrice) : null, null,
                 quantity != null ? new BigDecimal(quantity) : null, unit, safeIsVegetarian, safeIsVegan, nutriScoreGrade, novaGroup,
                 LocalDateTime.now().withNano(0), household);
+
+        product = productDao.save(product);
+
+        if (image != null && !image.isBlank()) {
+            if (image.startsWith("http://") || image.startsWith("https://")) {
+                product.setImage(localStorageService.saveImageFromUrl(product.getId(), "products", image));
+            } else {
+                product.setImage(image);
+            }
+        }
 
         return productDao.save(product);
     }

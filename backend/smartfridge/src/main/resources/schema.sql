@@ -70,7 +70,7 @@ CREATE TABLE Product (
     barcode VARCHAR(13),
     name VARCHAR(30) NOT NULL,
     brand VARCHAR(50),
-    image VARCHAR(255),
+    image VARCHAR(1000),
     quantity DECIMAL(7,2) NOT NULL,
     unit TINYINT NOT NULL,
     vegetarian BOOLEAN,
