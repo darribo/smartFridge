@@ -6,12 +6,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
@@ -50,6 +55,12 @@ class ProductServiceTest {
 
     @Autowired
     private UserHouseholdDao userHouseholdDao;
+
+    @Autowired
+    private LocalStorageService localStorageService;
+
+    @TempDir
+    Path tempDir;
 
     private User createUser(String suffix) {
         User user = new User(
@@ -178,7 +189,8 @@ class ProductServiceTest {
         Product product = createProduct(household, "Tomate");
 
         assertThrows(InvalidExpirationDateException.class, () -> productService.createProductItem(
-                admin.getId(), product.getId(), "2026-03-20T10:00:00", "2026-03-19T10:00:00", "2.50"));
+                admin.getId(), product.getId(), "2026-03-20T10:00:00", "2026-03-19T10:00:00", "2.50",
+                ProductItem.StorageLocation.FRIDGE));
     }
 
     @Test
@@ -190,14 +202,15 @@ class ProductServiceTest {
         Product product = createProduct(household, "Pollo");
 
         ProductItem created = productService.createProductItem(admin.getId(), product.getId(), "2026-03-01T10:00:00",
-                "2026-03-10T10:00:00", "3.10");
+                "2026-03-10T10:00:00", "3.10", ProductItem.StorageLocation.FRIDGE);
 
         ProductItem updated = productService.updateProductItem(admin.getId(), created.getId(), "2026-03-02T10:00:00",
-                "2026-03-12T10:00:00", "3.40");
+                "2026-03-12T10:00:00", "3.40", ProductItem.StorageLocation.FREEZER);
 
         assertEquals(LocalDateTime.parse("2026-03-02T10:00:00"), updated.getPurchaseDate());
         assertEquals(LocalDateTime.parse("2026-03-12T10:00:00"), updated.getExpirationDate());
         assertEquals(new BigDecimal("3.40"), updated.getPricePaid());
+        assertEquals(ProductItem.StorageLocation.FREEZER, updated.getStorageLocation());
     }
 
     @Test
@@ -209,10 +222,101 @@ class ProductServiceTest {
         Product product = createProduct(household, "Huevos");
 
         ProductItem created = productService.createProductItem(admin.getId(), product.getId(), "2026-03-01T10:00:00",
-                "2026-03-10T10:00:00", "2.20");
+                "2026-03-10T10:00:00", "2.20", ProductItem.StorageLocation.PANTRY);
 
         productService.deleteProductItem(admin.getId(), created.getId());
 
         assertTrue(productItemDao.findById(created.getId()).isEmpty());
+    }
+
+    @Test
+    void createProductItemUpdatesDefaultPriceWhenPricePaidChanges() throws Exception {
+
+        User admin = createUser("item_default_price");
+        Household household = createHousehold("Home product item price", admin);
+        addUserToHousehold(admin, household);
+        Product product = createProduct(household, "Garbanzos");
+
+        productService.createProductItem(admin.getId(), product.getId(), "2026-03-01T10:00:00",
+                "2026-03-10T10:00:00", "4.35", ProductItem.StorageLocation.FRIDGE);
+
+        Product updatedProduct = productDao.findById(product.getId()).orElseThrow();
+
+        assertEquals(new BigDecimal("4.35"), updatedProduct.getDefaultPrice());
+    }
+
+    @Test
+    void findProductsByNameReturnsOnlyHouseholdProducts() throws Exception {
+
+        User admin = createUser("find_by_name");
+        Household household = createHousehold("Home product search", admin);
+        addUserToHousehold(admin, household);
+
+        createProduct(household, "Pan Integral");
+        createProduct(household, "Pan de Molde");
+        createProduct(household, "Leche");
+
+        Block<Product> result = productService.findProductsByName(admin.getId(), household.getId(), "Pan", 0, 10);
+
+        assertEquals(2, result.getItems().size());
+        assertTrue(result.getItems().stream().allMatch(product -> product.getName().contains("Pan")));
+    }
+
+    @Test
+    void findProductByBarcodeReturnsLocalProductWhenPresent() throws Exception {
+
+        User admin = createUser("find_barcode_local");
+        Household household = createHousehold("Home product barcode", admin);
+        addUserToHousehold(admin, household);
+
+        Product localProduct = new Product("8480000168641", "Sal Fina", "Marca", new BigDecimal("1.10"), null,
+                new BigDecimal("1.00"), Product.Unit.KG, true, true, Product.NutriScoreGrade.A,
+                Product.NovaGroup.GROUP_1, LocalDateTime.now().withNano(0), household);
+        localProduct = productDao.save(localProduct);
+
+        Product found = productService.findProductByBarcode(admin.getId(), household.getId(), "8480000168641");
+
+        assertEquals(localProduct.getId(), found.getId());
+        assertEquals("Sal Fina", found.getName());
+    }
+
+    @Test
+    void uploadProductImageStoresRelativeUrlAndFile() throws Exception {
+
+        ReflectionTestUtils.setField(localStorageService, "uploadsRoot", tempDir.toString());
+        ReflectionTestUtils.setField(localStorageService, "maxSize", 3_145_728L);
+
+        User admin = createUser("upload_image");
+        Household household = createHousehold("Home product image", admin);
+        addUserToHousehold(admin, household);
+        Product product = createProduct(household, "Aceite");
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "aceite.png",
+                "image/png",
+                "fake-image-content".getBytes());
+
+        Product updated = productService.uploadProductImage(admin.getId(), product.getId(), file);
+
+        assertNotNull(updated.getImage());
+        assertTrue(updated.getImage().startsWith("/files/products/"));
+
+        String storedFileName = updated.getImage().replace("/files/products/", "");
+        assertTrue(Files.exists(tempDir.resolve("products").resolve(storedFileName)));
+    }
+
+    @Test
+    void createProductItemStoresStorageLocation() throws Exception {
+
+        User admin = createUser("item_storage_location");
+        Household household = createHousehold("Home product item location", admin);
+        addUserToHousehold(admin, household);
+        Product product = createProduct(household, "Mantequilla");
+
+        ProductItem created = productService.createProductItem(admin.getId(), product.getId(), "2026-03-01T10:00:00",
+                "2026-03-10T10:00:00", "2.20", ProductItem.StorageLocation.FRIDGE);
+
+        assertEquals(ProductItem.StorageLocation.FRIDGE, created.getStorageLocation());
     }
 }

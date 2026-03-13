@@ -21,6 +21,10 @@ import jakarta.transaction.Transactional;
 
 @Service
 @Transactional
+/**
+ * Servicio responsable del almacenamiento local de imágenes subidas o descargadas
+ * desde fuentes remotas.
+ */
 public class LocalStorageService {
 
     private static final Duration REMOTE_IMAGE_TIMEOUT = Duration.ofSeconds(15);

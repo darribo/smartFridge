@@ -8,14 +8,20 @@ import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
 import { DatePickerField } from "../../components/common/DatePickerField";
 import { FormLabel } from "../../components/FormLabel";
 import { PrimaryButton } from "../../components/PrimaryButton";
-import { createProductItem, searchProductsByName } from "../../api/products/productService";
+import {
+  createProductItem,
+  searchProductsByName,
+  type ProductItemStorageLocation as ApiProductItemStorageLocation,
+} from "../../api/products/productService";
 import type { ApiError } from "../../api/appFetch";
 import { THEME } from "../../theme/theme";
 import {
+  DropdownField,
   ExistingProduct,
   getTomorrowDate,
   parseNonNegativeDecimal,
   PRICE_LIMIT,
+  ProductItemStorageLocation,
   ProductFormErrors,
   styles,
   toIsoDateTimeOrNull,
@@ -41,6 +47,7 @@ export default function ExistingProductItemForm({
   const [searching, setSearching] = useState(false);
   const [purchaseDate, setPurchaseDate] = useState<Date | null>(new Date());
   const [expirationDate, setExpirationDate] = useState<Date | null>(null);
+  const [storageLocation, setStorageLocation] = useState<ProductItemStorageLocation>("PANTRY");
   const tomorrowDate = useMemo(() => getTomorrowDate(), []);
   const [pricePaid, setPricePaid] = useState("");
   const [itemCount, setItemCount] = useState(1);
@@ -49,6 +56,11 @@ export default function ExistingProductItemForm({
   const [selectedCardImageError, setSelectedCardImageError] = useState(false);
   const [errors, setErrors] = useState<ProductFormErrors>({});
   const [globalErrors, setGlobalErrors] = useState<string[]>([]);
+  const storageLocationOptions: Array<{ label: string; value: ProductItemStorageLocation }> = [
+    { label: t("addProduct.storageLocations.pantry"), value: "PANTRY" },
+    { label: t("addProduct.storageLocations.fridge"), value: "FRIDGE" },
+    { label: t("addProduct.storageLocations.freezer"), value: "FREEZER" },
+  ];
 
   useEffect(() => {
     //Se hace la precarga del producto seleccionado cuando viene de escaneo o de un alta recién creada.
@@ -60,6 +72,7 @@ export default function ExistingProductItemForm({
     setSearch(selectedProductSeed.name);
     setPricePaid(selectedProductSeed.defaultPrice ?? "");
     setItemCount(1);
+    setStorageLocation("PANTRY");
     setSelectedCardImageLoading(Boolean(selectedProductSeed.image));
     setSelectedCardImageError(false);
     setGlobalErrors([]);
@@ -145,6 +158,7 @@ export default function ExistingProductItemForm({
           toIsoDateTimeOrNull(purchaseDate),
           toIsoDateTimeOrNull(expirationDate),
           pricePaid.trim() || null,
+          storageLocation as ApiProductItemStorageLocation,
           () => resolve(null),
           (err) => resolve(err)
         );
@@ -209,6 +223,7 @@ export default function ExistingProductItemForm({
                   setSearch(item.name);
                   setPricePaid(item.defaultPrice ?? "");
                   setItemCount(1);
+                  setStorageLocation("PANTRY");
                   setSelectedCardImageLoading(Boolean(item.image));
                   setSelectedCardImageError(false);
                 }}
@@ -282,6 +297,13 @@ export default function ExistingProductItemForm({
               </View>
             </View>
           </View>
+
+          <DropdownField
+            label={t("addProduct.fields.storageLocationRequired")}
+            options={storageLocationOptions}
+            value={storageLocation}
+            onChange={setStorageLocation}
+          />
 
           <DatePickerField
             label={t("addProduct.fields.purchaseDateRequired")}

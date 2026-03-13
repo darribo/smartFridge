@@ -172,6 +172,11 @@
       "l": "l",
       "unit": "ud"
     },
+    "storageLocations": {
+      "pantry": "Despensa",
+      "fridge": "Frigorífico",
+      "freezer": "Conxelador"
+    },
     "fields": {
       "barcode": "Código de barras",
       "productNameRequired": "Nome do produto *",
@@ -185,6 +190,7 @@
       "novaGroup": "Grao NOVA",
       "purchaseDateRequired": "Data de compra *",
       "expirationDate": "Data de caducidade",
+      "storageLocationRequired": "Ubicación na casa *",
       "pricePaid": "Prezo pagado (€)",
       "itemsCount": "Número de items"
     },

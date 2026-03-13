@@ -1,5 +1,6 @@
 package es.udc.bonilla.rivera.daniel.rest.dtos;
 
+import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -20,13 +21,19 @@ public class NewProductItemParamsDto {
     @Schema(description = "Precio pagado por el item", example = "2.45", nullable = true)
     private String pricePaid;
 
+    @Schema(description = "Ubicación de la casa donde se guarda el item", example = "FRIDGE",
+            allowableValues = { "PANTRY", "FRIDGE", "FREEZER" })
+    private ProductItem.StorageLocation storageLocation;
+
     public NewProductItemParamsDto() {
     }
 
-    public NewProductItemParamsDto(String purchaseDate, String expirationDate, String pricePaid) {
+    public NewProductItemParamsDto(String purchaseDate, String expirationDate, String pricePaid,
+            ProductItem.StorageLocation storageLocation) {
         this.purchaseDate = purchaseDate;
         this.expirationDate = expirationDate;
         this.pricePaid = pricePaid;
+        this.storageLocation = storageLocation;
     }
 
     @NotNull
@@ -54,5 +61,14 @@ public class NewProductItemParamsDto {
 
     public void setPricePaid(String pricePaid) {
         this.pricePaid = pricePaid;
+    }
+
+    @NotNull
+    public ProductItem.StorageLocation getStorageLocation() {
+        return storageLocation;
+    }
+
+    public void setStorageLocation(ProductItem.StorageLocation storageLocation) {
+        this.storageLocation = storageLocation;
     }
 }

@@ -36,6 +36,7 @@ export type ProductUnit = 'g' | 'kg' | 'ml' | 'l' | 'unit' | 'G' | 'KG' | 'ML' |
 export type ProductNutriScoreGrade = 'A' | 'B' | 'C' | 'D' | 'E';
 
 export type ProductNovaGroup = 1 | 2 | 3 | 4 | "GROUP_1" | "GROUP_2" | "GROUP_3" | "GROUP_4";
+export type ProductItemStorageLocation = "PANTRY" | "FRIDGE" | "FREEZER";
 
 export type BarcodeProduct = {
     id: number | null;
@@ -92,13 +93,15 @@ export const createProductItem = async (
     purchaseDate: string | null,
     expirationDate: string | null,
     pricePaid: string | null,
+    storageLocation: ProductItemStorageLocation,
     onSuccess?: () => void,
     onError?: (err: ApiError) => void
 ) => {
     const body = {
         purchaseDate,
         expirationDate,
-        pricePaid
+        pricePaid,
+        storageLocation
     };
 
     const options = await fetchConfig("POST", body);

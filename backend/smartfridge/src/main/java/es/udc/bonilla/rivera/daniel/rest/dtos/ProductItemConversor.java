@@ -14,6 +14,7 @@ public class ProductItemConversor {
                 productItem.getProduct().getId(),
                 productItem.getPurchaseDate() != null ? productItem.getPurchaseDate().toString() : null,
                 productItem.getExpirationDate() != null ? productItem.getExpirationDate().toString() : null,
-                productItem.getPricePaid() != null ? productItem.getPricePaid().toString() : null);
+                productItem.getPricePaid() != null ? productItem.getPricePaid().toString() : null,
+                productItem.getStorageLocation());
     }
 }

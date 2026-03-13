@@ -8,6 +8,7 @@ import { THEME } from "../../theme/theme";
 export type ProductUnit = "G" | "KG" | "ML" | "L" | "UNIT";
 export type NutriScore = "A" | "B" | "C" | "D" | "E";
 export type NovaGroup = "GROUP_1" | "GROUP_2" | "GROUP_3" | "GROUP_4";
+export type ProductItemStorageLocation = "PANTRY" | "FRIDGE" | "FREEZER";
 
 export type ExistingProduct = {
   id: number;

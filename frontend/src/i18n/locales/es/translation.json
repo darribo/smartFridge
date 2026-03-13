@@ -172,6 +172,11 @@
       "l": "l",
       "unit": "ud"
     },
+    "storageLocations": {
+      "pantry": "Despensa",
+      "fridge": "Frigorífico",
+      "freezer": "Congelador"
+    },
     "fields": {
       "barcode": "Código de barras",
       "productNameRequired": "Nombre del producto *",
@@ -185,6 +190,7 @@
       "novaGroup": "Grado NOVA",
       "purchaseDateRequired": "Fecha de Compra *",
       "expirationDate": "Fecha de Caducidad",
+      "storageLocationRequired": "Ubicación en casa *",
       "pricePaid": "Precio Pagado (€)",
       "itemsCount": "Número de items"
     },

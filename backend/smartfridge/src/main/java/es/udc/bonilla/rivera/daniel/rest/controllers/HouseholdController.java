@@ -81,6 +81,16 @@ public class HouseholdController {
         return HouseholdConversor.toHouseholdDto(household);
     }
 
+    @Operation(
+        summary = "Obtener un hogar",
+        description = "Recupera los datos de un hogar concreto si el usuario autenticado pertenece a él."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Hogar recuperado",
+            content = @Content(schema = @Schema(implementation = HouseholdDto.class))),
+        @ApiResponse(responseCode = "404", description = "Hogar no encontrado o usuario fuera del hogar",
+            content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
+    })
     @GetMapping("/{householdId}")
     public HouseholdDto getHousehold(@RequestAttribute Long userId, @PathVariable Long householdId) throws InstanceNotFoundException {
         return HouseholdConversor.toHouseholdDto(householdService.getHousehold(userId, householdId));
@@ -109,7 +119,17 @@ public class HouseholdController {
         return HouseholdConversor.toHouseholdDto(household);
     }
 
-
+    @Operation(
+        summary = "Eliminar un miembro del hogar",
+        description = "Elimina a un miembro concreto de un hogar existente."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Miembro eliminado del hogar"),
+        @ApiResponse(responseCode = "404", description = "Usuario, hogar o relación no encontrada",
+            content = @Content(schema = @Schema(implementation = ErrorsDto.class))),
+        @ApiResponse(responseCode = "403", description = "Sin permisos para expulsar al miembro",
+            content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
+    })
     @DeleteMapping("/{householdId}/removeMember/{memberId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeHouseholdMember(@RequestAttribute Long userId, @PathVariable Long householdId, @PathVariable Long memberId) throws InstanceNotFoundException, PermissionException {

@@ -113,7 +113,7 @@ public class ProductController {
 
     @Operation(
         summary = "Crear un item de producto",
-        description = "Crea un nuevo item para un producto existente."
+        description = "Crea un nuevo item para un producto existente indicando su ubicación dentro de la casa."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Item de producto creado",
@@ -130,7 +130,7 @@ public class ProductController {
             throws InstanceNotFoundException, InvalidExpirationDateException {
 
         return ProductItemConversor.toProductItemDto(productService.createProductItem(userId, productId,
-                params.getPurchaseDate(), params.getExpirationDate(), params.getPricePaid()));
+                params.getPurchaseDate(), params.getExpirationDate(), params.getPricePaid(), params.getStorageLocation()));
     }
 
     @GetMapping("/{householdId}/search")

@@ -172,6 +172,11 @@
       "l": "l",
       "unit": "unit"
     },
+    "storageLocations": {
+      "pantry": "Pantry",
+      "fridge": "Fridge",
+      "freezer": "Freezer"
+    },
     "fields": {
       "barcode": "Barcode",
       "productNameRequired": "Product name *",
@@ -185,6 +190,7 @@
       "novaGroup": "NOVA group",
       "purchaseDateRequired": "Purchase date *",
       "expirationDate": "Expiration date",
+      "storageLocationRequired": "Storage location *",
       "pricePaid": "Price paid (€)",
       "itemsCount": "Number of items"
     },

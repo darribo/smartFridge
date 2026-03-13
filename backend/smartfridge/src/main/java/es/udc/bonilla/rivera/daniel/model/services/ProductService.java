@@ -85,7 +85,8 @@ public interface ProductService {
      * @throws InstanceNotFoundException Si el producto no existe o el usuario no pertenece al hogar del producto.
      * @throws InvalidExpirationDateException Si la fecha de caducidad es anterior a la fecha de compra.
      */
-    ProductItem createProductItem(Long userId, Long productId, String purchaseDate, String expirationDate, String pricePaid)
+    ProductItem createProductItem(Long userId, Long productId, String purchaseDate, String expirationDate, String pricePaid,
+            ProductItem.StorageLocation storageLocation)
             throws InstanceNotFoundException, InvalidExpirationDateException;
 
     /**
@@ -100,7 +101,8 @@ public interface ProductService {
      * @throws InstanceNotFoundException Si el item no existe o el usuario no pertenece al hogar del producto asociado.
      * @throws InvalidExpirationDateException Si la fecha de caducidad es anterior a la fecha de compra.
      */
-    ProductItem updateProductItem(Long userId, Long productItemId, String purchaseDate, String expirationDate, String pricePaid)
+    ProductItem updateProductItem(Long userId, Long productItemId, String purchaseDate, String expirationDate, String pricePaid,
+            ProductItem.StorageLocation storageLocation)
             throws InstanceNotFoundException, InvalidExpirationDateException;
 
     /**
@@ -122,7 +124,17 @@ public interface ProductService {
      */
     void deleteProductItem(Long userId, Long productItemId) throws InstanceNotFoundException;
 
-
+    /**
+     * Busca productos de un hogar por nombre de forma paginada.
+     *
+     * @param userId Identificador del usuario que realiza la consulta.
+     * @param householdId Identificador del hogar donde se realiza la búsqueda.
+     * @param name Texto a buscar sobre el nombre del producto.
+     * @param page Número de página solicitada.
+     * @param size Tamaño de página.
+     * @return Bloque paginado con los productos encontrados.
+     * @throws InstanceNotFoundException Si el usuario no pertenece al hogar indicado.
+     */
     Block<Product> findProductsByName(Long userId, Long householdId, String name, int page, int size) throws InstanceNotFoundException;
 
     /**

@@ -25,6 +25,10 @@ import es.udc.bonilla.rivera.daniel.model.services.exceptions.ProductIsNotFoodEx
 
 @Service
 @Transactional
+/**
+ * Implementación de {@link ProductService} para la gestión de productos e items
+ * asociados a hogares.
+ */
 public class ProductServiceImpl implements ProductService {
 
     @Autowired
@@ -43,6 +47,7 @@ public class ProductServiceImpl implements ProductService {
     private LocalStorageService localStorageService;
 
     @Override
+    /** {@inheritDoc} */
     public Product createProduct(Long userId, String barcode, String name, String brand, String defaultPrice, String image,
             String quantity, Product.Unit unit, Boolean isVegetarian, Boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
             Product.NovaGroup novaGroup, Long householdId) throws InstanceNotFoundException, DuplicateInstanceException, IOException {
@@ -79,6 +84,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    /** {@inheritDoc} */
     public Product updateProduct(Long userId, Long productId, String name, String defaultPrice, String image, String quantity)
             throws InstanceNotFoundException, DuplicateInstanceException {
 
@@ -102,6 +108,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
+    /** {@inheritDoc} */
     public Product getProduct(Long userId, Long productId) throws InstanceNotFoundException {
 
         Product product = permissionChecker.checkProductExists(productId);
@@ -112,6 +119,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    /** {@inheritDoc} */
     public void deleteProduct(Long userId, Long productId) throws InstanceNotFoundException {
 
         Product product = permissionChecker.checkProductExists(productId);
@@ -122,7 +130,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductItem createProductItem(Long userId, Long productId, String purchaseDate, String expirationDate, String pricePaid)
+    /** {@inheritDoc} */
+    public ProductItem createProductItem(Long userId, Long productId, String purchaseDate, String expirationDate, String pricePaid,
+            ProductItem.StorageLocation storageLocation)
             throws InstanceNotFoundException, InvalidExpirationDateException {
 
         Product product = permissionChecker.checkProductExists(productId);
@@ -143,13 +153,15 @@ public class ProductServiceImpl implements ProductService {
         }
 
         ProductItem productItem = new ProductItem(product, parsedPurchaseDate, parsedExpirationDate,
-                parsedPricePaid);
+                parsedPricePaid, storageLocation);
 
         return productItemDao.save(productItem);
     }
 
     @Override
-    public ProductItem updateProductItem(Long userId, Long productItemId, String purchaseDate, String expirationDate, String pricePaid)
+    /** {@inheritDoc} */
+    public ProductItem updateProductItem(Long userId, Long productItemId, String purchaseDate, String expirationDate, String pricePaid,
+            ProductItem.StorageLocation storageLocation)
             throws InstanceNotFoundException, InvalidExpirationDateException {
 
         ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
@@ -164,12 +176,14 @@ public class ProductServiceImpl implements ProductService {
         productItem.setPurchaseDate(parsedPurchaseDate);
         productItem.setExpirationDate(parsedExpirationDate);
         productItem.setPricePaid(pricePaid != null ? new BigDecimal(pricePaid) : null);
+        productItem.setStorageLocation(storageLocation);
 
         return productItem;
     }
 
     @Override
     @Transactional(readOnly = true)
+    /** {@inheritDoc} */
     public ProductItem getProductItem(Long userId, Long productItemId) throws InstanceNotFoundException {
 
         ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
@@ -180,6 +194,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    /** {@inheritDoc} */
     public void deleteProductItem(Long userId, Long productItemId) throws InstanceNotFoundException {
 
         ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
@@ -189,6 +204,13 @@ public class ProductServiceImpl implements ProductService {
         productItemDao.delete(productItem);
     }
 
+    /**
+     * Valida la coherencia temporal entre fecha de compra y fecha de caducidad.
+     *
+     * @param purchaseDate Fecha de compra del item.
+     * @param expirationDate Fecha de caducidad del item.
+     * @throws InvalidExpirationDateException Si la fecha de caducidad es anterior a la de compra.
+     */
     private void validateDates(LocalDateTime purchaseDate, LocalDateTime expirationDate) throws InvalidExpirationDateException {
 
         if (purchaseDate != null && expirationDate != null && expirationDate.isBefore(purchaseDate)) {
@@ -197,6 +219,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    /** {@inheritDoc} */
     public Block<Product> findProductsByName(Long userId, Long householdId, String name, int page, int size) throws InstanceNotFoundException {
         
         permissionChecker.checkUserHouseholdExists(userId, householdId);
@@ -207,6 +230,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    /** {@inheritDoc} */
     public Product findProductByBarcode(Long userId, Long householdId, String barcode) throws InstanceNotFoundException, ProductIsNotFoodException {
 
         permissionChecker.checkUserHouseholdExists(userId, householdId);
@@ -221,6 +245,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    /** {@inheritDoc} */
     public Product uploadProductImage(Long userId, Long productId, MultipartFile file) throws InstanceNotFoundException, IOException {
         
         Product product = permissionChecker.checkProductExists(productId);

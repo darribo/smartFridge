@@ -23,6 +23,10 @@ import es.udc.bonilla.rivera.daniel.model.services.exceptions.ProductIsNotFoodEx
 
 @Service
 @Transactional
+/**
+ * Cliente de infraestructura para consultar productos remotos en OpenFoodFacts y
+ * transformarlos a entidades {@link Product} no persistidas.
+ */
 public class OpenFoodFactsClient {
 
     private static final String BASE_URL = "https://world.openfoodfacts.org/api/v2/product/";
@@ -159,6 +163,14 @@ public class OpenFoodFactsClient {
         return parsedProduct;
     }
 
+    /**
+     * Infiera si un producto es apto para una dieta concreta recorriendo el árbol
+     * de ingredientes devuelto por OpenFoodFacts.
+     *
+     * @param productNode Nodo raíz del producto dentro de la respuesta JSON.
+     * @param fieldName Campo a analizar ({@code vegetarian} o {@code vegan}).
+     * @return {@code true}, {@code false} o {@code null} si la información es insuficiente.
+     */
     private Boolean inferDietFromIngredients(JsonNode productNode, String fieldName) {
         JsonNode ingredients = productNode.path("ingredients");
 
@@ -182,6 +194,14 @@ public class OpenFoodFactsClient {
         return Boolean.TRUE;
     }
 
+    /**
+     * Recorre recursivamente el árbol de ingredientes acumulando el estado
+     * dietético encontrado en cada nodo.
+     *
+     * @param ingredientsArray Lista de ingredientes a recorrer.
+     * @param fieldName Campo dietético a inspeccionar.
+     * @param agg Acumulador con el estado agregado del recorrido.
+     */
     private void walkIngredients(JsonNode ingredientsArray, String fieldName, DietAgg agg) {
         for (JsonNode ingredient : ingredientsArray) {
             JsonNode nested = ingredient.path("ingredients");
@@ -224,6 +244,13 @@ public class OpenFoodFactsClient {
         }
     }
 
+    /**
+     * Convierte el valor textual devuelto por OpenFoodFacts al enum interno usado
+     * por el agregador dietético.
+     *
+     * @param raw Valor textual del campo dietético.
+     * @return Estado dietético equivalente.
+     */
     private DietState parseDietState(String raw) {
         String value = raw == null ? "" : raw.trim().toLowerCase();
         return switch (value) {
@@ -235,6 +262,12 @@ public class OpenFoodFactsClient {
         };
     }
 
+    /**
+     * Convierte un {@link DietState} simple a un booleano triestado.
+     *
+     * @param state Estado dietético.
+     * @return {@code true}, {@code false} o {@code null} si no hay certeza.
+     */
     private Boolean toBooleanOrNull(DietState state) {
         return switch (state) {
             case YES -> Boolean.TRUE;
