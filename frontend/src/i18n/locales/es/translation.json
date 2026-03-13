@@ -80,10 +80,54 @@
     },
     "generateInviteLink": "Generar enlace de invitación"
   },
+  "home": {
+    "eyebrow": "Vista general",
+    "titleFallback": "Tu hogar",
+    "subtitle": "{{count}} productos necesitan atención esta semana",
+    "hero": {
+      "badge": "Prioridad de hoy",
+      "title": "{{count}} productos van justos",
+      "body": "Empieza por revisar lo que caduca pronto y añade lo que falte sin salir de la pantalla principal.",
+      "primary": "Revisar despensa",
+      "secondary": "Escanear"
+    },
+    "metrics": {
+      "expiring": "Caducan pronto",
+      "items": "Items activos",
+      "lowStock": "Poco stock"
+    },
+    "quickActions": {
+      "title": "Acciones rápidas",
+      "subtitle": "Lo más habitual al entrar",
+      "scan": "Escanear producto",
+      "add": "Añadir producto",
+      "pantry": "Ver despensa",
+      "households": "Mis hogares"
+    },
+    "households": {
+      "title": "Tus hogares",
+      "subtitle": "{{count}} personas en total",
+      "members": "{{count}} miembros"
+    },
+    "ideas": {
+      "title": "Ideas para hoy",
+      "subtitle": "Un hueco para recomendaciones futuras",
+      "cardTitle": "Cocina con lo que ya tienes",
+      "cardBody": "Aqui podrias enseñar recetas sugeridas, compras recomendadas o productos que conviene consumir antes."
+    },
+    "footer": {
+      "home": "Inicio",
+      "pantry": "Despensa",
+      "households": "Hogares",
+      "stats": "Stats"
+    }
+  },
   "household": {
     "detail": {
       "title": "Detalle del hogar",
       "edit": "Editar hogar",
+      "setAsCurrent": "Marcar como hogar actual",
+      "currentSelected": "Hogar actual",
       "subtitle": "Información y miembros del hogar",
       "descriptionLabel": "Descripción",
       "membersTitle": "Miembros",

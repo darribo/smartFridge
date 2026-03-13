@@ -14,12 +14,14 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { AuthStackParamList } from "../../navigation/AuthStack";
 import { useFocusEffect } from "@react-navigation/native";
+import { useHouseholdStore } from "../../store/householdStore";
 
 
 type Props = NativeStackScreenProps<AuthStackParamList, "MyHouseholds">;
 
 export default function MyHouseholdsScreen({navigation}: Props){
 
+    const currentHouseholdId = useHouseholdStore((s) => s.currentHouseholdId);
     const [households, setHouseholds] = useState<UserHouseholdListItem[]>([]);
     const [page, setPage] = useState(0);
     const [loadingFirst, setLoadingFirst] = useState(true);
@@ -98,16 +100,26 @@ export default function MyHouseholdsScreen({navigation}: Props){
     };
 
     const renderItem = ({ item }: { item: UserHouseholdListItem }) => (
-        <MyHouseholdsItemCard item={item} onPress={onOpenHousehold} />
+        <MyHouseholdsItemCard
+          item={item}
+          onPress={onOpenHousehold}
+          isCurrent={currentHouseholdId === item.id}
+        />
     );
 
     return (
     <SafeAreaView edges={["top"]} style={styles.safe}>
       <View style={styles.container}>
-        {/* Header (sin campanita) */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>{t("households.list.title")}</Text>
-          <Text style={styles.headerSubtitle}>{t("households.list.subtitle")}</Text>
+          <View style={styles.headerRow}>
+            <Pressable onPress={() => navigation.goBack()} hitSlop={10} style={styles.backBtn}>
+              <MaterialCommunityIcons name="chevron-left" size={26} color={THEME.text} />
+            </Pressable>
+            <View style={styles.headerTextWrap}>
+              <Text style={styles.headerTitle}>{t("households.list.title")}</Text>
+              <Text style={styles.headerSubtitle}>{t("households.list.subtitle")}</Text>
+            </View>
+          </View>
         </View>
 
         {/* Error global (si quieres) */}
@@ -172,6 +184,21 @@ export default function MyHouseholdsScreen({navigation}: Props){
     header: {
         paddingTop: 10,
         paddingBottom: 12,
+    },
+    headerRow: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+    },
+    backBtn: {
+        marginTop: 2,
+        marginRight: 8,
+        width: 36,
+        height: 36,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    headerTextWrap: {
+        flex: 1,
     },
     headerTitle: {
         fontSize: 28,

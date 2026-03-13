@@ -27,6 +27,7 @@ import { getAuthenticatedUser } from "../../api/users/userService";
 import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
 import HouseholdMemberActionsSheet from "../../components/households/HouseholdMemberActionsSheet";
 import HouseholdMemberItem from "../../components/households/HouseholdMemberItem";
+import { useHouseholdStore } from "../../store/householdStore";
 import { THEME } from "../../theme/theme";
 
 type Props = {
@@ -42,6 +43,8 @@ const GENERIC_HOUSEHOLD_IMAGE =
 
 export default function HouseholdDetailScreen({ householdId, navigation }: Props) {
   const { t } = useTranslation();
+  const currentHouseholdId = useHouseholdStore((s) => s.currentHouseholdId);
+  const setCurrentHouseholdId = useHouseholdStore((s) => s.setCurrentHouseholdId);
 
   const [household, setHousehold] = useState<Household | null>(null);
   const [members, setMembers] = useState<HouseholdUser[]>([]);
@@ -148,10 +151,15 @@ export default function HouseholdDetailScreen({ householdId, navigation }: Props
   );
 
   const isCurrentUserAdmin = currentUserId !== null && household?.adminId === currentUserId;
+  const isSelectedHousehold = currentHouseholdId === householdId;
 
   const onEditHousehold = () => {
     if (!household) return;
     navigation?.navigate?.("UpdateHousehold", { household });
+  };
+
+  const onSetAsCurrentHousehold = () => {
+    setCurrentHouseholdId(householdId);
   };
 
   const canManageMember = (member: HouseholdUser) =>
@@ -278,7 +286,7 @@ export default function HouseholdDetailScreen({ householdId, navigation }: Props
                   )}
                 </View>
 
-                <View style={styles.householdTextWrap}>
+              <View style={styles.householdTextWrap}>
                   <Text style={householdNameStyle}>
                     {household?.name ?? "-"}
                   </Text>
@@ -287,6 +295,38 @@ export default function HouseholdDetailScreen({ householdId, navigation }: Props
                   </Text>
                 </View>
               </View>
+
+              <Pressable
+                onPress={onSetAsCurrentHousehold}
+                disabled={isSelectedHousehold}
+                style={({ pressed }) => [
+                  styles.currentHouseholdBtn,
+                  isSelectedHousehold && styles.currentHouseholdBtnSelected,
+                  pressed && !isSelectedHousehold && styles.currentHouseholdBtnPressed,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  isSelectedHousehold
+                    ? t("household.detail.currentSelected")
+                    : t("household.detail.setAsCurrent")
+                }
+              >
+                <MaterialCommunityIcons
+                  name={isSelectedHousehold ? "check-circle" : "home-switch-outline"}
+                  size={20}
+                  color={isSelectedHousehold ? "#1E7A4D" : "#102218"}
+                />
+                <Text
+                  style={[
+                    styles.currentHouseholdBtnText,
+                    isSelectedHousehold && styles.currentHouseholdBtnTextSelected,
+                  ]}
+                >
+                  {isSelectedHousehold
+                    ? t("household.detail.currentSelected")
+                    : t("household.detail.setAsCurrent")}
+                </Text>
+              </Pressable>
 
               {globalErrors.length > 0 ? (
                 <View style={styles.errorWrap}>
@@ -452,6 +492,41 @@ const styles = StyleSheet.create({
   errorWrap: {
     marginTop: 8,
     marginBottom: 2,
+  },
+  currentHouseholdBtn: {
+    marginTop: 16,
+    marginBottom: 4,
+    alignSelf: "flex-start",
+    minHeight: 48,
+    paddingHorizontal: 16,
+    borderRadius: 999,
+    backgroundColor: "#2BEE7C",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    shadowColor: "#2BEE7C",
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  currentHouseholdBtnSelected: {
+    backgroundColor: "#E7F8EE",
+    borderWidth: 1,
+    borderColor: "#B7E6C7",
+    shadowOpacity: 0,
+  },
+  currentHouseholdBtnPressed: {
+    opacity: 0.94,
+    transform: [{ scale: 0.99 }],
+  },
+  currentHouseholdBtnText: {
+    fontSize: 15,
+    fontWeight: "900",
+    color: "#102218",
+  },
+  currentHouseholdBtnTextSelected: {
+    color: "#1E7A4D",
   },
   retryBtn: {
     alignSelf: "flex-start",

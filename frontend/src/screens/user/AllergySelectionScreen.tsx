@@ -72,7 +72,7 @@ export default function AllergySelectionScreen({ route, navigation }: Props) {
       userWithAllergies,
       (auth) => {
         console.log(`Registrado el usuario con token ${auth.serviceToken}`);
-        navigation.replace("MyHouseholds");
+        navigation.replace("Home");
       },
       (err: ApiError) => {
         const hasFieldErrors =

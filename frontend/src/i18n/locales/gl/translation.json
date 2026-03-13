@@ -80,10 +80,54 @@
     },
     "generateInviteLink": "Xerar enlace de invitación"
   },
+  "home": {
+    "eyebrow": "Vista xeral",
+    "titleFallback": "O teu fogar",
+    "subtitle": "{{count}} produtos precisan atención esta semana",
+    "hero": {
+      "badge": "Prioridade de hoxe",
+      "title": "{{count}} produtos van xustos",
+      "body": "Comeza revisando o que caduca pronto e engade o que falte sen saír da pantalla principal.",
+      "primary": "Revisar despensa",
+      "secondary": "Escanear"
+    },
+    "metrics": {
+      "expiring": "Caducan pronto",
+      "items": "Items activos",
+      "lowStock": "Pouco stock"
+    },
+    "quickActions": {
+      "title": "Accións rápidas",
+      "subtitle": "O máis habitual ao entrar",
+      "scan": "Escanear produto",
+      "add": "Engadir produto",
+      "pantry": "Ver despensa",
+      "households": "Os meus fogares"
+    },
+    "households": {
+      "title": "Os teus fogares",
+      "subtitle": "{{count}} persoas en total",
+      "members": "{{count}} membros"
+    },
+    "ideas": {
+      "title": "Ideas para hoxe",
+      "subtitle": "Un oco para recomendacións futuras",
+      "cardTitle": "Cociña co que xa tes",
+      "cardBody": "Aqui poderías ensinar receitas suxeridas, compras recomendadas ou produtos que convén consumir antes."
+    },
+    "footer": {
+      "home": "Inicio",
+      "pantry": "Despensa",
+      "households": "Fogares",
+      "stats": "Stats"
+    }
+  },
   "household": {
     "detail": {
       "title": "Detalle do fogar",
       "edit": "Editar fogar",
+      "setAsCurrent": "Marcar como fogar actual",
+      "currentSelected": "Fogar actual",
       "subtitle": "Información e membros do fogar",
       "descriptionLabel": "Descrición",
       "membersTitle": "Membros",

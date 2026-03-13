@@ -8,9 +8,10 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 type Props = {
   item: UserHouseholdListItem;
   onPress: (householdId: number) => void;
+  isCurrent?: boolean;
 };
 
-export default function MyHouseholdsItemCard({item, onPress}: Props) {
+export default function MyHouseholdsItemCard({item, onPress, isCurrent = false}: Props) {
     
     const { t } = useTranslation();
     const [failedAvatarUris, setFailedAvatarUris] = useState<Set<string>>(new Set());
@@ -25,8 +26,18 @@ export default function MyHouseholdsItemCard({item, onPress}: Props) {
     return (
         <Pressable
             onPress={() => onPress(item.id)}
-            style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+            style={({ pressed }) => [
+              styles.card,
+              isCurrent && styles.cardCurrent,
+              pressed && styles.cardPressed
+            ]}
         >
+            {isCurrent ? (
+              <View style={styles.currentPill}>
+                <MaterialCommunityIcons name="check-circle" size={14} color="#1E7A4D" />
+                <Text style={styles.currentPillText}>{t("household.detail.currentSelected")}</Text>
+              </View>
+            ) : null}
             
             <View style={styles.content}>
                 <View style={styles.left}>
@@ -99,6 +110,8 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 16,
     marginVertical: 8,
+    borderWidth: 1,
+    borderColor: "transparent",
     shadowColor: "#000",
     shadowOpacity: 0.06,
     shadowRadius: 10,
@@ -109,6 +122,30 @@ const styles = StyleSheet.create({
   },
   cardPressed: {
     opacity: 0.92,
+  },
+  cardCurrent: {
+    borderColor: "#B7E6C7",
+    backgroundColor: "#FCFFFD",
+    shadowColor: "#2BE36F",
+    shadowOpacity: 0.1,
+  },
+  currentPill: {
+    position: "absolute",
+    top: 12,
+    right: 14,
+    zIndex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "#EAF9F0",
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  currentPillText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#1E7A4D",
   },
   content: {
     flexDirection: "row",

@@ -80,10 +80,54 @@
     },
     "generateInviteLink": "Generate invitation link"
   },
+  "home": {
+    "eyebrow": "Overview",
+    "titleFallback": "Your household",
+    "subtitle": "{{count}} products need attention this week",
+    "hero": {
+      "badge": "Today's priority",
+      "title": "{{count}} products are getting close",
+      "body": "Start by reviewing what expires soon and add what is missing without leaving the main screen.",
+      "primary": "Review pantry",
+      "secondary": "Scan"
+    },
+    "metrics": {
+      "expiring": "Expiring soon",
+      "items": "Active items",
+      "lowStock": "Low stock"
+    },
+    "quickActions": {
+      "title": "Quick actions",
+      "subtitle": "The usual things on entry",
+      "scan": "Scan product",
+      "add": "Add product",
+      "pantry": "Open pantry",
+      "households": "My households"
+    },
+    "households": {
+      "title": "Your households",
+      "subtitle": "{{count}} people in total",
+      "members": "{{count}} members"
+    },
+    "ideas": {
+      "title": "Ideas for today",
+      "subtitle": "A slot for future recommendations",
+      "cardTitle": "Cook with what you already have",
+      "cardBody": "This area could show suggested recipes, recommended purchases or products you should consume first."
+    },
+    "footer": {
+      "home": "Home",
+      "pantry": "Pantry",
+      "households": "Homes",
+      "stats": "Stats"
+    }
+  },
   "household": {
     "detail": {
       "title": "Household detail",
       "edit": "Edit household",
+      "setAsCurrent": "Set as current household",
+      "currentSelected": "Current household",
       "subtitle": "Household info and members",
       "descriptionLabel": "Description",
       "membersTitle": "Members",
