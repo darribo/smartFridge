@@ -30,7 +30,7 @@ export type InfoCardKey = "nutriScore" | "novaGroup" | null;
 
 export const PRICE_LIMIT = 999.99;
 export const QUANTITY_LIMIT = 99999.99;
-export const PRODUCT_NAME_MAX_LENGTH = 50;
+export const PRODUCT_NAME_MAX_LENGTH = 80;
 
 export const NUTRI_COLORS: Record<NutriScore, string> = {
   A: "#39D27A",
@@ -376,6 +376,58 @@ export const styles = StyleSheet.create({
     color: THEME.muted,
     marginBottom: 10,
   },
+  allergySectionCard: {
+    marginBottom: 24,
+    padding: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#D7E2EF",
+    backgroundColor: "#F8FCFA",
+  },
+  allergySectionHeader: {
+    marginBottom: 12,
+  },
+  allergySectionSubtitle: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: THEME.muted,
+    marginTop: 2,
+  },
+  allergyChipsWrap: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  allergyChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 16,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: THEME.border,
+  },
+  allergyChipSelected: {
+    borderColor: THEME.primary,
+    backgroundColor: "#EAF9F0",
+  },
+  allergyChipIcon: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  allergyChipText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: THEME.text,
+  },
+  allergyChipTextSelected: {
+    color: "#0E1A13",
+  },
   optionalBoolWrap: {
     flexDirection: "row",
     alignItems: "center",
@@ -431,7 +483,7 @@ export const styles = StyleSheet.create({
     marginTop: -8,
   },
   nutriInfoLabel: {
-    marginTop: 8,
+    marginTop: 18,
   },
   gradeRow: {
     flexDirection: "row",

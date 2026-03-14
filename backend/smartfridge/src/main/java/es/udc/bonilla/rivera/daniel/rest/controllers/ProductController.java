@@ -29,6 +29,7 @@ import es.udc.bonilla.rivera.daniel.model.entities.Product;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
 import es.udc.bonilla.rivera.daniel.model.services.Block;
 import es.udc.bonilla.rivera.daniel.model.services.ProductService;
+import es.udc.bonilla.rivera.daniel.model.services.ResolvedBarcodeProduct;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationDateException;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.ProductIsNotFoodException;
 import es.udc.bonilla.rivera.daniel.rest.common.ErrorsDto;
@@ -37,6 +38,7 @@ import es.udc.bonilla.rivera.daniel.rest.dtos.BarcodeProductDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.BlockDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewProductItemParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewProductParamsDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.AllergyConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductItemConversor;
@@ -67,6 +69,9 @@ public class ProductController {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private AllergyConversor allergyConversor;
 
     @ExceptionHandler(InvalidExpirationDateException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -110,7 +115,7 @@ public class ProductController {
         Product product = productService.createProduct(userId, params.getBarcode(), params.getName(), params.getBrand(),
                 params.getDefaultPrice(), params.getImage(), params.getQuantity(), params.getUnit(),
                 params.getIsVegetarian(), params.getIsVegan(), params.getNutriScoreGrade(), params.getNovaGroup(),
-                params.getHouseholdId());
+                params.getHouseholdId(), params.getAllergyIds());
 
         return ProductConversor.toProductDto(product);
     }
@@ -203,10 +208,12 @@ public class ProductController {
         @ApiResponse(responseCode = "404", description = "Producto no encontrado o usuario fuera del hogar",
             content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
     })
-    public BarcodeProductDto getProductByBarcode(@RequestAttribute Long userId, @PathVariable Long householdId, @RequestParam String barcode)
+    public BarcodeProductDto getProductByBarcode(@RequestAttribute Long userId, @PathVariable Long householdId, @RequestParam String barcode, Locale locale)
             throws InstanceNotFoundException, ProductIsNotFoodException {
-        Product product = productService.findProductByBarcode(userId, householdId, barcode);
-        return BarcodeProductConversor.toBarcodeProductDto(product);
+        ResolvedBarcodeProduct resolvedProduct = productService.findProductByBarcode(userId, householdId, barcode);
+        return BarcodeProductConversor.toBarcodeProductDto(
+                resolvedProduct.getProduct(),
+                allergyConversor.toAllergyDtos(resolvedProduct.getAllergies(), locale));
     }
 
     @Operation(

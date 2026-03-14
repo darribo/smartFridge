@@ -1,5 +1,7 @@
 package es.udc.bonilla.rivera.daniel.rest.dtos;
 
+import java.util.List;
+
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
 
 public class BarcodeProductConversor {
@@ -7,7 +9,7 @@ public class BarcodeProductConversor {
     private BarcodeProductConversor() {
     }
 
-    public static BarcodeProductDto toBarcodeProductDto(Product product) {
+    public static BarcodeProductDto toBarcodeProductDto(Product product, List<AllergyDto> allergies) {
         return new BarcodeProductDto(
                 product.getId(),
                 product.getBarcode(),
@@ -20,6 +22,7 @@ public class BarcodeProductConversor {
                 product.isVegetarian(),
                 product.isVegan(),
                 product.getNutriScoreGrade(),
-                product.getNovaGroup());
+                product.getNovaGroup(),
+                allergies);
     }
 }

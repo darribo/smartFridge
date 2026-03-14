@@ -95,6 +95,7 @@ public class Product {
         this.barcode = barcode;
     }
     
+    @Column(length = 80, nullable = false)
     public String getName() {
         return name;
     }

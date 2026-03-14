@@ -1,5 +1,6 @@
 /* DROP TABLE IF EXISTS HouseholdInvitation; */
 DROP TABLE IF EXISTS ProductItem;
+DROP TABLE IF EXISTS ProductAllergy;
 DROP TABLE IF EXISTS Product;
 DROP TABLE IF EXISTS UserHousehold;
 DROP TABLE IF EXISTS UserAllergy;
@@ -22,7 +23,7 @@ CREATE TABLE users (
 
 CREATE TABLE Household (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(30) NOT NULL,
+    name VARCHAR(80) NOT NULL,
     description VARCHAR(500),
     countryCode VARCHAR(10) NOT NULL,
     regionCode VARCHAR(10) NOT NULL,
@@ -68,7 +69,7 @@ CREATE TABLE Product (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     householdId BIGINT NOT NULL,
     barcode VARCHAR(13),
-    name VARCHAR(30) NOT NULL,
+    name VARCHAR(80) NOT NULL,
     brand VARCHAR(50),
     image VARCHAR(1000),
     quantity DECIMAL(7,2) NOT NULL,
@@ -81,6 +82,14 @@ CREATE TABLE Product (
     defaultPrice DECIMAL(5,2),
     --isFavorite BOOLEAN NOT NULL,
     FOREIGN KEY (householdId) REFERENCES Household(id) ON DELETE CASCADE
+);
+
+CREATE TABLE ProductAllergy (
+    productId BIGINT NOT NULL,
+    allergyId BIGINT NOT NULL,
+    PRIMARY KEY (productId, allergyId),
+    FOREIGN KEY (productId) REFERENCES Product(id) ON DELETE CASCADE,
+    FOREIGN KEY (allergyId) REFERENCES Allergy(id) ON DELETE CASCADE
 );
 
 CREATE TABLE ProductItem (

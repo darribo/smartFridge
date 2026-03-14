@@ -184,6 +184,7 @@
       "quantityRequired": "Cantidad *",
       "unitRequired": "Unidad *",
       "defaultPrice": "Precio por defecto (€)",
+      "allergies": "Alérgenos",
       "vegetarian": "Vegetariano",
       "vegan": "Vegano",
       "nutriScore": "NutriScore",

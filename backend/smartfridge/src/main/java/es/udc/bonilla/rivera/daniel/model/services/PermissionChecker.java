@@ -4,6 +4,7 @@ import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.entities.Allergy;
 import es.udc.bonilla.rivera.daniel.model.entities.Household;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
+import es.udc.bonilla.rivera.daniel.model.entities.ProductAllergy;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
 import es.udc.bonilla.rivera.daniel.model.entities.User;
 import es.udc.bonilla.rivera.daniel.model.entities.UserAllergy;
@@ -22,6 +23,8 @@ public interface PermissionChecker {
     Product checkProductExistsInHousehold(Long productId, Long householdId) throws InstanceNotFoundException;
 
     ProductItem checkProductItemExists(Long productItemId) throws InstanceNotFoundException;
+
+    ProductAllergy checkProductAllergyExists(Long productId, Long allergyId) throws InstanceNotFoundException;
 
     UserAllergy checkUserAllergyExists(Long userId, Long allergyId) throws InstanceNotFoundException;
 

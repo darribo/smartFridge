@@ -1,5 +1,7 @@
 package es.udc.bonilla.rivera.daniel.rest.dtos;
 
+import java.util.List;
+
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -45,12 +47,15 @@ public class BarcodeProductDto {
     @Schema(description = "Grupo NOVA del producto", example = "GROUP_1", nullable = true)
     private Product.NovaGroup novaGroup;
 
+    @Schema(description = "Alergias asociadas al producto", nullable = true)
+    private List<AllergyDto> allergies;
+
     public BarcodeProductDto() {
     }
 
     public BarcodeProductDto(Long id, String barcode, String name, String brand, String defaultPrice, String image,
             String quantity, Product.Unit unit, Boolean vegetarian, Boolean vegan,
-            Product.NutriScoreGrade nutriScoreGrade, Product.NovaGroup novaGroup) {
+            Product.NutriScoreGrade nutriScoreGrade, Product.NovaGroup novaGroup, List<AllergyDto> allergies) {
         this.id = id;
         this.barcode = barcode;
         this.name = name;
@@ -63,6 +68,7 @@ public class BarcodeProductDto {
         this.vegan = vegan;
         this.nutriScoreGrade = nutriScoreGrade;
         this.novaGroup = novaGroup;
+        this.allergies = allergies;
     }
 
     public Long getId() {
@@ -159,5 +165,13 @@ public class BarcodeProductDto {
 
     public void setNovaGroup(Product.NovaGroup novaGroup) {
         this.novaGroup = novaGroup;
+    }
+
+    public List<AllergyDto> getAllergies() {
+        return allergies;
+    }
+
+    public void setAllergies(List<AllergyDto> allergies) {
+        this.allergies = allergies;
     }
 }

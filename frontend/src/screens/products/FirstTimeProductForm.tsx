@@ -18,6 +18,8 @@ import { PrimaryButton } from "../../components/PrimaryButton";
 import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
 import { createProduct, uploadProductImage } from "../../api/products/productService";
 import type { BarcodeProduct } from "../../api/products/productService";
+import { getAllergies, type Allergy } from "../../api/allergies/allergyService";
+import { iconFor, tintFor } from "../../components/allergies/allergyVisuals";
 import { THEME } from "../../theme/theme";
 import {
   DropdownField,
@@ -73,6 +75,8 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
   const [globalErrors, setGlobalErrors] = useState<string[]>([]);
   const [showAdditionalInfo, setShowAdditionalInfo] = useState(false);
   const [infoCard, setInfoCard] = useState<InfoCardKey>(null);
+  const [availableAllergies, setAvailableAllergies] = useState<Allergy[]>([]);
+  const [selectedAllergyIds, setSelectedAllergyIds] = useState<number[]>([]);
 
   const unitOptions = useMemo(
     () => [
@@ -107,6 +111,37 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
   );
 
   const isLocalImage = (value?: string | null) => !!value && value.startsWith("file://");
+
+  const loadAllergies = async () => {
+    const loaded: Allergy[] = [];
+    let page = 0;
+    let hasMore = true;
+
+    while (hasMore) {
+      // eslint-disable-next-line no-await-in-loop
+      await getAllergies(
+        page,
+        (block) => {
+          loaded.push(...block.items);
+          hasMore = block.existMoreItems;
+          page += 1;
+        },
+        () => {
+          hasMore = false;
+        }
+      );
+    }
+
+    setAvailableAllergies(loaded);
+  };
+
+  const toggleAllergy = (allergyId: number) => {
+    setSelectedAllergyIds((prev) =>
+      prev.includes(allergyId)
+        ? prev.filter((id) => id !== allergyId)
+        : [...prev, allergyId]
+    );
+  };
 
   const imageForCreatePayload = (value?: string | null) => {
     //Se hace la preparación del campo image para createProduct: si es local se envía null y luego se sube por multipart.
@@ -151,6 +186,10 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
   };
 
   useEffect(() => {
+    loadAllergies();
+  }, []);
+
+  useEffect(() => {
     //Se hace la precarga desde barcodeProduct cuando viene un producto externo sin id local.
     if (!barcodeProduct || barcodeProduct.id !== null) {
       return;
@@ -167,6 +206,7 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
     setVegan(barcodeProduct.vegan ?? null);
     setNutriScoreGrade((barcodeProduct.nutriScoreGrade as NutriScore | null) ?? null);
     setNovaGroup((barcodeProduct.novaGroup as NovaGroup | null) ?? null);
+    setSelectedAllergyIds(barcodeProduct.allergies?.map((allergy) => allergy.id) ?? []);
     setGlobalErrors([]);
   }, [barcodeProduct]);
 
@@ -230,6 +270,7 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
       isVegan: vegan,
       nutriScoreGrade,
       novaGroup,
+      allergyIds: selectedAllergyIds,
     };
 
     await createProduct(
@@ -410,6 +451,49 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
 
         {showAdditionalInfo ? (
           <>
+            <View style={styles.allergySectionCard}>
+              <View style={styles.allergySectionHeader}>
+                <FormLabel text={t("addProduct.fields.allergies")} />
+                <Text style={styles.allergySectionSubtitle}>
+                  {t("addProduct.moreInfo.subtitle")}
+                </Text>
+              </View>
+
+              <View style={styles.allergyChipsWrap}>
+                {availableAllergies.map((allergy) => {
+                  const selected = selectedAllergyIds.includes(allergy.id);
+                  const tint = tintFor(allergy.icon);
+
+                  return (
+                    <Pressable
+                      key={allergy.id}
+                      onPress={() => toggleAllergy(allergy.id)}
+                      style={[
+                        styles.allergyChip,
+                        selected && styles.allergyChipSelected,
+                      ]}
+                    >
+                      <View style={[styles.allergyChipIcon, { backgroundColor: tint.bg }]}>
+                        <MaterialCommunityIcons
+                          name={iconFor(allergy.icon)}
+                          size={16}
+                          color={tint.fg}
+                        />
+                      </View>
+                      <Text
+                        style={[
+                          styles.allergyChipText,
+                          selected && styles.allergyChipTextSelected,
+                        ]}
+                      >
+                        {allergy.name}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+
             <OptionalBooleanField
               label={t("addProduct.fields.vegetarian")}
               icon="leaf"

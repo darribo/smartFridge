@@ -10,6 +10,7 @@ import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.daos.AllergyDao;
 import es.udc.bonilla.rivera.daniel.model.daos.HouseholdDao;
 import es.udc.bonilla.rivera.daniel.model.daos.ProductDao;
+import es.udc.bonilla.rivera.daniel.model.daos.ProductAllergyDao;
 import es.udc.bonilla.rivera.daniel.model.daos.ProductItemDao;
 import es.udc.bonilla.rivera.daniel.model.daos.UserAllergyDao;
 import es.udc.bonilla.rivera.daniel.model.daos.UserDao;
@@ -17,6 +18,8 @@ import es.udc.bonilla.rivera.daniel.model.daos.UserHouseholdDao;
 import es.udc.bonilla.rivera.daniel.model.entities.Allergy;
 import es.udc.bonilla.rivera.daniel.model.entities.Household;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
+import es.udc.bonilla.rivera.daniel.model.entities.ProductAllergy;
+import es.udc.bonilla.rivera.daniel.model.entities.ProductAllergyId;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
 import es.udc.bonilla.rivera.daniel.model.entities.User;
 import es.udc.bonilla.rivera.daniel.model.entities.UserAllergy;
@@ -42,6 +45,9 @@ public class PermissionCheckerImpl implements PermissionChecker {
 
     @Autowired
     private ProductItemDao productItemDao;
+
+    @Autowired
+    private ProductAllergyDao productAllergyDao;
 
     @Autowired
     private UserAllergyDao userAllergyDao;
@@ -119,6 +125,18 @@ public class PermissionCheckerImpl implements PermissionChecker {
 
         if (!optional.isPresent()) {
             throw new InstanceNotFoundException("project.entities.productitem", productItemId);
+        }
+
+        return optional.get();
+    }
+
+    @Override
+    public ProductAllergy checkProductAllergyExists(Long productId, Long allergyId) throws InstanceNotFoundException {
+
+        Optional<ProductAllergy> optional = productAllergyDao.findById(new ProductAllergyId(productId, allergyId));
+
+        if (!optional.isPresent()) {
+            throw new InstanceNotFoundException("project.entities.productallergy", "(" + productId + ", " + allergyId + ")");
         }
 
         return optional.get();

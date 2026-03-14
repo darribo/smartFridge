@@ -1,5 +1,7 @@
 package es.udc.bonilla.rivera.daniel.rest.dtos;
 
+import java.util.List;
+
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMax;
@@ -16,7 +18,7 @@ public class NewProductParamsDto {
     @Schema(description = "Código de barras del producto (único en el sistema)", example = "8437015942011", nullable = true)
     private String barcode;
 
-    @Schema(description = "Nombre del producto", example = "Leche Entera", minLength = 1, maxLength = 50)
+    @Schema(description = "Nombre del producto", example = "Leche Entera", minLength = 1, maxLength = 80)
     private String name;
 
     @Schema(description = "Marca del producto", example = "Marca Blanca", nullable = true)
@@ -49,12 +51,15 @@ public class NewProductParamsDto {
     @Schema(description = "Identificador del hogar al que se añadirá el producto", example = "10")
     private Long householdId;
 
+    @Schema(description = "Identificadores de alergias asociadas al producto", nullable = true)
+    private List<Long> allergyIds;
+
     public NewProductParamsDto() {
     }
 
     public NewProductParamsDto(String barcode, String name, String brand, String defaultPrice, String image, String quantity,
             Product.Unit unit, Boolean isVegetarian, Boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
-            Product.NovaGroup novaGroup, Long householdId) {
+            Product.NovaGroup novaGroup, Long householdId, List<Long> allergyIds) {
         this.barcode = barcode;
         this.name = name;
         this.brand = brand;
@@ -67,6 +72,7 @@ public class NewProductParamsDto {
         this.nutriScoreGrade = nutriScoreGrade;
         this.novaGroup = novaGroup;
         this.householdId = householdId;
+        this.allergyIds = allergyIds;
     }
 
     @Size(max = 13)
@@ -79,7 +85,7 @@ public class NewProductParamsDto {
     }
 
     @NotNull
-    @Size(min = 1, max = 50)
+    @Size(min = 1, max = 80)
     public String getName() {
         return name;
     }
@@ -175,5 +181,13 @@ public class NewProductParamsDto {
 
     public void setHouseholdId(Long householdId) {
         this.householdId = householdId;
+    }
+
+    public List<Long> getAllergyIds() {
+        return allergyIds;
+    }
+
+    public void setAllergyIds(List<Long> allergyIds) {
+        this.allergyIds = allergyIds;
     }
 }

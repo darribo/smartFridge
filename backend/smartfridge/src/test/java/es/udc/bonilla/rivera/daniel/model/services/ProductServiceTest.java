@@ -99,7 +99,7 @@ class ProductServiceTest {
 
         Product created = productService.createProduct(member.getId(), "8437015942011", "Leche Entera", "Marca",
                 "1.55", "milk.png", "1.00", Product.Unit.L, true, false, Product.NutriScoreGrade.B,
-                Product.NovaGroup.GROUP_1, household.getId());
+                Product.NovaGroup.GROUP_1, household.getId(), null);
 
         assertNotNull(created);
         assertNotNull(created.getId());
@@ -117,10 +117,10 @@ class ProductServiceTest {
         assertThrows(DuplicateInstanceException.class, () -> {
             productService.createProduct(member.getId(), "1111111111111", "Pasta", "Brand", "1.00", "a.png", "1.00",
                     Product.Unit.KG, true, true, Product.NutriScoreGrade.A, Product.NovaGroup.GROUP_1,
-                    household.getId());
+                    household.getId(), null);
             productService.createProduct(member.getId(), "2222222222222", "Pasta", "Brand", "1.10", "b.png", "1.00",
                     Product.Unit.KG, true, true, Product.NutriScoreGrade.A, Product.NovaGroup.GROUP_1,
-                    household.getId());
+                    household.getId(), null);
         });
     }
 
@@ -134,10 +134,10 @@ class ProductServiceTest {
         assertThrows(DuplicateInstanceException.class, () -> {
             productService.createProduct(member.getId(), "9999999999999", "Pasta", "Brand", "1.00", "a.png", "1.00",
                     Product.Unit.KG, true, true, Product.NutriScoreGrade.A, Product.NovaGroup.GROUP_1,
-                    household.getId());
+                    household.getId(), null);
             productService.createProduct(member.getId(), "9999999999999", "Arroz", "Brand", "1.10", "b.png", "1.00",
                     Product.Unit.KG, true, true, Product.NutriScoreGrade.A, Product.NovaGroup.GROUP_1,
-                    household.getId());
+                    household.getId(), null);
         });
     }
 
@@ -274,10 +274,10 @@ class ProductServiceTest {
                 Product.NovaGroup.GROUP_1, LocalDateTime.now().withNano(0), household);
         localProduct = productDao.save(localProduct);
 
-        Product found = productService.findProductByBarcode(admin.getId(), household.getId(), "8480000168641");
+        ResolvedBarcodeProduct found = productService.findProductByBarcode(admin.getId(), household.getId(), "8480000168641");
 
-        assertEquals(localProduct.getId(), found.getId());
-        assertEquals("Sal Fina", found.getName());
+        assertEquals(localProduct.getId(), found.getProduct().getId());
+        assertEquals("Sal Fina", found.getProduct().getName());
     }
 
     @Test

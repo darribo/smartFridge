@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
+import es.udc.bonilla.rivera.daniel.model.entities.ProductAllergy;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationDateException;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.ProductIsNotFoodException;
@@ -37,7 +38,8 @@ public interface ProductService {
      */
     Product createProduct(Long userId, String barcode, String name, String brand, String defaultPrice, String image,
             String quantity, Product.Unit unit, Boolean isVegetarian, Boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
-            Product.NovaGroup novaGroup, Long householdId) throws InstanceNotFoundException, DuplicateInstanceException, IOException;
+            Product.NovaGroup novaGroup, Long householdId, List<Long> allergyIds)
+            throws InstanceNotFoundException, DuplicateInstanceException, IOException;
 
     /**
      * Actualiza los datos editables de un producto.
@@ -149,7 +151,7 @@ public interface ProductService {
      * @throws InstanceNotFoundException Si el usuario no pertenece al hogar o no se encuentra el producto.
      * @throws ProductIsNotFoodException Si el código corresponde a un producto no alimenticio.
      */
-    Product findProductByBarcode(Long userId, Long householdId, String barcode) throws InstanceNotFoundException, ProductIsNotFoodException;
+    ResolvedBarcodeProduct findProductByBarcode(Long userId, Long householdId, String barcode) throws InstanceNotFoundException, ProductIsNotFoodException;
 
     /**
      * Sube una imagen asociada a un producto y actualiza su URL en base de datos.
@@ -169,6 +171,13 @@ public interface ProductService {
     List<ProductItem> findProductItems(Long userId, Long productId) throws InstanceNotFoundException;
 
     int countProductItems(Long userId, Long productId) throws InstanceNotFoundException;
+
+    ProductAllergy addProductAllergy(Long userId, Long productId, Long allergyId)
+            throws InstanceNotFoundException, DuplicateInstanceException;
+
+    ProductAllergy getProductAllergy(Long userId, Long productId, Long allergyId) throws InstanceNotFoundException;
+
+    void removeProductAllergy(Long userId, Long productId, Long allergyId) throws InstanceNotFoundException;
 
 
 

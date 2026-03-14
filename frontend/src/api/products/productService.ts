@@ -1,5 +1,6 @@
 import { ApiError, appFetch, fetchConfig } from "../appFetch";
 import { Block } from "../block";
+import type { Allergy } from "../allergies/allergyService";
 
 export type NewProductParams = {
     barcode?: string | null;
@@ -13,6 +14,7 @@ export type NewProductParams = {
     isVegan?: boolean | null;
     nutriScoreGrade?: ProductNutriScoreGrade | null;
     novaGroup?: ProductNovaGroup | null;
+    allergyIds?: number[] | null;
 }
 
 export type Product = {
@@ -80,6 +82,7 @@ export type BarcodeProduct = {
     vegan?: boolean | null;
     nutriScoreGrade?: ProductNutriScoreGrade | null;
     novaGroup?: ProductNovaGroup | null;
+    allergies?: Allergy[] | null;
 }
 
 
