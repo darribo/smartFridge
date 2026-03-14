@@ -261,5 +261,42 @@
       "notFound": "No se encontró ningún producto con ese código.",
       "default": "No se pudo escanear el producto."
     }
+  },
+  "products": {
+    "locationSelector": {
+      "title": "Ver productos",
+      "subtitle": "Elige la zona de la casa que quieres consultar",
+      "options": {
+        "all": "Ver todo",
+        "fridge": "Frigorífico",
+        "freezer": "Congelador",
+        "pantry": "Despensa"
+      }
+    },
+    "list": {
+      "title": "Mis productos",
+      "searchPlaceholder": "Buscar producto",
+      "showItems": "Ver items",
+      "hideItems": "Ocultar items",
+      "mixedLocations": "Varias ubicaciones",
+      "itemNumber": "Item #{{id}}",
+      "purchaseDate": "Compra",
+      "expirationDate": "Caducidad",
+      "noDate": "Sin fecha",
+      "empty": "No hay productos que coincidan con los filtros.",
+      "errors": {
+        "default": "No se pudieron cargar los productos."
+      }
+    },
+    "filters": {
+      "title": "Filtros",
+      "clear": "Limpiar",
+      "brandPlaceholder": "Filtrar por marca",
+      "vegetarian": "Vegetariano",
+      "vegan": "Vegano",
+      "nutriScore": "NutriScore",
+      "novaGroup": "Grupo NOVA",
+      "any": "Cualquiera"
+    }
   }
 }

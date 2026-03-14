@@ -261,5 +261,42 @@
       "notFound": "Non se atopou ningún produto con ese código.",
       "default": "Non se puido escanear o produto."
     }
+  },
+  "products": {
+    "locationSelector": {
+      "title": "Ver produtos",
+      "subtitle": "Escolle a zona da casa que queres consultar",
+      "options": {
+        "all": "Ver todo",
+        "fridge": "Frigorífico",
+        "freezer": "Conxelador",
+        "pantry": "Despensa"
+      }
+    },
+    "list": {
+      "title": "Os meus produtos",
+      "searchPlaceholder": "Buscar produto",
+      "showItems": "Ver items",
+      "hideItems": "Ocultar items",
+      "mixedLocations": "Varias localizacións",
+      "itemNumber": "Item #{{id}}",
+      "purchaseDate": "Compra",
+      "expirationDate": "Caducidade",
+      "noDate": "Sen data",
+      "empty": "Non hai produtos que coincidan cos filtros.",
+      "errors": {
+        "default": "Non se puideron cargar os produtos."
+      }
+    },
+    "filters": {
+      "title": "Filtros",
+      "clear": "Limpar",
+      "brandPlaceholder": "Filtrar por marca",
+      "vegetarian": "Vexetariano",
+      "vegan": "Vegano",
+      "nutriScore": "NutriScore",
+      "novaGroup": "Grupo NOVA",
+      "any": "Calquera"
+    }
   }
 }

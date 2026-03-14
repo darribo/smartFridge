@@ -31,12 +31,41 @@ export type Product = {
     createdAt: string; // ISO 8601 format
 }
 
+export type ProductItem = {
+    id: number;
+    productId: number;
+    purchaseDate?: string | null;
+    expirationDate?: string | null;
+    pricePaid?: string | null;
+    storageLocation: ProductItemStorageLocation;
+}
+
+export type ProductWithItems = {
+    id: number;
+    name: string;
+    image?: string | null;
+    quantity?: string | null;
+    unit: ProductUnit;
+    countItems: number;
+    items: ProductItem[];
+}
+
 export type ProductUnit = 'g' | 'kg' | 'ml' | 'l' | 'unit' | 'G' | 'KG' | 'ML' | 'L' | 'UNIT';
 
 export type ProductNutriScoreGrade = 'A' | 'B' | 'C' | 'D' | 'E';
 
 export type ProductNovaGroup = 1 | 2 | 3 | 4 | "GROUP_1" | "GROUP_2" | "GROUP_3" | "GROUP_4";
 export type ProductItemStorageLocation = "PANTRY" | "FRIDGE" | "FREEZER";
+
+export type ProductFilters = {
+    name?: string;
+    brand?: string;
+    isVegetarian?: boolean | null;
+    isVegan?: boolean | null;
+    nutriScoreGrade?: ProductNutriScoreGrade | null;
+    novaGroup?: ProductNovaGroup | null;
+    storageLocation?: ProductItemStorageLocation | null;
+}
 
 export type BarcodeProduct = {
     id: number | null;
@@ -82,6 +111,37 @@ export const searchProductsByName = async (
 
     return appFetch(
         `/products/${householdId}/search?name=${encodeURIComponent(name)}&page=${page}`,
+        options,
+        onSuccess,
+        onError
+    );
+};
+
+export const findProducts = async (
+    householdId: number,
+    filters: ProductFilters,
+    page: number,
+    onSuccess?: (block: Block<ProductWithItems>) => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("GET");
+    const params = new URLSearchParams();
+
+    if (filters.name?.trim()) params.append("name", filters.name.trim());
+    if (filters.brand?.trim()) params.append("brand", filters.brand.trim());
+    if (filters.isVegetarian !== null && filters.isVegetarian !== undefined) {
+        params.append("isVegetarian", String(filters.isVegetarian));
+    }
+    if (filters.isVegan !== null && filters.isVegan !== undefined) {
+        params.append("isVegan", String(filters.isVegan));
+    }
+    if (filters.nutriScoreGrade) params.append("nutriScoreGrade", String(filters.nutriScoreGrade));
+    if (filters.novaGroup) params.append("novaGroup", String(filters.novaGroup));
+    if (filters.storageLocation) params.append("storageLocation", filters.storageLocation);
+    params.append("page", String(page));
+
+    return appFetch(
+        `/products/${householdId}?${params.toString()}`,
         options,
         onSuccess,
         onError

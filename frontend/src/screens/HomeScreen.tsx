@@ -96,21 +96,41 @@ export default function HomeScreen({ navigation }: Props) {
     return [t("common.networkError")];
   };
 
-  const loadHome = () => {
+  const fetchHouseholdPage = (page: number) =>
+    new Promise<Block<UserHouseholdListItem>>((resolve, reject) => {
+      getUserHouseholds(
+        page,
+        (block: Block<UserHouseholdListItem>) => resolve(block),
+        (err: ApiError) => reject(err)
+      );
+    });
+
+  const loadHome = async () => {
     setLoadingFirst(true);
     setGlobalErrors([]);
 
-    getUserHouseholds(
-      0,
-      (block: Block<UserHouseholdListItem>) => {
-        setHouseholds(block.items);
-        setLoadingFirst(false);
-      },
-      (err: ApiError) => {
-        setGlobalErrors(extractErrorMessages(err));
-        setLoadingFirst(false);
+    try {
+      let page = 0;
+      let hasMore = true;
+      const allHouseholds: UserHouseholdListItem[] = [];
+
+      while (hasMore) {
+        const block = await fetchHouseholdPage(page);
+        allHouseholds.push(...block.items);
+        hasMore = block.existMoreItems;
+        page += 1;
       }
-    );
+
+      setHouseholds(allHouseholds);
+    } catch (err) {
+      if (err && typeof err === "object" && "globalErrors" in err) {
+        setGlobalErrors(extractErrorMessages(err as ApiError));
+      } else {
+        setGlobalErrors([t("common.networkError")]);
+      }
+    } finally {
+      setLoadingFirst(false);
+    }
   };
 
   useFocusEffect(
@@ -239,10 +259,7 @@ export default function HomeScreen({ navigation }: Props) {
               <QuickAction
                 icon="fridge-outline"
                 label={t("home.quickActions.pantry")}
-                onPress={() =>
-                  resolvedHouseholdId &&
-                  navigation.navigate("HouseholdDetail", { householdId: resolvedHouseholdId })
-                }
+                onPress={() => navigation.navigate("ProductLocationSelector")}
               />
               <QuickAction
                 icon="home-group-plus"
@@ -301,10 +318,7 @@ export default function HomeScreen({ navigation }: Props) {
           <FooterItem
             icon="fridge-outline"
             label={t("home.footer.pantry")}
-            onPress={() =>
-              resolvedHouseholdId &&
-              navigation.navigate("HouseholdDetail", { householdId: resolvedHouseholdId })
-            }
+            onPress={() => navigation.navigate("ProductLocationSelector")}
           />
           <Pressable
             onPress={() =>

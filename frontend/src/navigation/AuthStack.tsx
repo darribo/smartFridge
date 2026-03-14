@@ -13,6 +13,8 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ApiError } from "../api/appFetch";
 import AddProductScreen from "../screens/products/AddProductScreen";
 import ScanProductScreen from "../screens/products/ScanProductScreen";
+import MyProductsScreen from "../screens/products/MyProductsScreen";
+import ProductLocationSelectorScreen from "../screens/products/ProductLocationSelectorScreen";
 
 export type AuthStackParamList = {
   Register: { backendError?: ApiError } | undefined;
@@ -25,6 +27,8 @@ export type AuthStackParamList = {
   HouseholdDetail: { householdId: number };
   AddProduct: { householdId: number; barcodeProduct?: BarcodeProduct } | undefined;
   ScanProduct: { householdId: number };
+  ProductLocationSelector: undefined;
+  MyProducts: { storageFilter: "ALL" | "PANTRY" | "FRIDGE" | "FREEZER" } | undefined;
 };
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
@@ -41,6 +45,8 @@ export function AuthStack() {
       <Stack.Screen name="MyHouseholds" component={MyHouseholdsScreen} />
       <Stack.Screen name="AddProduct" component={AddProductScreen} />
       <Stack.Screen name="ScanProduct" component={ScanProductScreen} />
+      <Stack.Screen name="ProductLocationSelector" component={ProductLocationSelectorScreen} />
+      <Stack.Screen name="MyProducts" component={MyProductsScreen} />
       <Stack.Screen name="HouseholdDetail">
         {({ route, navigation }) => (
           <HouseholdDetailScreen

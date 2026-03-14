@@ -3,6 +3,7 @@ package es.udc.bonilla.rivera.daniel.model.services;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -19,7 +20,10 @@ import es.udc.bonilla.rivera.daniel.model.daos.ProductDao;
 import es.udc.bonilla.rivera.daniel.model.daos.ProductItemDao;
 import es.udc.bonilla.rivera.daniel.model.entities.Household;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
+import es.udc.bonilla.rivera.daniel.model.entities.Product.NovaGroup;
+import es.udc.bonilla.rivera.daniel.model.entities.Product.NutriScoreGrade;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
+import es.udc.bonilla.rivera.daniel.model.entities.ProductItem.StorageLocation;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationDateException;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.ProductIsNotFoodException;
 
@@ -257,6 +261,48 @@ public class ProductServiceImpl implements ProductService {
         product.setImage(imageUrl);
 
         return productDao.save(product);
+    }
+
+    @Override
+    public Block<Product> findProducts(Long userId, Long householdId, String name, String brand, Boolean isVegetarian,
+            Boolean isVegan, NutriScoreGrade nutriScoreGrade, NovaGroup novaGroup, StorageLocation storageLocation,
+            int page, int size) throws InstanceNotFoundException {
+        
+        permissionChecker.checkUserHouseholdExists(userId, householdId);
+
+        Slice<Product> productSlice = productDao.findProducts(
+                householdId,
+                name,
+                brand,
+                isVegetarian,
+                isVegan,
+                nutriScoreGrade,
+                novaGroup,
+                storageLocation,
+                page,
+                size);
+
+        return new Block<>(productSlice.getContent(), productSlice.hasNext());
+    }
+
+    @Override
+    public List<ProductItem> findProductItems(Long userId, Long productId) throws InstanceNotFoundException {
+        
+        Product product = permissionChecker.checkProductExists(productId);
+
+        permissionChecker.checkUserHouseholdExists(userId, product.getHousehold().getId());
+
+        return productItemDao.findByProductId(productId); //TODO: En su momento devolver solo los productos a los que les quede cantidad, o aplicar algún criterio de ordenación (por ejemplo, fecha de caducidad) para mostrar primero los que caduquen antes.
+    }
+
+    @Override
+    public int countProductItems(Long userId, Long productId) throws InstanceNotFoundException {
+        
+        Product product = permissionChecker.checkProductExists(productId);
+
+        permissionChecker.checkUserHouseholdExists(userId, product.getHousehold().getId());
+
+        return productItemDao.countByProductId(productId);
     }
 
 }

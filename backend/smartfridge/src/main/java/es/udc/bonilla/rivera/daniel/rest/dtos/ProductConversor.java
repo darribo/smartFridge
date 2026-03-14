@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
+import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
 
 public class ProductConversor {
 
@@ -37,5 +38,17 @@ public class ProductConversor {
         }
 
         return productDtos;
+    }
+
+    public static ProductWithItemsDto toProductWithItemsDto(Product product, List<ProductItem> productItems, int countItems) {
+
+        return new ProductWithItemsDto(
+                product.getId(),
+                product.getName(),
+                product.getImage(),
+                product.getQuantity() != null ? product.getQuantity().toString() : null,
+                product.getUnit(),
+                countItems,
+                ProductItemConversor.toProductItemDtos(productItems));
     }
 }

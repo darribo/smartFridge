@@ -1,6 +1,8 @@
 package es.udc.bonilla.rivera.daniel.rest.controllers;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,13 +26,14 @@ import org.springframework.web.multipart.MultipartFile;
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
+import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
 import es.udc.bonilla.rivera.daniel.model.services.Block;
 import es.udc.bonilla.rivera.daniel.model.services.ProductService;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationDateException;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.ProductIsNotFoodException;
+import es.udc.bonilla.rivera.daniel.rest.common.ErrorsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.BarcodeProductConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.BarcodeProductDto;
-import es.udc.bonilla.rivera.daniel.rest.common.ErrorsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.BlockDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewProductItemParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewProductParamsDto;
@@ -38,6 +41,7 @@ import es.udc.bonilla.rivera.daniel.rest.dtos.ProductConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductItemConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductItemDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.ProductWithItemsDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -150,6 +154,40 @@ public class ProductController {
 
         
         return new BlockDto<>(ProductConversor.toProductDtos(block.getItems()), block.getExistMoreItems());
+    }
+
+    @GetMapping("/{householdId}")
+    @Operation(
+        summary = "Buscar productos con sus items",
+        description = "Devuelve una lista paginada de productos de un hogar aplicando filtros opcionales y incluyendo sus items asociados."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Productos obtenidos correctamente",
+            content = @Content(schema = @Schema(implementation = BlockDto.class))),
+        @ApiResponse(responseCode = "404", description = "Usuario fuera del hogar",
+            content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
+    })
+    public BlockDto<ProductWithItemsDto> findProducts(@RequestAttribute Long userId, @PathVariable Long householdId,
+            @RequestParam(required = false) String name, @RequestParam(required = false) String brand,
+            @RequestParam(required = false) Boolean isVegetarian, @RequestParam(required = false) Boolean isVegan,
+            @RequestParam(required = false) Product.NutriScoreGrade nutriScoreGrade,
+            @RequestParam(required = false) Product.NovaGroup novaGroup,
+            @RequestParam(required = false) ProductItem.StorageLocation storageLocation,
+            @RequestParam int page) throws InstanceNotFoundException {
+
+        Block<Product> block = productService.findProducts(userId, householdId, name, brand, isVegetarian, isVegan,
+                nutriScoreGrade, novaGroup, storageLocation, page, SEARCH_PRODUCTS_SIZE);
+
+        List<ProductWithItemsDto> productWithItemsDtos = new ArrayList<>();
+
+        for (Product product : block.getItems()) {
+            List<ProductItem> productItems = productService.findProductItems(userId, product.getId());
+            int countItems = productService.countProductItems(userId, product.getId());
+
+            productWithItemsDtos.add(ProductConversor.toProductWithItemsDto(product, productItems, countItems));
+        }
+
+        return new BlockDto<>(productWithItemsDtos, block.getExistMoreItems());
     }
 
     @GetMapping("/{householdId}/barcode")

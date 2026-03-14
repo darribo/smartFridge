@@ -16,7 +16,7 @@ public class NewProductParamsDto {
     @Schema(description = "Código de barras del producto (único en el sistema)", example = "8437015942011", nullable = true)
     private String barcode;
 
-    @Schema(description = "Nombre del producto", example = "Leche Entera", minLength = 1, maxLength = 30)
+    @Schema(description = "Nombre del producto", example = "Leche Entera", minLength = 1, maxLength = 50)
     private String name;
 
     @Schema(description = "Marca del producto", example = "Marca Blanca", nullable = true)
@@ -79,7 +79,7 @@ public class NewProductParamsDto {
     }
 
     @NotNull
-    @Size(min = 1, max = 30)
+    @Size(min = 1, max = 50)
     public String getName() {
         return name;
     }

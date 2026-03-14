@@ -1,6 +1,7 @@
 package es.udc.bonilla.rivera.daniel.model.services;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -161,5 +162,14 @@ public interface ProductService {
      * @throws IOException Si ocurre un error durante el almacenamiento físico del archivo.
      */
     Product uploadProductImage(Long userId, Long productId, MultipartFile file) throws InstanceNotFoundException, IOException;
+
+    Block<Product> findProducts(Long userId, Long householdId, String name, String brand, Boolean isVegetarian, Boolean isVegan,
+        Product.NutriScoreGrade nutriScoreGrade, Product.NovaGroup novaGroup, ProductItem.StorageLocation storageLocation, int page, int size) throws InstanceNotFoundException;
+
+    List<ProductItem> findProductItems(Long userId, Long productId) throws InstanceNotFoundException;
+
+    int countProductItems(Long userId, Long productId) throws InstanceNotFoundException;
+
+
 
 }

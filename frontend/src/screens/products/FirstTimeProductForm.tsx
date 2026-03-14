@@ -33,6 +33,7 @@ import {
   OptionalBooleanField,
   parseNonNegativeDecimal,
   ProductFormErrors,
+  PRODUCT_NAME_MAX_LENGTH,
   ProductUnit,
   QUANTITY_LIMIT,
   PRICE_LIMIT,
@@ -184,7 +185,9 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
     const next: ProductFormErrors = {};
 
     if (!name.trim()) next.name = t("genericErrors.requiredField");
-    else if (name.trim().length > 30) next.name = t("genericErrors.max", { max: 30 });
+    else if (name.trim().length > PRODUCT_NAME_MAX_LENGTH) {
+      next.name = t("genericErrors.max", { max: PRODUCT_NAME_MAX_LENGTH });
+    }
 
     if (!quantity.trim()) {
       next.quantity = t("genericErrors.requiredField");
@@ -341,7 +344,7 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
           setName(value);
           setErrors((prev) => ({ ...prev, name: undefined }));
         }}
-        maxLength={30}
+        maxLength={PRODUCT_NAME_MAX_LENGTH}
         placeholder={t("addProduct.placeholders.productName")}
         errorText={errors.name}
       />

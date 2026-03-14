@@ -261,5 +261,42 @@
       "notFound": "No product was found for this barcode.",
       "default": "Unable to scan the product."
     }
+  },
+  "products": {
+    "locationSelector": {
+      "title": "View products",
+      "subtitle": "Choose the area of the house you want to browse",
+      "options": {
+        "all": "View all",
+        "fridge": "Fridge",
+        "freezer": "Freezer",
+        "pantry": "Pantry"
+      }
+    },
+    "list": {
+      "title": "My products",
+      "searchPlaceholder": "Search product",
+      "showItems": "View items",
+      "hideItems": "Hide items",
+      "mixedLocations": "Multiple locations",
+      "itemNumber": "Item #{{id}}",
+      "purchaseDate": "Purchase",
+      "expirationDate": "Expiration",
+      "noDate": "No date",
+      "empty": "No products match the current filters.",
+      "errors": {
+        "default": "Unable to load products."
+      }
+    },
+    "filters": {
+      "title": "Filters",
+      "clear": "Clear",
+      "brandPlaceholder": "Filter by brand",
+      "vegetarian": "Vegetarian",
+      "vegan": "Vegan",
+      "nutriScore": "NutriScore",
+      "novaGroup": "NOVA group",
+      "any": "Any"
+    }
   }
 }

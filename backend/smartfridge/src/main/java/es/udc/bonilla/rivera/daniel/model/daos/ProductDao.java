@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
 
-public interface ProductDao extends JpaRepository<Product, Long>{
+public interface ProductDao extends JpaRepository<Product, Long>, CustomizedProductDao {
 
     Optional<Product> findByIdAndHouseholdId(Long productId, Long householdId);
 

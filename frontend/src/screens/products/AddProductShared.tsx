@@ -30,6 +30,7 @@ export type InfoCardKey = "nutriScore" | "novaGroup" | null;
 
 export const PRICE_LIMIT = 999.99;
 export const QUANTITY_LIMIT = 99999.99;
+export const PRODUCT_NAME_MAX_LENGTH = 50;
 
 export const NUTRI_COLORS: Record<NutriScore, string> = {
   A: "#39D27A",
