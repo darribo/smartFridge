@@ -27,9 +27,11 @@ import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
+import es.udc.bonilla.rivera.daniel.model.entities.User;
 import es.udc.bonilla.rivera.daniel.model.services.Block;
 import es.udc.bonilla.rivera.daniel.model.services.ProductService;
 import es.udc.bonilla.rivera.daniel.model.services.ResolvedBarcodeProduct;
+import es.udc.bonilla.rivera.daniel.model.services.UserService;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationDateException;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.ProductIsNotFoodException;
 import es.udc.bonilla.rivera.daniel.rest.common.ErrorsDto;
@@ -44,6 +46,8 @@ import es.udc.bonilla.rivera.daniel.rest.dtos.ProductDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductItemConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductItemDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductWithItemsDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.SimplifiedUserDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.UserConversor;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -72,6 +76,9 @@ public class ProductController {
 
     @Autowired
     private AllergyConversor allergyConversor;
+
+    @Autowired
+    private UserService userService;
 
     @ExceptionHandler(InvalidExpirationDateException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -235,5 +242,18 @@ public class ProductController {
 
         return ProductConversor.toProductDto(product);
     }
+
+
+    @GetMapping("/{householdId}/checkAllergies")
+    public List<SimplifiedUserDto> checkAllergiesByIds(
+            @RequestAttribute Long userId,
+            @PathVariable Long householdId,
+            @RequestParam(required = false) List<Long> allergyIds) throws InstanceNotFoundException {
+
+        List<User> users = userService.findUsersByAllergyIds(userId, householdId, allergyIds);
+
+        return UserConversor.toSimplifiedUserDtos(users);
+    }
+    
     
 }

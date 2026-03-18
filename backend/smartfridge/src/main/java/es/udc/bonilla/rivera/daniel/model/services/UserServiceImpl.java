@@ -1,5 +1,6 @@
 package es.udc.bonilla.rivera.daniel.model.services;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
+import es.udc.bonilla.rivera.daniel.model.daos.ProductAllergyDao;
 import es.udc.bonilla.rivera.daniel.model.daos.UserAllergyDao;
 import es.udc.bonilla.rivera.daniel.model.daos.UserDao;
 import es.udc.bonilla.rivera.daniel.model.entities.Allergy;
+import es.udc.bonilla.rivera.daniel.model.entities.Product;
 import es.udc.bonilla.rivera.daniel.model.entities.User;
 import es.udc.bonilla.rivera.daniel.model.entities.UserAllergy;
 import es.udc.bonilla.rivera.daniel.model.entities.UserAllergyId;
@@ -32,6 +35,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserAllergyDao userAllergyDao;
+
+    @Autowired
+    private ProductAllergyDao productAllergyDao;
 
     @Override
     public User signUp(String userName, String password, String email, String firstName, String lastName, String avatar) throws DuplicateInstanceException {
@@ -112,6 +118,32 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly=true)
     public User loginFromId(Long id) throws InstanceNotFoundException {
         return permissionChecker.checkUserExists(id);
+    }
+
+    @Override
+    public List<User> findUsersByAllergies(Long userId, Long productId) throws InstanceNotFoundException {
+
+        Product product = permissionChecker.checkProductExists(productId);
+
+        Long householdId = product.getHousehold().getId();
+
+        permissionChecker.checkUserHouseholdExists(userId, householdId);
+
+        List<Long> allergyIds = productAllergyDao.findAllergyIdsByProductId(productId);
+
+        return userAllergyDao.findUsersByAllergies(allergyIds, householdId);
+    }
+
+    @Override
+    public List<User> findUsersByAllergyIds(Long userId, Long householdId, List<Long> allergyIds) throws InstanceNotFoundException {
+
+        permissionChecker.checkUserHouseholdExists(userId, householdId);
+
+        if (allergyIds == null || allergyIds.isEmpty()) {
+            return List.of();
+        }
+
+        return userAllergyDao.findUsersByAllergies(allergyIds, householdId);
     }
 
 }

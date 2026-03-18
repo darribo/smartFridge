@@ -241,6 +241,12 @@
         "title": "What is NOVA group?",
         "description": "NOVA classifies food processing level from 1 to 4: 1 (minimally processed) to 4 (ultra-processed)."
       }
+    },
+    "allergyWarning": {
+      "title": "Are you sure you want to add this product?",
+      "body": "This product contains allergens that may affect: {{users}}.",
+      "confirm": "Continue anyway",
+      "cancel": "Cancel"
     }
   },
   "scanProduct": {

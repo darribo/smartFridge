@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -16,8 +16,8 @@ import { FormLabel } from "../../components/FormLabel";
 import { InputLabel } from "../../components/users/InputLabel";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
-import { createProduct, uploadProductImage } from "../../api/products/productService";
-import type { BarcodeProduct } from "../../api/products/productService";
+import { checkAllergiesByIds, createProduct, uploadProductImage } from "../../api/products/productService";
+import type { BarcodeProduct, SimplifiedUser } from "../../api/products/productService";
 import { getAllergies, type Allergy } from "../../api/allergies/allergyService";
 import { iconFor, tintFor } from "../../components/allergies/allergyVisuals";
 import { THEME } from "../../theme/theme";
@@ -77,6 +77,8 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
   const [infoCard, setInfoCard] = useState<InfoCardKey>(null);
   const [availableAllergies, setAvailableAllergies] = useState<Allergy[]>([]);
   const [selectedAllergyIds, setSelectedAllergyIds] = useState<number[]>([]);
+  const [allergyWarnUsers, setAllergyWarnUsers] = useState<SimplifiedUser[] | null>(null);
+  const pendingConfirmRef = useRef<(() => Promise<void>) | null>(null);
 
   const unitOptions = useMemo(
     () => [
@@ -247,7 +249,7 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
   };
 
   const onSubmit = async () => {
-    //Se hace la creación del producto y, si la imagen es local, su subida posterior.
+    //Se hace la validación, comprobación de alergias y, solo si el usuario confirma, la creación del producto.
     if (submitting) return;
 
     const nextErrors = validateFirstFlow();
@@ -256,9 +258,7 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
 
     if (Object.keys(nextErrors).length > 0) return;
 
-    setSubmitting(true);
-
-    const product = {
+    const productPayload = {
       barcode: barcode.trim() || null,
       name: name.trim(),
       image: imageForCreatePayload(image),
@@ -272,65 +272,86 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
       novaGroup,
       allergyIds: selectedAllergyIds,
     };
+    const capturedImage = image;
 
-    await createProduct(
-      householdId,
-      product,
-      async (createdProduct) => {
-        let finalImage = createdProduct.image ?? null;
+    const proceed = async () => {
+      setSubmitting(true);
+      setGlobalErrors([]);
 
-        if (isLocalImage(image)) {
-          setUploadingImage(true);
-          await uploadProductImage(
-            createdProduct.id,
-            image!,
-            (updatedProduct) => {
-              finalImage = updatedProduct.image ?? finalImage;
-            },
-            (err) => {
-              setGlobalErrors(err.globalErrors ?? [t("addProduct.errors.imageUploadFailed")]);
+      const createdProduct = await new Promise<import("../../api/products/productService").Product | null>((resolve) => {
+        createProduct(
+          householdId,
+          productPayload,
+          (p) => resolve(p),
+          (err) => {
+            if (err.fieldErrors) {
+              const fieldErrors = err.fieldErrors;
+              setErrors((prev) => ({
+                ...prev,
+                name: fieldErrors.name
+                  ? Array.isArray(fieldErrors.name) ? fieldErrors.name[0] : fieldErrors.name
+                  : prev.name,
+                quantity: fieldErrors.quantity
+                  ? Array.isArray(fieldErrors.quantity) ? fieldErrors.quantity[0] : fieldErrors.quantity
+                  : prev.quantity,
+                defaultPrice: fieldErrors.defaultPrice
+                  ? Array.isArray(fieldErrors.defaultPrice) ? fieldErrors.defaultPrice[0] : fieldErrors.defaultPrice
+                  : prev.defaultPrice,
+              }));
             }
-          );
-          setUploadingImage(false);
-        }
+            setGlobalErrors(err.globalErrors ?? [t("addProduct.errors.saveFailed")]);
+            resolve(null);
+          }
+        );
+      });
 
-        onCreated({
-          id: createdProduct.id,
-          barcode: createdProduct.barcode ?? "",
-          name: createdProduct.name,
-          image: finalImage,
-          defaultPrice: createdProduct.defaultPrice ?? null,
-        });
-      },
-      (err) => {
-        if (err.fieldErrors) {
-          const fieldErrors = err.fieldErrors;
-          setErrors((prev) => ({
-            ...prev,
-            name: fieldErrors.name
-              ? Array.isArray(fieldErrors.name)
-                ? fieldErrors.name[0]
-                : fieldErrors.name
-              : prev.name,
-            quantity: fieldErrors.quantity
-              ? Array.isArray(fieldErrors.quantity)
-                ? fieldErrors.quantity[0]
-                : fieldErrors.quantity
-              : prev.quantity,
-            defaultPrice: fieldErrors.defaultPrice
-              ? Array.isArray(fieldErrors.defaultPrice)
-                ? fieldErrors.defaultPrice[0]
-                : fieldErrors.defaultPrice
-              : prev.defaultPrice,
-          }));
-        }
-
-        setGlobalErrors(err.globalErrors ?? [t("addProduct.errors.saveFailed")]);
+      if (!createdProduct) {
+        setSubmitting(false);
+        return;
       }
-    );
 
+      let finalImage = createdProduct.image ?? null;
+      if (isLocalImage(capturedImage)) {
+        setUploadingImage(true);
+        await new Promise<void>((resolve) => {
+          uploadProductImage(
+            createdProduct.id,
+            capturedImage!,
+            (updatedProduct) => { finalImage = updatedProduct.image ?? finalImage; resolve(); },
+            (err) => { setGlobalErrors(err.globalErrors ?? [t("addProduct.errors.imageUploadFailed")]); resolve(); }
+          );
+        });
+        setUploadingImage(false);
+      }
+
+      setSubmitting(false);
+      onCreated({
+        id: createdProduct.id,
+        barcode: createdProduct.barcode ?? "",
+        name: createdProduct.name,
+        image: finalImage,
+        defaultPrice: createdProduct.defaultPrice ?? null,
+      });
+    };
+
+    if (selectedAllergyIds.length === 0) {
+      await proceed();
+      return;
+    }
+
+    // Comprobar alergias ANTES de crear el producto
+    setSubmitting(true);
+    const affectedUsers = await new Promise<SimplifiedUser[]>((resolve) => {
+      checkAllergiesByIds(householdId, selectedAllergyIds, (users) => resolve(users), () => resolve([]));
+    });
     setSubmitting(false);
-    setUploadingImage(false);
+
+    if (affectedUsers.length > 0) {
+      pendingConfirmRef.current = proceed;
+      setAllergyWarnUsers(affectedUsers);
+    } else {
+      await proceed();
+    }
   };
 
   return (
@@ -589,6 +610,52 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
           </Text>
         </View>
       ) : null}
+
+      <Modal
+        visible={allergyWarnUsers !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => { pendingConfirmRef.current = null; setAllergyWarnUsers(null); }}
+      >
+        <TouchableWithoutFeedback onPress={() => { pendingConfirmRef.current = null; setAllergyWarnUsers(null); }}>
+          <View style={styles.modalBackdrop} />
+        </TouchableWithoutFeedback>
+
+        <View style={styles.sheetWrap}>
+          <View style={styles.sheet}>
+            <View style={styles.sheetHandle} />
+            <View style={{ alignItems: "center", marginBottom: 8 }}>
+              <MaterialCommunityIcons name="alert-circle" size={44} color="#F59E0B" />
+            </View>
+            <Text style={styles.sheetTitle}>{t("addProduct.allergyWarning.title")}</Text>
+            <Text style={styles.sheetBody}>
+              {t("addProduct.allergyWarning.body", {
+                users: allergyWarnUsers?.map((u) => u.userName).join(", ") ?? "",
+              })}
+            </Text>
+            <PrimaryButton
+              text={t("addProduct.allergyWarning.confirm")}
+              onPress={async () => {
+                const fn = pendingConfirmRef.current;
+                pendingConfirmRef.current = null;
+                setAllergyWarnUsers(null);
+                if (fn) await fn();
+              }}
+            />
+            <Pressable
+              onPress={() => {
+                pendingConfirmRef.current = null;
+                setAllergyWarnUsers(null);
+              }}
+              style={{ alignItems: "center", paddingVertical: 14 }}
+            >
+              <Text style={{ color: THEME.muted, fontSize: 15 }}>
+                {t("addProduct.allergyWarning.cancel")}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
 
       <Modal
         visible={infoCard !== null}

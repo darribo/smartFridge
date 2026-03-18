@@ -1,5 +1,8 @@
 package es.udc.bonilla.rivera.daniel.rest.dtos;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import es.udc.bonilla.rivera.daniel.model.entities.User;
 
 public class UserConversor {
@@ -12,6 +15,21 @@ public class UserConversor {
 
     public static final AuthenticatedUserDto toAuthenticatedUserDto(String serviceToken, UserDto userDto) {
         return new AuthenticatedUserDto(serviceToken, userDto);
+    }
+
+    public static final SimplifiedUserDto toSimplifiedUserDto(User user) {
+        return new SimplifiedUserDto(user.getId(), user.getUserName());
+    }
+
+    public static final List<SimplifiedUserDto> toSimplifiedUserDtos(List<User> users) {
+        
+        List<SimplifiedUserDto> simplifiedUserDtos = new ArrayList<>();
+
+        for (User user : users) {
+            simplifiedUserDtos.add(toSimplifiedUserDto(user));
+        }
+
+        return simplifiedUserDtos;
     }
 
 }

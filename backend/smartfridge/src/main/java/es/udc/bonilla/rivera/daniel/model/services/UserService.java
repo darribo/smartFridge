@@ -1,5 +1,7 @@
 package es.udc.bonilla.rivera.daniel.model.services;
 
+import java.util.List;
+
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.entities.User;
@@ -62,5 +64,9 @@ public interface UserService {
      * @throws InstanceNotFoundException Si no se encuentra el usuario indicado.
      */
     User loginFromId(Long id) throws InstanceNotFoundException;
+
+    List<User> findUsersByAllergies(Long userId, Long productId) throws InstanceNotFoundException;
+
+    List<User> findUsersByAllergyIds(Long userId, Long householdId, List<Long> allergyIds) throws InstanceNotFoundException;
 
 }

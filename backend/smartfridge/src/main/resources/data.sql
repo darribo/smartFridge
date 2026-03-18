@@ -24,6 +24,22 @@ INSERT INTO users (id, userName, password, email, firstName, lastName, avatar, r
     (7, 'sofia_test', '$2a$10$W5j1lZ2sXbGQaWgN/LvIuuhX5b9qHOikAlV1BnmjjNtMJGsqc6Mm2', 'sofia_test@mail.com', 'Sofia', 'Test', 'avatar_sofia.png', 1),
     (8, 'diego_test', '$2a$10$W5j1lZ2sXbGQaWgN/LvIuuhX5b9qHOikAlV1BnmjjNtMJGsqc6Mm2', 'diego_test@mail.com', 'Diego', 'Test', NULL, 1);
 
+INSERT INTO UserAllergy(userId, allergyId) VALUES
+    (1, 1),
+    (1, 7),
+    (2, 5),
+    (3, 3),
+    (3, 8),
+    (4, 2),
+    (4, 6),
+    (4, 9),
+    (5, 4),
+    (5, 10),
+    (6, 11),
+    (7, 12),
+    (8, 13),
+    (8, 14);
+
 INSERT INTO Household (id, name, description, countryCode, regionCode, regionName, admin_id) VALUES
     (10, 'Casa Centro', 'Hogar principal para pruebas', 'ES', 'GA', 'Galicia', 1),
     (11, 'Casa Norte', 'Segundo hogar para pruebas', 'ES', 'AS', 'Asturias', 3),

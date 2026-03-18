@@ -241,6 +241,12 @@
         "title": "Que é o grao NOVA?",
         "description": "NOVA clasifica o nivel de procesado dos alimentos do 1 ao 4: 1 (minimamente procesado) a 4 (ultraprocesado)."
       }
+    },
+    "allergyWarning": {
+      "title": "Seguro que desexas engadir este produto?",
+      "body": "Este produto contén alérgenos que poden afectar a: {{users}}.",
+      "confirm": "Continuar de todas formas",
+      "cancel": "Cancelar"
     }
   },
   "scanProduct": {

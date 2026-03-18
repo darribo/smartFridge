@@ -193,6 +193,28 @@ export const getProductByBarcode = async (
     );
 };
 
+export type SimplifiedUser = {
+  id: number;
+  userName: string;
+};
+
+export const checkAllergiesByIds = async (
+  householdId: number,
+  allergyIds: number[],
+  onSuccess?: (users: SimplifiedUser[]) => void,
+  onError?: (err: ApiError) => void
+) => {
+  const options = await fetchConfig("GET");
+  const query = allergyIds.map((id) => `allergyIds=${id}`).join("&");
+
+  return appFetch(
+    `/products/${householdId}/checkAllergies?${query}`,
+    options,
+    onSuccess,
+    onError
+  );
+};
+
 export const uploadProductImage = async (
   productId: number,
   localUri: string,
