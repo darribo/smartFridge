@@ -1,4 +1,10 @@
 {
+  "noHousehold": {
+    "title": "Necesitas un fogar",
+    "message": "Para usar esta función necesitas ter un fogar activo. Crea un ou selecciona un dos que xa tes.",
+    "create": "Crear un fogar",
+    "goToList": "Ver os meus fogares"
+  },
   "common": {
     "loading": "Cargando…",
     "retry": "Tentar de novo",
@@ -76,7 +82,11 @@
     "membersCount_other": "{{count}} membros",
     "list": {
       "title": "Os meus fogares",
-      "subtitle": "Xestiona os teus espazos de comida"
+      "subtitle": "Xestiona os teus espazos de comida",
+      "empty": "Aínda non tes ningún fogar. ¡Crea un!",
+      "actions": {
+        "create": "Crear fogar"
+      }
     },
     "generateInviteLink": "Xerar enlace de invitación"
   },
@@ -132,7 +142,10 @@
       "descriptionLabel": "Descrición",
       "membersTitle": "Membros",
       "membersEmpty": "Este fogar aínda non ten membros.",
-      "showMore": "Ver máis membros"
+      "showMore": "Ver máis membros",
+      "delete": "Eliminar fogar",
+      "deleteConfirmTitle": "Eliminar fogar",
+      "deleteConfirmMessage": "Seguro que queres eliminar este fogar? Esta acción non se pode desfacer."
     },
     "member": {
       "admin": "ADMIN",

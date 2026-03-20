@@ -8,6 +8,7 @@ import {
   FlatList,
   Pressable,
   Image,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -17,8 +18,10 @@ import type { ApiError } from "../../api/appFetch";
 import type { Block } from "../../api/block";
 import {
   changeHouseholdAdmin,
+  deleteHousehold,
   getHousehold,
   getHouseholdMembers,
+  getUserHouseholds,
   Household,
   HouseholdUser,
   removeHouseholdMember,
@@ -45,6 +48,7 @@ export default function HouseholdDetailScreen({ householdId, navigation }: Props
   const { t } = useTranslation();
   const currentHouseholdId = useHouseholdStore((s) => s.currentHouseholdId);
   const setCurrentHouseholdId = useHouseholdStore((s) => s.setCurrentHouseholdId);
+  const clearCurrentHouseholdId = useHouseholdStore((s) => s.clearCurrentHouseholdId);
 
   const [household, setHousehold] = useState<Household | null>(null);
   const [members, setMembers] = useState<HouseholdUser[]>([]);
@@ -58,6 +62,9 @@ export default function HouseholdDetailScreen({ householdId, navigation }: Props
   const [selectedMember, setSelectedMember] = useState<HouseholdUser | null>(null);
   const [memberActionLoading, setMemberActionLoading] = useState(false);
   const [memberActionErrors, setMemberActionErrors] = useState<string[]>([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteErrors, setDeleteErrors] = useState<string[]>([]);
   const householdNameLength = household?.name?.trim().length ?? 0;
   const householdNameStyle =
     householdNameLength > 30
@@ -217,6 +224,33 @@ export default function HouseholdDetailScreen({ householdId, navigation }: Props
     setMemberActionLoading(false);
   };
 
+  const onDeleteHousehold = async () => {
+    setDeleteLoading(true);
+    setDeleteErrors([]);
+
+    await deleteHousehold(
+      householdId,
+      async () => {
+        setShowDeleteConfirm(false);
+        if (currentHouseholdId === householdId) {
+          await getUserHouseholds(0, (block) => {
+            if (block.items.length > 0) {
+              setCurrentHouseholdId(block.items[0].id);
+            } else {
+              clearCurrentHouseholdId();
+            }
+          });
+        }
+        navigation?.goBack?.();
+      },
+      (err: ApiError) => {
+        setDeleteErrors(extractErrorMessages(err));
+      }
+    );
+
+    setDeleteLoading(false);
+  };
+
   if (loadingFirst) {
     return (
       <SafeAreaView style={styles.safe}>
@@ -242,15 +276,25 @@ export default function HouseholdDetailScreen({ householdId, navigation }: Props
           </Pressable>
           <Text style={styles.headerTitle}>{t("household.detail.title")}</Text>
           {isCurrentUserAdmin ? (
-            <Pressable
-              onPress={onEditHousehold}
-              style={styles.editBtn}
-              hitSlop={10}
-              accessibilityRole="button"
-              accessibilityLabel={t("household.detail.edit")}
-            >
-              <MaterialCommunityIcons name="pencil-outline" size={24} color={THEME.text} />
-            </Pressable>
+            <View style={styles.headerActions}>
+              <Pressable
+                onPress={onEditHousehold}
+                style={styles.editBtn}
+                hitSlop={10}
+                accessibilityRole="button"
+                accessibilityLabel={t("household.detail.edit")}
+              >
+                <MaterialCommunityIcons name="pencil-outline" size={24} color={THEME.text} />
+              </Pressable>
+              <Pressable
+                onPress={() => setShowDeleteConfirm(true)}
+                style={styles.editBtn}
+                hitSlop={10}
+                accessibilityRole="button"
+              >
+                <MaterialCommunityIcons name="trash-can-outline" size={24} color="#B91C1C" />
+              </Pressable>
+            </View>
           ) : (
             <View style={styles.headerSpacer} />
           )}
@@ -368,7 +412,59 @@ export default function HouseholdDetailScreen({ householdId, navigation }: Props
             <MaterialCommunityIcons name="link-variant" size={22} color="#102218" />
             <Text style={styles.inviteBtnText}>{t("households.generateInviteLink")}</Text>
           </Pressable>
+
         </View>
+
+        <Modal
+          visible={showDeleteConfirm}
+          transparent
+          animationType="fade"
+          onRequestClose={() => !deleteLoading && setShowDeleteConfirm(false)}
+        >
+          <Pressable
+            style={styles.modalOverlay}
+            onPress={() => !deleteLoading && setShowDeleteConfirm(false)}
+          >
+            <Pressable style={styles.modalBox} onPress={() => {}}>
+              <View style={styles.modalIconWrap}>
+                <MaterialCommunityIcons name="home-remove-outline" size={36} color="#B91C1C" />
+              </View>
+              <Text style={styles.modalTitle}>{t("household.detail.deleteConfirmTitle")}</Text>
+              <Text style={styles.modalMessage}>{t("household.detail.deleteConfirmMessage")}</Text>
+
+              {deleteErrors.length > 0 && (
+                <View style={styles.modalErrorWrap}>
+                  <GlobalErrorBox messages={deleteErrors} />
+                </View>
+              )}
+
+              <View style={styles.modalActions}>
+                <Pressable
+                  onPress={() => setShowDeleteConfirm(false)}
+                  disabled={deleteLoading}
+                  style={({ pressed }) => [styles.modalCancelBtn, pressed && { opacity: 0.7 }]}
+                >
+                  <Text style={styles.modalCancelText}>{t("household.memberActions.cancel")}</Text>
+                </Pressable>
+                <Pressable
+                  onPress={onDeleteHousehold}
+                  disabled={deleteLoading}
+                  style={({ pressed }) => [
+                    styles.modalDeleteBtn,
+                    deleteLoading && { opacity: 0.6 },
+                    pressed && !deleteLoading && { opacity: 0.85 },
+                  ]}
+                >
+                  {deleteLoading ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text style={styles.modalDeleteText}>{t("household.memberActions.confirm")}</Text>
+                  )}
+                </Pressable>
+              </View>
+            </Pressable>
+          </Pressable>
+        </Modal>
 
         <HouseholdMemberActionsSheet
           visible={!!selectedMember}
@@ -426,6 +522,10 @@ const styles = StyleSheet.create({
   headerSpacer: {
     width: 42,
     height: 42,
+  },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   listContent: {
     paddingHorizontal: 16,
@@ -584,6 +684,105 @@ const styles = StyleSheet.create({
     right: 16,
     bottom: 28,
     backgroundColor: THEME.bg,
+    gap: 8,
+  },
+  deleteBtn: {
+    height: 48,
+    borderRadius: 30,
+    borderWidth: 1.5,
+    borderColor: "#FECACA",
+    backgroundColor: "#FEF2F2",
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+  },
+  deleteBtnPressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.99 }],
+  },
+  deleteBtnText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#B91C1C",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+  },
+  modalBox: {
+    width: "100%",
+    backgroundColor: THEME.surface,
+    borderRadius: 24,
+    padding: 24,
+    alignItems: "center",
+    gap: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+  },
+  modalIconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    backgroundColor: "#FEF2F2",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 4,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "900",
+    color: THEME.text,
+    textAlign: "center",
+  },
+  modalMessage: {
+    fontSize: 15,
+    color: THEME.muted,
+    textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 4,
+  },
+  modalErrorWrap: {
+    width: "100%",
+  },
+  modalActions: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 8,
+    width: "100%",
+  },
+  modalCancelBtn: {
+    flex: 1,
+    height: 50,
+    borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: THEME.border,
+    backgroundColor: THEME.mint,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalCancelText: {
+    fontWeight: "700",
+    fontSize: 15,
+    color: THEME.text,
+  },
+  modalDeleteBtn: {
+    flex: 1,
+    height: 50,
+    borderRadius: 999,
+    backgroundColor: "#B91C1C",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalDeleteText: {
+    fontWeight: "900",
+    fontSize: 15,
+    color: "#fff",
   },
   emptyWrap: {
     alignItems: "center",

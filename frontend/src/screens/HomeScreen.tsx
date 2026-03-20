@@ -17,6 +17,7 @@ import { ApiError } from "../api/appFetch";
 import { Block } from "../api/block";
 import { getUserHouseholds, UserHouseholdListItem } from "../api/households/householdService";
 import { GlobalErrorBox } from "../components/common/GlobalErrorBox";
+import NoHouseholdModal from "../components/common/NoHouseholdModal";
 import type { AuthStackParamList } from "../navigation/AuthStack";
 import { useHouseholdStore } from "../store/householdStore";
 import { THEME } from "../theme/theme";
@@ -80,6 +81,7 @@ export default function HomeScreen({ navigation }: Props) {
   const [households, setHouseholds] = useState<UserHouseholdListItem[]>([]);
   const [loadingFirst, setLoadingFirst] = useState(true);
   const [globalErrors, setGlobalErrors] = useState<string[]>([]);
+  const [showNoHousehold, setShowNoHousehold] = useState(false);
 
   const extractErrorMessages = (err: ApiError): string[] => {
     if (Array.isArray(err.globalErrors) && err.globalErrors.length > 0) {
@@ -159,6 +161,14 @@ export default function HomeScreen({ navigation }: Props) {
   const pantryItems = currentHousehold ? currentHousehold.membersNumber * 7 + 12 : 24;
   const lowStock = households.length > 0 ? Math.max(1, households.length - 1) : 2;
 
+  const requireHousehold = (action: (id: number) => void) => {
+    if (resolvedHouseholdId) {
+      action(resolvedHouseholdId);
+    } else {
+      setShowNoHousehold(true);
+    }
+  };
+
   if (loadingFirst) {
     return (
       <SafeAreaView edges={["top"]} style={styles.safe}>
@@ -171,6 +181,12 @@ export default function HomeScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView edges={["top"]} style={styles.safe}>
+      <NoHouseholdModal
+        visible={showNoHousehold}
+        onClose={() => setShowNoHousehold(false)}
+        onCreateHousehold={() => { setShowNoHousehold(false); navigation.navigate("CreateHousehold"); }}
+        onGoToHouseholds={() => { setShowNoHousehold(false); navigation.navigate("MyHouseholds"); }}
+      />
       <View style={styles.screen}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
@@ -199,8 +215,7 @@ export default function HomeScreen({ navigation }: Props) {
               <Pressable
                 style={styles.heroPrimaryBtn}
                 onPress={() =>
-                  resolvedHouseholdId &&
-                  navigation.navigate("HouseholdDetail", { householdId: resolvedHouseholdId })
+                  requireHousehold((id) => navigation.navigate("HouseholdDetail", { householdId: id }))
                 }
               >
                 <Text style={styles.heroPrimaryBtnText}>{t("home.hero.primary")}</Text>
@@ -208,8 +223,7 @@ export default function HomeScreen({ navigation }: Props) {
               <Pressable
                 style={styles.heroGhostBtn}
                 onPress={() =>
-                  resolvedHouseholdId &&
-                  navigation.navigate("ScanProduct", { householdId: resolvedHouseholdId })
+                  requireHousehold((id) => navigation.navigate("ScanProduct", { householdId: id }))
                 }
               >
                 <MaterialCommunityIcons name="qrcode-scan" size={18} color="#E8FFF1" />
@@ -243,8 +257,7 @@ export default function HomeScreen({ navigation }: Props) {
                 icon="qrcode-scan"
                 label={t("home.quickActions.scan")}
                 onPress={() =>
-                  resolvedHouseholdId &&
-                  navigation.navigate("ScanProduct", { householdId: resolvedHouseholdId })
+                  requireHousehold((id) => navigation.navigate("ScanProduct", { householdId: id }))
                 }
                 accent
               />
@@ -252,8 +265,7 @@ export default function HomeScreen({ navigation }: Props) {
                 icon="plus-box-outline"
                 label={t("home.quickActions.add")}
                 onPress={() =>
-                  resolvedHouseholdId &&
-                  navigation.navigate("AddProduct", { householdId: resolvedHouseholdId })
+                  requireHousehold((id) => navigation.navigate("AddProduct", { householdId: id }))
                 }
               />
               <QuickAction
@@ -322,8 +334,7 @@ export default function HomeScreen({ navigation }: Props) {
           />
           <Pressable
             onPress={() =>
-              resolvedHouseholdId &&
-              navigation.navigate("ScanProduct", { householdId: resolvedHouseholdId })
+              requireHousehold((id) => navigation.navigate("ScanProduct", { householdId: id }))
             }
             style={styles.scanFab}
           >

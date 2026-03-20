@@ -1,4 +1,10 @@
 {
+  "noHousehold": {
+    "title": "Necesitas un hogar",
+    "message": "Para usar esta función necesitas tener un hogar activo. Crea uno o selecciona uno de los que ya tienes.",
+    "create": "Crear un hogar",
+    "goToList": "Ver mis hogares"
+  },
   "common": {
     "loading": "Cargando…",
     "retry": "Reintentar",
@@ -76,7 +82,11 @@
     "membersCount_other": "{{count}} miembros",
     "list": {
       "title": "Mis hogares",
-      "subtitle": "Gestiona tus espacios de comida"
+      "subtitle": "Gestiona tus espacios de comida",
+      "empty": "Todavía no tienes ningún hogar. ¡Crea uno!",
+      "actions": {
+        "create": "Crear hogar"
+      }
     },
     "generateInviteLink": "Generar enlace de invitación"
   },
@@ -132,7 +142,10 @@
       "descriptionLabel": "Descripción",
       "membersTitle": "Miembros",
       "membersEmpty": "Este hogar todavía no tiene miembros.",
-      "showMore": "Ver más miembros"
+      "showMore": "Ver más miembros",
+      "delete": "Eliminar hogar",
+      "deleteConfirmTitle": "Eliminar hogar",
+      "deleteConfirmMessage": "¿Seguro que quieres eliminar este hogar? Esta acción no se puede deshacer."
     },
     "member": {
       "admin": "ADMIN",

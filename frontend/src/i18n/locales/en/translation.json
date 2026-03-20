@@ -1,4 +1,10 @@
 {
+  "noHousehold": {
+    "title": "You need a household",
+    "message": "To use this feature you need an active household. Create one or select one you already have.",
+    "create": "Create a household",
+    "goToList": "See my households"
+  },
   "common": {
     "loading": "Loading…",
     "retry": "Retry",
@@ -76,7 +82,11 @@
     "membersCount_other": "{{count}} members",
     "list": {
       "title": "My households",
-      "subtitle": "Manage your food spaces"
+      "subtitle": "Manage your food spaces",
+      "empty": "You don't have any household yet. Create one!",
+      "actions": {
+        "create": "Create household"
+      }
     },
     "generateInviteLink": "Generate invitation link"
   },
@@ -132,7 +142,10 @@
       "descriptionLabel": "Description",
       "membersTitle": "Members",
       "membersEmpty": "This household has no members yet.",
-      "showMore": "Show more members"
+      "showMore": "Show more members",
+      "delete": "Delete household",
+      "deleteConfirmTitle": "Delete household",
+      "deleteConfirmMessage": "Are you sure you want to delete this household? This action cannot be undone."
     },
     "member": {
       "admin": "ADMIN",

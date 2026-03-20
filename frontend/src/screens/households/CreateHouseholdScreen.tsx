@@ -71,7 +71,7 @@ export default function CreateHouseholdScreen({ navigation }: Props) {
       },
       (household) => {
         console.log(`${household.name} creado con éxito`);
-        navigation.navigate("MyHouseholds");
+        navigation.replace("MyHouseholds");
       },
       (err: ApiError) => {
         if (err.fieldErrors) {

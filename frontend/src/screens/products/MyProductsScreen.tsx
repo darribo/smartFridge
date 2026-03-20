@@ -18,6 +18,7 @@ import type { AuthStackParamList } from "../../navigation/AuthStack";
 import { THEME } from "../../theme/theme";
 import { useHouseholdStore } from "../../store/householdStore";
 import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
+import NoHouseholdModal from "../../components/common/NoHouseholdModal";
 import { DropdownField } from "./AddProductShared";
 import { findProducts, type ProductFilters, type ProductItemStorageLocation, type ProductNutriScoreGrade, type ProductWithItems, type ProductUnit } from "../../api/products/productService";
 import { resolveProductImage } from "../../utils/image";
@@ -205,6 +206,7 @@ export default function ProductsScreen({ navigation, route }: Props) {
   const [novaGroup, setNovaGroup] = useState<NovaFilter>("ANY");
   const [showFilters, setShowFilters] = useState(false);
 
+  const [showNoHousehold, setShowNoHousehold] = useState(!currentHouseholdId);
   const [products, setProducts] = useState<ProductWithItems[]>([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
@@ -303,6 +305,12 @@ export default function ProductsScreen({ navigation, route }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <NoHouseholdModal
+        visible={showNoHousehold}
+        onClose={() => { setShowNoHousehold(false); navigation.goBack(); }}
+        onCreateHousehold={() => { setShowNoHousehold(false); navigation.navigate("CreateHousehold"); }}
+        onGoToHouseholds={() => { setShowNoHousehold(false); navigation.navigate("MyHouseholds"); }}
+      />
       <View style={styles.screen}>
         <View style={styles.header}>
           <View style={styles.headerRow}>

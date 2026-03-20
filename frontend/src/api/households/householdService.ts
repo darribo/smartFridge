@@ -214,6 +214,21 @@ export const removeHouseholdMember = async(
     );
 }
 
+export const deleteHousehold = async(
+    householdId: number,
+    onSuccess?: () => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("DELETE");
+
+    return appFetch(
+        `/households/${householdId}`,
+        options,
+        onSuccess,
+        onError
+    );
+}
+
 /* export const getPendingInvitations = async(
     householdId: number,
     page: number,
