@@ -1,4 +1,5 @@
 /* DROP TABLE IF EXISTS HouseholdInvitation; */
+DROP TABLE IF EXISTS ProductItemTransaction;
 DROP TABLE IF EXISTS ProductItem;
 DROP TABLE IF EXISTS ProductAllergy;
 DROP TABLE IF EXISTS Product;
@@ -103,7 +104,19 @@ CREATE TABLE ProductItem (
     openedAt DATETIME,
     initialQuantityValue DECIMAL(7,2),
     quantityRemainingValue DECIMAL(7,2),
+    discardDate DATETIME,
     FOREIGN KEY (productId) REFERENCES Product(id) ON DELETE CASCADE
+);
+
+CREATE TABLE ProductItemTransaction (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    productItemId BIGINT NOT NULL,
+    userId BIGINT,
+    type VARCHAR(10) NOT NULL,
+    quantityDeltaValue DECIMAL(7,2),
+    createdAt DATETIME NOT NULL,
+    FOREIGN KEY (productItemId) REFERENCES ProductItem(id) ON DELETE CASCADE,
+    FOREIGN KEY (userId) REFERENCES users(id) ON DELETE SET NULL
 );
 
 --TODO: ALERGIAS

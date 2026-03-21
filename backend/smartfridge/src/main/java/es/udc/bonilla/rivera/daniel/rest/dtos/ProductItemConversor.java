@@ -34,4 +34,13 @@ public class ProductItemConversor {
 
         return productItemDtos;
     }
+
+    public static ExpiringProductItemDto toExpiringProductItemDto(ProductItem productItem, long daysRemaining) {
+
+        return new ExpiringProductItemDto(
+                productItem.getId(),
+                productItem.getProduct().getName(),
+                productItem.getProduct().getImage(),
+                daysRemaining);
+    }
 }

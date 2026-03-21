@@ -1,6 +1,7 @@
 package es.udc.bonilla.rivera.daniel.model.services;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -10,7 +11,9 @@ import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductAllergy;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
+import es.udc.bonilla.rivera.daniel.model.entities.ProductItemTransaction;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationDateException;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidProductItemTransactionException;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.ProductIsNotFoodException;
 
 public interface ProductService {
@@ -177,6 +180,12 @@ public interface ProductService {
     ProductAllergy getProductAllergy(Long userId, Long productId, Long allergyId) throws InstanceNotFoundException;
 
     void removeProductAllergy(Long userId, Long productId, Long allergyId) throws InstanceNotFoundException;
+
+    Block<ProductItem> findExpiringProducts(Long userId, Long householdId, int page, int size) throws InstanceNotFoundException;
+
+    int getDaysUntilExpiration(Long productItemId) throws InstanceNotFoundException;
+
+    ProductItemTransaction createProductItemTransaction(Long userId, Long productItemId, ProductItemTransaction.TransactionType type, BigDecimal quantityDeltaValue) throws InstanceNotFoundException, InvalidProductItemTransactionException;
 
 
 

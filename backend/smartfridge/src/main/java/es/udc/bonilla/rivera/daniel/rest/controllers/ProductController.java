@@ -35,6 +35,7 @@ import es.udc.bonilla.rivera.daniel.model.services.ProductService;
 import es.udc.bonilla.rivera.daniel.model.services.ResolvedBarcodeProduct;
 import es.udc.bonilla.rivera.daniel.model.services.UserService;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationDateException;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidProductItemTransactionException;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.ProductIsNotFoodException;
 import es.udc.bonilla.rivera.daniel.rest.common.ErrorsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.BarcodeProductConversor;
@@ -45,6 +46,7 @@ import es.udc.bonilla.rivera.daniel.rest.dtos.NewProductParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.UpdateProductItemParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.UpdateProductParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.AllergyConversor;
+import es.udc.bonilla.rivera.daniel.rest.dtos.ExpiringProductItemDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductDetailDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductDto;
@@ -92,6 +94,16 @@ public class ProductController {
 
         String errorMessage = messageSource.getMessage(INVALID_EXPIRATION_DATE_EXCEPTION_CODE, null,
                 INVALID_EXPIRATION_DATE_EXCEPTION_CODE, locale);
+
+        return new ErrorsDto(errorMessage);
+    }
+
+    @ExceptionHandler(InvalidProductItemTransactionException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ErrorsDto handleInvalidProductItemTransactionException(InvalidProductItemTransactionException exception, Locale locale) {
+
+        String errorMessage = messageSource.getMessage(exception.getErrorCode(), null, exception.getErrorCode(), locale);
 
         return new ErrorsDto(errorMessage);
     }
@@ -301,6 +313,21 @@ public class ProductController {
             @PathVariable Long itemId) throws InstanceNotFoundException {
 
         productService.deleteProductItem(userId, itemId);
+    }
+
+    @GetMapping("/{householdId}/expiring")
+    public BlockDto<ExpiringProductItemDto> findExpiringProducts(@RequestAttribute Long userId,
+            @PathVariable Long householdId, @RequestParam int page) throws InstanceNotFoundException {
+
+        Block<ProductItem> block = productService.findExpiringProducts(userId, householdId, page, SEARCH_PRODUCTS_SIZE);
+
+        List<ExpiringProductItemDto> dtos = new ArrayList<>();
+        for (ProductItem item : block.getItems()) {
+            int daysRemaining = productService.getDaysUntilExpiration(item.getId());
+            dtos.add(ProductItemConversor.toExpiringProductItemDto(item, daysRemaining));
+        }
+
+        return new BlockDto<>(dtos, block.getExistMoreItems());
     }
 
     @GetMapping("/{householdId}/checkAllergies")

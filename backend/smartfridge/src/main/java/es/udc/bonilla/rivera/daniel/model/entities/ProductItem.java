@@ -32,6 +32,7 @@ public class ProductItem {
     private LocalDateTime openedAt;
     private BigDecimal initialQuantityValue;
     private BigDecimal quantityRemainingValue;
+    private LocalDateTime discardDate;
 
     public ProductItem() {}
 
@@ -46,6 +47,7 @@ public class ProductItem {
         this.openedAt = openedAt;
         this.initialQuantityValue = initialQuantityValue;
         this.quantityRemainingValue = quantityRemainingValue;
+        this.discardDate = null;
     }
 
     @Id
@@ -126,6 +128,14 @@ public class ProductItem {
 
     public void setQuantityRemainingValue(BigDecimal quantityRemainingValue) {
         this.quantityRemainingValue = quantityRemainingValue;
+    }
+
+    public LocalDateTime getDiscardDate() {
+        return discardDate;
+    }
+
+    public void setDiscardDate(LocalDateTime discardDate) {
+        this.discardDate = discardDate;
     }
 
 }
