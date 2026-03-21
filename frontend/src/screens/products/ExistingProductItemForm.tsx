@@ -50,6 +50,7 @@ export default function ExistingProductItemForm({
   const [storageLocation, setStorageLocation] = useState<ProductItemStorageLocation>("PANTRY");
   const tomorrowDate = useMemo(() => getTomorrowDate(), []);
   const [pricePaid, setPricePaid] = useState("");
+  const [initialQuantityValue, setInitialQuantityValue] = useState("");
   const [itemCount, setItemCount] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [selectedCardImageLoading, setSelectedCardImageLoading] = useState(false);
@@ -71,6 +72,7 @@ export default function ExistingProductItemForm({
     setSelectedProduct(selectedProductSeed);
     setSearch(selectedProductSeed.name);
     setPricePaid(selectedProductSeed.defaultPrice ?? "");
+    setInitialQuantityValue(selectedProductSeed.quantity ?? "");
     setItemCount(1);
     setStorageLocation("PANTRY");
     setSelectedCardImageLoading(Boolean(selectedProductSeed.image));
@@ -113,6 +115,8 @@ export default function ExistingProductItemForm({
           name: item.name,
           image: item.image ?? null,
           defaultPrice: item.defaultPrice ?? null,
+          quantity: item.quantity ?? null,
+          unit: item.unit ?? null,
         }));
         setSearchResults(mappedResults);
       },
@@ -159,6 +163,7 @@ export default function ExistingProductItemForm({
           toIsoDateTimeOrNull(expirationDate),
           pricePaid.trim() || null,
           storageLocation as ApiProductItemStorageLocation,
+          initialQuantityValue.trim() || null,
           () => resolve(null),
           (err) => resolve(err)
         );
@@ -222,6 +227,7 @@ export default function ExistingProductItemForm({
                   setSelectedProduct(item);
                   setSearch(item.name);
                   setPricePaid(item.defaultPrice ?? "");
+                  setInitialQuantityValue(item.quantity ?? "");
                   setItemCount(1);
                   setStorageLocation("PANTRY");
                   setSelectedCardImageLoading(Boolean(item.image));
@@ -337,6 +343,15 @@ export default function ExistingProductItemForm({
             placeholder={t("addProduct.placeholders.decimal")}
             keyboardType="decimal-pad"
             errorText={errors.pricePaid}
+          />
+
+          <FormLabel text={t("addProduct.fields.initialQuantityValue", { unit: selectedProduct.unit?.toLowerCase() ?? "" })} />
+          <InputLabel
+            value={initialQuantityValue}
+            onChangeText={setInitialQuantityValue}
+            placeholder={selectedProduct.quantity ?? t("addProduct.placeholders.decimal")}
+            keyboardType="decimal-pad"
+            maxLength={8}
           />
 
           <PrimaryButton

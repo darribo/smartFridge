@@ -197,6 +197,7 @@
       "quantityRequired": "Quantity *",
       "unitRequired": "Unit *",
       "defaultPrice": "Default price (€)",
+      "daysAfterOpening": "Once opened, consume within (days)",
       "vegetarian": "Vegetarian",
       "vegan": "Vegan",
       "nutriScore": "NutriScore",
@@ -205,6 +206,7 @@
       "expirationDate": "Expiration date",
       "storageLocationRequired": "Storage location *",
       "pricePaid": "Price paid (€)",
+      "initialQuantityValue": "Quantity you have ({{unit}})",
       "itemsCount": "Number of items"
     },
     "placeholders": {
@@ -213,7 +215,8 @@
       "brand": "Ex. Brand",
       "searchProduct": "Search product",
       "date": "YYYY-MM-DD",
-      "decimal": "0.00"
+      "decimal": "0.00",
+      "daysAfterOpening": "E.g. 5"
     },
     "moreInfo": {
       "title": "Do you want to add more information?",
@@ -225,6 +228,7 @@
     },
     "actions": {
       "saveProduct": "Save product",
+      "loadBarcodeData": "Load data for this barcode",
       "addToPantry": "Add to pantry",
       "cancel": "Cancel",
       "decrease": "Decrease count",
@@ -262,6 +266,22 @@
       "cancel": "Cancel"
     }
   },
+  "editProduct": {
+    "title": "Edit product",
+    "save": "Save changes",
+    "saveFailed": "Unable to save the product.",
+    "deleteTitle": "Delete product",
+    "deleteMessage": "Are you sure you want to delete this product? All its items will also be deleted.",
+    "deleteConfirm": "Delete",
+    "deleteCancel": "Cancel",
+    "deleteFailed": "Unable to delete the product.",
+    "editItem": "Edit item",
+    "deleteItem": "Delete item",
+    "deleteItemTitle": "Delete item",
+    "deleteItemMessage": "Are you sure you want to delete this item?",
+    "deleteItemFailed": "Unable to delete the item.",
+    "saveItemFailed": "Unable to save the item."
+  },
   "scanProduct": {
     "title": "Scan product",
     "subtitle": "Place the barcode inside the frame",
@@ -297,6 +317,7 @@
       "searchPlaceholder": "Search product",
       "showItems": "View items",
       "hideItems": "Hide items",
+      "viewDetail": "View detail",
       "mixedLocations": "Multiple locations",
       "itemNumber": "Item #{{id}}",
       "purchaseDate": "Purchase",
@@ -306,6 +327,24 @@
       "errors": {
         "default": "Unable to load products."
       }
+    },
+    "detail": {
+      "title": "Product detail",
+      "loadError": "Could not load the product.",
+      "barcode": "Barcode",
+      "defaultPrice": "Usual price",
+      "daysAfterOpening": "Consume after opening in",
+      "daysAfterOpeningValue": "{{count}} days",
+      "addedOn": "Added on",
+      "vegetarian": "Vegetarian",
+      "vegan": "Vegan",
+      "itemsTitle": "Units at home",
+      "addItem": "Add",
+      "noItems": "No units registered.",
+      "expires": "Expires",
+      "noExpiration": "No expiration",
+      "pricePaid": "Price paid",
+      "quantity": "Quantity"
     },
     "filters": {
       "title": "Filters",

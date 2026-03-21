@@ -1,4 +1,5 @@
 /* DROP TABLE IF EXISTS HouseholdInvitation; */
+DROP TABLE IF EXISTS ProductItemTransaction;
 DROP TABLE IF EXISTS ProductItem;
 DROP TABLE IF EXISTS ProductAllergy;
 DROP TABLE IF EXISTS Product;
@@ -80,6 +81,7 @@ CREATE TABLE Product (
     novaGroup TINYINT,
     createdAt DATETIME NOT NULL,
     defaultPrice DECIMAL(5,2),
+    daysAfterOpening INTEGER,
     --isFavorite BOOLEAN NOT NULL,
     FOREIGN KEY (householdId) REFERENCES Household(id) ON DELETE CASCADE
 );
@@ -98,10 +100,23 @@ CREATE TABLE ProductItem (
     purchaseDate DATETIME NOT NULL,
     expirationDate DATETIME,
     storageLocation VARCHAR(20) NOT NULL,
-    -- openedAt DATETIME,
-    -- daysSinceProductWasOpened INTEGER,
-    pricePaid DECIMAL(5,2), --TODO: Si es diferente actualizar el por defecto del producto o dejarlo?
+    pricePaid DECIMAL(5,2),
+    openedAt DATETIME,
+    initialQuantityValue DECIMAL(7,2),
+    quantityRemainingValue DECIMAL(7,2),
+    discardDate DATETIME,
     FOREIGN KEY (productId) REFERENCES Product(id) ON DELETE CASCADE
+);
+
+CREATE TABLE ProductItemTransaction (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    productItemId BIGINT NOT NULL,
+    userId BIGINT,
+    type VARCHAR(10) NOT NULL,
+    quantityDeltaValue DECIMAL(7,2),
+    createdAt DATETIME NOT NULL,
+    FOREIGN KEY (productItemId) REFERENCES ProductItem(id) ON DELETE CASCADE,
+    FOREIGN KEY (userId) REFERENCES users(id) ON DELETE SET NULL
 );
 
 --TODO: ALERGIAS

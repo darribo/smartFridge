@@ -16,7 +16,7 @@ import { FormLabel } from "../../components/FormLabel";
 import { InputLabel } from "../../components/users/InputLabel";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
-import { checkAllergiesByIds, createProduct, uploadProductImage } from "../../api/products/productService";
+import { checkAllergiesByIds, createProduct, getProductByBarcode, uploadProductImage } from "../../api/products/productService";
 import type { BarcodeProduct, SimplifiedUser } from "../../api/products/productService";
 import { getAllergies, type Allergy } from "../../api/allergies/allergyService";
 import { iconFor, tintFor } from "../../components/allergies/allergyVisuals";
@@ -42,7 +42,7 @@ import {
   styles,
   ExistingProduct,
 } from "./AddProductShared";
-import { GENERIC_PRODUCT_IMAGE, resolveProductImage } from "../../utils/image";
+import { resolveProductImage } from "../../utils/image";
 
 import * as ImagePicker from "expo-image-picker";
 
@@ -51,9 +51,11 @@ type Props = {
   householdId: number;
   barcodeProduct?: BarcodeProduct;
   onCreated: (product: ExistingProduct) => void;
+  onScanPress?: () => void;
+  onBarcodeLoaded?: (product: BarcodeProduct) => void;
 };
 
-export default function FirstTimeProductForm({ householdId, barcodeProduct, onCreated }: Props) {
+export default function FirstTimeProductForm({ householdId, barcodeProduct, onCreated, onScanPress, onBarcodeLoaded }: Props) {
   //Se hace la gestión completa del alta inicial de producto con datos precargados opcionales.
   const { t } = useTranslation();
 
@@ -64,10 +66,12 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
   const [quantity, setQuantity] = useState("");
   const [unit, setUnit] = useState<ProductUnit>("ML");
   const [defaultPrice, setDefaultPrice] = useState("");
+  const [daysAfterOpening, setDaysAfterOpening] = useState("");
   const [vegetarian, setVegetarian] = useState<boolean | null>(null);
   const [vegan, setVegan] = useState<boolean | null>(null);
   const [nutriScoreGrade, setNutriScoreGrade] = useState<NutriScore | null>(null);
   const [novaGroup, setNovaGroup] = useState<NovaGroup | null>(null);
+  const [loadingBarcode, setLoadingBarcode] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreviewLoading, setImagePreviewLoading] = useState(false);
@@ -217,6 +221,45 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
     setImagePreviewLoading(Boolean(image));
   }, [image]);
 
+  const applyBarcodeProduct = (bp: BarcodeProduct) => {
+    setBarcode(bp.barcode ?? "");
+    setName(bp.name ?? "");
+    setBrand(bp.brand ?? "");
+    setImage(bp.image ?? null);
+    setDefaultPrice(bp.defaultPrice != null ? String(bp.defaultPrice) : "");
+    setQuantity(bp.quantity != null ? String(bp.quantity) : "");
+    setUnit(normalizeUnit(bp.unit ?? null));
+    setVegetarian(bp.vegetarian ?? null);
+    setVegan(bp.vegan ?? null);
+    setNutriScoreGrade((bp.nutriScoreGrade as NutriScore | null) ?? null);
+    setNovaGroup((bp.novaGroup as NovaGroup | null) ?? null);
+    setSelectedAllergyIds(bp.allergies?.map((a) => a.id) ?? []);
+    setGlobalErrors([]);
+  };
+
+  const handleLoadBarcode = () => {
+    const trimmed = barcode.trim();
+    if (!trimmed || loadingBarcode) return;
+    setLoadingBarcode(true);
+    setGlobalErrors([]);
+    getProductByBarcode(
+      householdId,
+      trimmed,
+      (bp) => {
+        setLoadingBarcode(false);
+        if (bp.id !== null) {
+          onBarcodeLoaded?.(bp);
+        } else {
+          applyBarcodeProduct(bp);
+        }
+      },
+      (err) => {
+        setLoadingBarcode(false);
+        setGlobalErrors(err.globalErrors ?? [t("addProduct.errors.saveFailed")]);
+      }
+    );
+  };
+
   const isFirstFlowValid = useMemo(() => {
     //Se hace una validación mínima para habilitar el botón principal.
     return name.trim().length > 0 && quantity.trim().length > 0;
@@ -271,6 +314,7 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
       nutriScoreGrade,
       novaGroup,
       allergyIds: selectedAllergyIds,
+      daysAfterOpening: daysAfterOpening.trim() ? parseInt(daysAfterOpening.trim(), 10) : null,
     };
     const capturedImage = image;
 
@@ -331,6 +375,8 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
         name: createdProduct.name,
         image: finalImage,
         defaultPrice: createdProduct.defaultPrice ?? null,
+        quantity: createdProduct.quantity ?? null,
+        unit: createdProduct.unit ?? null,
       });
     };
 
@@ -397,7 +443,22 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
         onChangeText={setBarcode}
         placeholder={t("addProduct.placeholders.barcode")}
         rightIcon="barcode-outline"
+        onRightIconPress={onScanPress}
       />
+      {barcode.trim().length > 0 ? (
+        <Pressable
+          onPress={handleLoadBarcode}
+          disabled={loadingBarcode}
+          style={styles.loadBarcodeBtn}
+        >
+          {loadingBarcode ? (
+            <ActivityIndicator size="small" color={THEME.primary} />
+          ) : (
+            <MaterialCommunityIcons name="cloud-download-outline" size={18} color={THEME.primary} />
+          )}
+          <Text style={styles.loadBarcodeBtnText}>{t("addProduct.actions.loadBarcodeData")}</Text>
+        </Pressable>
+      ) : null}
 
       <FormLabel text={t("addProduct.fields.productNameRequired")} />
       <InputLabel
@@ -454,6 +515,15 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
         placeholder={t("addProduct.placeholders.decimal")}
         keyboardType="decimal-pad"
         errorText={errors.defaultPrice}
+      />
+
+      <FormLabel text={t("addProduct.fields.daysAfterOpening")} />
+      <InputLabel
+        value={daysAfterOpening}
+        onChangeText={setDaysAfterOpening}
+        placeholder={t("addProduct.placeholders.daysAfterOpening")}
+        keyboardType="number-pad"
+        maxLength={3}
       />
 
       <View style={styles.moreInfoBox}>

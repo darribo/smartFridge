@@ -13,7 +13,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +35,7 @@ import es.udc.bonilla.rivera.daniel.model.services.ProductService;
 import es.udc.bonilla.rivera.daniel.model.services.ResolvedBarcodeProduct;
 import es.udc.bonilla.rivera.daniel.model.services.UserService;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationDateException;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidProductItemTransactionException;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.ProductIsNotFoodException;
 import es.udc.bonilla.rivera.daniel.rest.common.ErrorsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.BarcodeProductConversor;
@@ -40,8 +43,12 @@ import es.udc.bonilla.rivera.daniel.rest.dtos.BarcodeProductDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.BlockDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewProductItemParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewProductParamsDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.UpdateProductItemParamsDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.UpdateProductParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.AllergyConversor;
+import es.udc.bonilla.rivera.daniel.rest.dtos.ExpiringProductItemDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductConversor;
+import es.udc.bonilla.rivera.daniel.rest.dtos.ProductDetailDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductItemConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductItemDto;
@@ -91,6 +98,16 @@ public class ProductController {
         return new ErrorsDto(errorMessage);
     }
 
+    @ExceptionHandler(InvalidProductItemTransactionException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ErrorsDto handleInvalidProductItemTransactionException(InvalidProductItemTransactionException exception, Locale locale) {
+
+        String errorMessage = messageSource.getMessage(exception.getErrorCode(), null, exception.getErrorCode(), locale);
+
+        return new ErrorsDto(errorMessage);
+    }
+
     @ExceptionHandler(ProductIsNotFoodException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
@@ -122,7 +139,7 @@ public class ProductController {
         Product product = productService.createProduct(userId, params.getBarcode(), params.getName(), params.getBrand(),
                 params.getDefaultPrice(), params.getImage(), params.getQuantity(), params.getUnit(),
                 params.getIsVegetarian(), params.getIsVegan(), params.getNutriScoreGrade(), params.getNovaGroup(),
-                params.getHouseholdId(), params.getAllergyIds());
+                params.getHouseholdId(), params.getAllergyIds(), params.getDaysAfterOpening());
 
         return ProductConversor.toProductDto(product);
     }
@@ -146,7 +163,8 @@ public class ProductController {
             throws InstanceNotFoundException, InvalidExpirationDateException {
 
         return ProductItemConversor.toProductItemDto(productService.createProductItem(userId, productId,
-                params.getPurchaseDate(), params.getExpirationDate(), params.getPricePaid(), params.getStorageLocation()));
+                params.getPurchaseDate(), params.getExpirationDate(), params.getPricePaid(), params.getStorageLocation(),
+                params.getInitialQuantityValue()));
     }
 
     @GetMapping("/{householdId}/search")
@@ -243,6 +261,74 @@ public class ProductController {
         return ProductConversor.toProductDto(product);
     }
 
+
+    @GetMapping("/{productId}/detail")
+    @Operation(
+        summary = "Obtener detalle de un producto",
+        description = "Devuelve la información completa de un producto junto con todos sus items."
+    )
+    public ProductDetailDto getProductDetail(@RequestAttribute Long userId, @PathVariable Long productId)
+            throws InstanceNotFoundException {
+
+        Product product = productService.getProduct(userId, productId);
+        List<ProductItem> items = productService.findProductItems(userId, productId);
+
+        return ProductConversor.toProductDetailDto(product, items);
+    }
+
+    @PutMapping("/{productId}")
+    public ProductDto updateProduct(@RequestAttribute Long userId, @PathVariable Long productId,
+            @Validated @RequestBody UpdateProductParamsDto params)
+            throws InstanceNotFoundException, DuplicateInstanceException {
+
+        Product product = productService.updateProduct(userId, productId,
+                params.getName(), params.getBrand(), params.getDefaultPrice(),
+                params.getQuantity(), params.getUnit(), params.getIsVegetarian(), params.getIsVegan(),
+                params.getNutriScoreGrade(), params.getNovaGroup(), params.getDaysAfterOpening());
+
+        return ProductConversor.toProductDto(product);
+    }
+
+    @DeleteMapping("/{productId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteProduct(@RequestAttribute Long userId, @PathVariable Long productId)
+            throws InstanceNotFoundException {
+
+        productService.deleteProduct(userId, productId);
+    }
+
+    @PutMapping("/{productId}/items/{itemId}")
+    public ProductItemDto updateProductItem(@RequestAttribute Long userId, @PathVariable Long productId,
+            @PathVariable Long itemId, @Validated @RequestBody UpdateProductItemParamsDto params)
+            throws InstanceNotFoundException, InvalidExpirationDateException {
+
+        return ProductItemConversor.toProductItemDto(productService.updateProductItem(userId, itemId,
+                params.getExpirationDate(), params.getPricePaid(), params.getStorageLocation(),
+                params.getInitialQuantityValue()));
+    }
+
+    @DeleteMapping("/{productId}/items/{itemId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteProductItem(@RequestAttribute Long userId, @PathVariable Long productId,
+            @PathVariable Long itemId) throws InstanceNotFoundException {
+
+        productService.deleteProductItem(userId, itemId);
+    }
+
+    @GetMapping("/{householdId}/expiring")
+    public BlockDto<ExpiringProductItemDto> findExpiringProducts(@RequestAttribute Long userId,
+            @PathVariable Long householdId, @RequestParam int page) throws InstanceNotFoundException {
+
+        Block<ProductItem> block = productService.findExpiringProducts(userId, householdId, page, SEARCH_PRODUCTS_SIZE);
+
+        List<ExpiringProductItemDto> dtos = new ArrayList<>();
+        for (ProductItem item : block.getItems()) {
+            int daysRemaining = productService.getDaysUntilExpiration(item.getId());
+            dtos.add(ProductItemConversor.toExpiringProductItemDto(item, daysRemaining));
+        }
+
+        return new BlockDto<>(dtos, block.getExistMoreItems());
+    }
 
     @GetMapping("/{householdId}/checkAllergies")
     public List<SimplifiedUserDto> checkAllergiesByIds(

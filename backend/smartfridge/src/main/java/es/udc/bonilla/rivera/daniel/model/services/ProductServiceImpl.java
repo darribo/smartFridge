@@ -20,6 +20,7 @@ import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.daos.ProductAllergyDao;
 import es.udc.bonilla.rivera.daniel.model.daos.ProductDao;
 import es.udc.bonilla.rivera.daniel.model.daos.ProductItemDao;
+import es.udc.bonilla.rivera.daniel.model.daos.ProductItemTransactionDao;
 import es.udc.bonilla.rivera.daniel.model.entities.Allergy;
 import es.udc.bonilla.rivera.daniel.model.entities.Household;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
@@ -29,7 +30,11 @@ import es.udc.bonilla.rivera.daniel.model.entities.ProductAllergy;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductAllergyId;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItem.StorageLocation;
+import es.udc.bonilla.rivera.daniel.model.entities.ProductItemTransaction;
+import java.time.temporal.ChronoUnit;
+
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationDateException;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidProductItemTransactionException;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.ProductIsNotFoodException;
 
 @Service
@@ -58,11 +63,14 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private LocalStorageService localStorageService;
 
+    @Autowired
+    private ProductItemTransactionDao productItemTransactionDao;
+
     @Override
     /** {@inheritDoc} */
     public Product createProduct(Long userId, String barcode, String name, String brand, String defaultPrice, String image,
             String quantity, Product.Unit unit, Boolean isVegetarian, Boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
-            Product.NovaGroup novaGroup, Long householdId, List<Long> allergyIds)
+            Product.NovaGroup novaGroup, Long householdId, List<Long> allergyIds, Integer daysAfterOpening)
             throws InstanceNotFoundException, DuplicateInstanceException, IOException {
 
         permissionChecker.checkUserHouseholdExists(userId, householdId);
@@ -92,6 +100,7 @@ public class ProductServiceImpl implements ProductService {
                 nutriScoreGrade,
                 novaGroup,
                 LocalDateTime.now().withNano(0),
+                daysAfterOpening,
                 household
         );
 
@@ -122,7 +131,10 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     /** {@inheritDoc} */
-    public Product updateProduct(Long userId, Long productId, String name, String defaultPrice, String image, String quantity)
+    public Product updateProduct(Long userId, Long productId, String name, String brand,
+            String defaultPrice, String quantity, Product.Unit unit,
+            Boolean isVegetarian, Boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
+            Product.NovaGroup novaGroup, Integer daysAfterOpening)
             throws InstanceNotFoundException, DuplicateInstanceException {
 
         Product product = permissionChecker.checkProductExists(productId);
@@ -137,13 +149,15 @@ public class ProductServiceImpl implements ProductService {
         }
 
         product.setName(name);
+        product.setBrand(brand != null && brand.isBlank() ? null : brand);
         product.setDefaultPrice(parseBigDecimal(defaultPrice));
-
-        if (image != null && !image.isBlank()) {
-            product.setImage(image);
-        }
-
         product.setQuantity(parseBigDecimal(quantity));
+        product.setUnit(unit);
+        product.setVegetarian(isVegetarian);
+        product.setVegan(isVegan);
+        product.setNutriScoreGrade(nutriScoreGrade);
+        product.setNovaGroup(novaGroup);
+        product.setDaysAfterOpening(daysAfterOpening);
 
         return product;
     }
@@ -172,7 +186,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     /** {@inheritDoc} */
     public ProductItem createProductItem(Long userId, Long productId, String purchaseDate, String expirationDate, String pricePaid,
-            ProductItem.StorageLocation storageLocation)
+            ProductItem.StorageLocation storageLocation, String initialQuantityValue)
             throws InstanceNotFoundException, InvalidExpirationDateException {
 
         Product product = permissionChecker.checkProductExists(productId);
@@ -181,6 +195,8 @@ public class ProductServiceImpl implements ProductService {
         LocalDateTime parsedPurchaseDate = purchaseDate != null ? LocalDateTime.parse(purchaseDate) : null;
         LocalDateTime parsedExpirationDate = expirationDate != null ? LocalDateTime.parse(expirationDate) : null;
         BigDecimal parsedPricePaid = parseBigDecimal(pricePaid);
+        BigDecimal parsedInitialQuantity = initialQuantityValue != null ? parseBigDecimal(initialQuantityValue) : null;
+        BigDecimal resolvedInitialQuantity = parsedInitialQuantity != null ? parsedInitialQuantity : product.getQuantity();
 
         validateDates(parsedPurchaseDate, parsedExpirationDate);
 
@@ -196,7 +212,10 @@ public class ProductServiceImpl implements ProductService {
                 parsedPurchaseDate,
                 parsedExpirationDate,
                 parsedPricePaid,
-                storageLocation
+                storageLocation,
+                null,
+                resolvedInitialQuantity,
+                resolvedInitialQuantity
         );
 
         return productItemDao.save(productItem);
@@ -204,22 +223,26 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     /** {@inheritDoc} */
-    public ProductItem updateProductItem(Long userId, Long productItemId, String purchaseDate, String expirationDate, String pricePaid,
-            ProductItem.StorageLocation storageLocation)
+    public ProductItem updateProductItem(Long userId, Long productItemId, String expirationDate, String pricePaid,
+            ProductItem.StorageLocation storageLocation, String initialQuantityValue)
             throws InstanceNotFoundException, InvalidExpirationDateException {
 
         ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
         permissionChecker.checkUserHouseholdExists(userId, productItem.getProduct().getHousehold().getId());
 
-        LocalDateTime parsedPurchaseDate = purchaseDate != null ? LocalDateTime.parse(purchaseDate) : null;
         LocalDateTime parsedExpirationDate = expirationDate != null ? LocalDateTime.parse(expirationDate) : null;
 
-        validateDates(parsedPurchaseDate, parsedExpirationDate);
+        validateDates(productItem.getPurchaseDate(), parsedExpirationDate);
 
-        productItem.setPurchaseDate(parsedPurchaseDate);
         productItem.setExpirationDate(parsedExpirationDate);
         productItem.setPricePaid(parseBigDecimal(pricePaid));
         productItem.setStorageLocation(storageLocation);
+
+        if (initialQuantityValue != null) {
+            BigDecimal parsed = parseBigDecimal(initialQuantityValue);
+            productItem.setInitialQuantityValue(parsed);
+            productItem.setQuantityRemainingValue(parsed);
+        }
 
         return productItem;
     }
@@ -424,5 +447,76 @@ public class ProductServiceImpl implements ProductService {
         }
 
         return resolvedAllergyIds;
+    }
+
+    @Override
+    public Block<ProductItem> findExpiringProducts(Long userId, Long householdId, int page, int size) throws InstanceNotFoundException {
+        
+        permissionChecker.checkUserHouseholdExists(userId, householdId);
+
+        Slice<ProductItem> productItemSlice = productItemDao.findExpiringProducts(householdId, LocalDateTime.now().plusDays(3).withNano(0), PageRequest.of(page, size));
+
+        return new Block<>(productItemSlice.getContent(), productItemSlice.hasNext());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getDaysUntilExpiration(Long productItemId) throws InstanceNotFoundException {
+
+        ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
+
+        LocalDateTime now = LocalDateTime.now();
+        int minDays = Integer.MAX_VALUE;
+
+        if (productItem.getExpirationDate() != null) {
+            int days = (int) ChronoUnit.DAYS.between(now, productItem.getExpirationDate());
+            minDays = Math.min(minDays, days);
+        }
+
+        if (productItem.getOpenedAt() != null && productItem.getProduct().getDaysAfterOpening() != null) {
+            LocalDateTime expiresAfterOpening = productItem.getOpenedAt().plusDays(productItem.getProduct().getDaysAfterOpening());
+            int days = (int) ChronoUnit.DAYS.between(now, expiresAfterOpening);
+            minDays = Math.min(minDays, days);
+        }
+
+        return minDays == Integer.MAX_VALUE ? -1 : minDays;
+    }
+
+    @Override
+    public ProductItemTransaction createProductItemTransaction(Long userId, Long productItemId, ProductItemTransaction.TransactionType type, BigDecimal quantityDeltaValue) throws InstanceNotFoundException, InvalidProductItemTransactionException {
+
+        ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
+        permissionChecker.checkUserHouseholdExists(userId, productItem.getProduct().getHousehold().getId());
+
+        //Si el tipo es crear y ya existe alguna transaccion para ese item de producto lanzar excepcion
+        if(type == ProductItemTransaction.TransactionType.CREATE && productItemTransactionDao.existsByProductItemId(productItemId)) {
+            throw new InvalidProductItemTransactionException(InvalidProductItemTransactionException.ALREADY_CREATED);
+        }
+
+        //Si el tipo es tirar y ya se ha tirado lanzar excepcion
+        if(type == ProductItemTransaction.TransactionType.DISCARD && productItem.getDiscardDate() != null) {
+            throw new InvalidProductItemTransactionException(InvalidProductItemTransactionException.ALREADY_DISCARDED);
+        }
+
+        //Si ya no queda o se ha tirado, no se pueden hacer transacciones (abrir, consumir, ajustar) sobre el producto
+        if(productItem.getQuantityRemainingValue().compareTo(BigDecimal.ZERO) == 0 || productItem.getDiscardDate() != null) {
+            throw new InvalidProductItemTransactionException(InvalidProductItemTransactionException.ITEM_NOT_OPERABLE);
+        }
+
+        //Si el tipo es abrir y ya se ha abierto lanzar excepcion
+        if(type == ProductItemTransaction.TransactionType.OPEN && productItem.getOpenedAt() != null) {
+            throw new InvalidProductItemTransactionException(InvalidProductItemTransactionException.ALREADY_OPENED);
+        }
+
+        ProductItemTransaction transaction = new ProductItemTransaction(
+                productItem,
+                permissionChecker.checkUserExists(userId),
+                type,
+                quantityDeltaValue,
+                LocalDateTime.now().withNano(0)
+        );
+
+        return productItemTransactionDao.save(transaction);
+
     }
 }

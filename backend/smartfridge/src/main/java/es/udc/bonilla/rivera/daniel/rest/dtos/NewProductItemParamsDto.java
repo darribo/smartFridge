@@ -25,15 +25,19 @@ public class NewProductItemParamsDto {
             allowableValues = { "PANTRY", "FRIDGE", "FREEZER" })
     private ProductItem.StorageLocation storageLocation;
 
+    @Schema(description = "Cantidad inicial del item (por defecto la del producto)", example = "1.00", nullable = true)
+    private String initialQuantityValue;
+
     public NewProductItemParamsDto() {
     }
 
     public NewProductItemParamsDto(String purchaseDate, String expirationDate, String pricePaid,
-            ProductItem.StorageLocation storageLocation) {
+            ProductItem.StorageLocation storageLocation, String initialQuantityValue) {
         this.purchaseDate = purchaseDate;
         this.expirationDate = expirationDate;
         this.pricePaid = pricePaid;
         this.storageLocation = storageLocation;
+        this.initialQuantityValue = initialQuantityValue;
     }
 
     @NotNull
@@ -70,5 +74,15 @@ public class NewProductItemParamsDto {
 
     public void setStorageLocation(ProductItem.StorageLocation storageLocation) {
         this.storageLocation = storageLocation;
+    }
+
+    @DecimalMin(value = "0.00")
+    @DecimalMax(value = "99999.99")
+    public String getInitialQuantityValue() {
+        return initialQuantityValue;
+    }
+
+    public void setInitialQuantityValue(String initialQuantityValue) {
+        this.initialQuantityValue = initialQuantityValue;
     }
 }

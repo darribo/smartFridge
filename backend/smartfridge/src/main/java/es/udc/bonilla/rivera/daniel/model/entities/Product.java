@@ -3,6 +3,7 @@ package es.udc.bonilla.rivera.daniel.model.entities;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -10,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Column;
 
 @Entity
 public class Product {
@@ -51,6 +51,7 @@ public class Product {
     private NutriScoreGrade nutriScoreGrade;
     private NovaGroup novaGroup;
     private LocalDateTime createdAt;
+    private Integer daysAfterOpening;
     /* private Boolean isFavorite; */
     private Household household;
     
@@ -59,8 +60,7 @@ public class Product {
 
     public Product(String barcode, String name, String brand, BigDecimal defaultPrice, String image,
             BigDecimal quantity, Unit unit, Boolean isVegetarian, Boolean isVegan, NutriScoreGrade nutriScoreGrade,
-            NovaGroup novaGroup, LocalDateTime createdAt, /* Boolean isFavorite, */ Household household) {
-
+            NovaGroup novaGroup, LocalDateTime createdAt, Integer daysAfterOpening, /* Boolean isFavorite, */ Household household) {
 
         this.barcode = barcode;
         this.name = name;
@@ -74,6 +74,7 @@ public class Product {
         this.nutriScoreGrade = nutriScoreGrade;
         this.novaGroup = novaGroup;
         this.createdAt = createdAt;
+        this.daysAfterOpening = daysAfterOpening;
         /* this.isFavorite = isFavorite; */
         this.household = household;
     }
@@ -173,6 +174,13 @@ public class Product {
     }
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Integer getDaysAfterOpening() {
+        return daysAfterOpening;
+    }
+    public void setDaysAfterOpening(Integer daysAfterOpening) {
+        this.daysAfterOpening = daysAfterOpening;
     }
 
     /* public Boolean isFavorite() {

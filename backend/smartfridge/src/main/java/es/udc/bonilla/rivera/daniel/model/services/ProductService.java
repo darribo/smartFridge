@@ -1,6 +1,7 @@
 package es.udc.bonilla.rivera.daniel.model.services;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -10,7 +11,9 @@ import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductAllergy;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
+import es.udc.bonilla.rivera.daniel.model.entities.ProductItemTransaction;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationDateException;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidProductItemTransactionException;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.ProductIsNotFoodException;
 
 public interface ProductService {
@@ -38,7 +41,7 @@ public interface ProductService {
      */
     Product createProduct(Long userId, String barcode, String name, String brand, String defaultPrice, String image,
             String quantity, Product.Unit unit, Boolean isVegetarian, Boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
-            Product.NovaGroup novaGroup, Long householdId, List<Long> allergyIds)
+            Product.NovaGroup novaGroup, Long householdId, List<Long> allergyIds, Integer daysAfterOpening)
             throws InstanceNotFoundException, DuplicateInstanceException, IOException;
 
     /**
@@ -46,15 +49,14 @@ public interface ProductService {
      *
      * @param userId Identificador del usuario que realiza la operación.
      * @param productId Identificador del producto a actualizar.
-     * @param name Nuevo nombre del producto.
-     * @param defaultPrice Nuevo precio por defecto.
-     * @param image Nueva imagen.
-     * @param quantity Nueva cantidad.
      * @return La entidad {@code Product} actualizada.
      * @throws InstanceNotFoundException Si el producto no existe o el usuario no pertenece al hogar del producto.
      * @throws DuplicateInstanceException Si el nuevo nombre ya existe en otro producto del mismo hogar.
      */
-    Product updateProduct(Long userId, Long productId, String name, String defaultPrice, String image, String quantity)
+    Product updateProduct(Long userId, Long productId, String name, String brand,
+            String defaultPrice, String quantity, Product.Unit unit,
+            Boolean isVegetarian, Boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
+            Product.NovaGroup novaGroup, Integer daysAfterOpening)
             throws InstanceNotFoundException, DuplicateInstanceException;
 
     /**
@@ -89,7 +91,7 @@ public interface ProductService {
      * @throws InvalidExpirationDateException Si la fecha de caducidad es anterior a la fecha de compra.
      */
     ProductItem createProductItem(Long userId, Long productId, String purchaseDate, String expirationDate, String pricePaid,
-            ProductItem.StorageLocation storageLocation)
+            ProductItem.StorageLocation storageLocation, String initialQuantityValue)
             throws InstanceNotFoundException, InvalidExpirationDateException;
 
     /**
@@ -104,8 +106,8 @@ public interface ProductService {
      * @throws InstanceNotFoundException Si el item no existe o el usuario no pertenece al hogar del producto asociado.
      * @throws InvalidExpirationDateException Si la fecha de caducidad es anterior a la fecha de compra.
      */
-    ProductItem updateProductItem(Long userId, Long productItemId, String purchaseDate, String expirationDate, String pricePaid,
-            ProductItem.StorageLocation storageLocation)
+    ProductItem updateProductItem(Long userId, Long productItemId, String expirationDate, String pricePaid,
+            ProductItem.StorageLocation storageLocation, String initialQuantityValue)
             throws InstanceNotFoundException, InvalidExpirationDateException;
 
     /**
@@ -178,6 +180,12 @@ public interface ProductService {
     ProductAllergy getProductAllergy(Long userId, Long productId, Long allergyId) throws InstanceNotFoundException;
 
     void removeProductAllergy(Long userId, Long productId, Long allergyId) throws InstanceNotFoundException;
+
+    Block<ProductItem> findExpiringProducts(Long userId, Long householdId, int page, int size) throws InstanceNotFoundException;
+
+    int getDaysUntilExpiration(Long productItemId) throws InstanceNotFoundException;
+
+    ProductItemTransaction createProductItemTransaction(Long userId, Long productItemId, ProductItemTransaction.TransactionType type, BigDecimal quantityDeltaValue) throws InstanceNotFoundException, InvalidProductItemTransactionException;
 
 
 

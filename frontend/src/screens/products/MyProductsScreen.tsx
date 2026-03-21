@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 
@@ -26,11 +27,6 @@ import { resolveProductImage } from "../../utils/image";
 type StorageFilter = "ALL" | "PANTRY" | "FRIDGE" | "FREEZER";
 type NovaFilter = "ANY" | "GROUP_1" | "GROUP_2" | "GROUP_3" | "GROUP_4";
 type Props = NativeStackScreenProps<AuthStackParamList, "MyProducts">;
-
-function formatDate(date: string | null | undefined, emptyText: string) {
-  if (!date) return emptyText;
-  return date.slice(0, 10);
-}
 
 function formatQuantity(quantity?: string | null, unit?: ProductUnit) {
   if (!quantity || !unit) return "";
@@ -100,96 +96,55 @@ function NullableToggle({
 function ProductCard({
   product,
   t,
+  onPress,
 }: {
   product: ProductWithItems;
   t: (key: string, options?: any) => string;
+  onPress: () => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
-
   const firstLocation = product.items[0]?.storageLocation;
   const allSameLocation = product.items.every((item) => item.storageLocation === firstLocation);
   const locationMeta = allSameLocation && firstLocation ? getLocationMeta(firstLocation, t) : null;
   const subtitle = formatQuantity(product.quantity, product.unit);
 
   return (
-    <View style={styles.card}>
-      <Pressable onPress={() => setExpanded((prev) => !prev)} style={styles.cardPressable}>
-        <View style={styles.cardContent}>
-          <View style={styles.cardTopRow}>
-            {locationMeta ? (
-              <View style={[styles.badge, { backgroundColor: locationMeta.bg }]}>
-                <MaterialCommunityIcons name={locationMeta.icon} size={15} color={locationMeta.color} />
-                <Text style={[styles.badgeText, { color: locationMeta.color }]}>{locationMeta.label}</Text>
-              </View>
-            ) : (
-              <View style={[styles.badge, styles.mixedBadge]}>
-                <MaterialCommunityIcons name="layers-triple-outline" size={15} color={THEME.muted} />
-                <Text style={[styles.badgeText, { color: THEME.muted }]}>
-                  {t("products.list.mixedLocations")}
-                </Text>
-              </View>
-            )}
+    <Pressable style={styles.card} onPress={onPress}>
+      <View style={[styles.cardContent, styles.cardPressable]}>
+        <View style={styles.cardTopRow}>
+          {locationMeta ? (
+            <View style={[styles.badge, { backgroundColor: locationMeta.bg }]}>
+              <MaterialCommunityIcons name={locationMeta.icon} size={15} color={locationMeta.color} />
+              <Text style={[styles.badgeText, { color: locationMeta.color }]}>{locationMeta.label}</Text>
+            </View>
+          ) : (
+            <View style={[styles.badge, styles.mixedBadge]}>
+              <MaterialCommunityIcons name="layers-triple-outline" size={15} color={THEME.muted} />
+              <Text style={[styles.badgeText, { color: THEME.muted }]}>
+                {t("products.list.mixedLocations")}
+              </Text>
+            </View>
+          )}
 
-            <View style={styles.countPill}>
-              <Text style={styles.countPillText}>{product.countItems}</Text>
+          <View style={styles.countPill}>
+            <Text style={styles.countPillText}>{product.countItems}</Text>
+          </View>
+        </View>
+
+        <View style={styles.mainRow}>
+          <View style={styles.textBlock}>
+            <Text style={styles.productName}>{product.name}</Text>
+            {subtitle ? <Text style={styles.productSubtitle}>{subtitle}</Text> : null}
+
+            <View style={styles.expandHintRow}>
+              <Text style={styles.expandHintText}>{t("products.list.viewDetail")}</Text>
+              <MaterialCommunityIcons name="chevron-right" size={18} color={THEME.muted} />
             </View>
           </View>
 
-          <View style={styles.mainRow}>
-            <View style={styles.textBlock}>
-              <Text style={styles.productName}>{product.name}</Text>
-              {subtitle ? <Text style={styles.productSubtitle}>{subtitle}</Text> : null}
-
-              <View style={styles.expandHintRow}>
-                <Text style={styles.expandHintText}>
-                  {expanded ? t("products.list.hideItems") : t("products.list.showItems")}
-                </Text>
-                <MaterialCommunityIcons
-                  name={expanded ? "chevron-up" : "chevron-down"}
-                  size={18}
-                  color={THEME.muted}
-                />
-              </View>
-            </View>
-
-            <Image source={{ uri: resolveProductImage(product.image) }} style={styles.productImage} />
-          </View>
+          <Image source={{ uri: resolveProductImage(product.image) }} style={styles.productImage} />
         </View>
-      </Pressable>
-
-      {expanded ? (
-        <View style={styles.itemsContainer}>
-          {product.items.map((item, index) => {
-            const meta = getLocationMeta(item.storageLocation, t);
-
-            return (
-              <View
-                key={item.id}
-                style={[styles.itemRow, index !== product.items.length - 1 ? styles.itemRowBorder : null]}
-              >
-                <View style={styles.itemLeft}>
-                  <View style={[styles.itemIconWrap, { backgroundColor: meta.bg }]}>
-                    <MaterialCommunityIcons name={meta.icon} size={15} color={meta.color} />
-                  </View>
-
-                  <View style={styles.itemTextBlock}>
-                    <Text style={styles.itemTitle}>{t("products.list.itemNumber", { id: item.id })}</Text>
-                    <Text style={styles.itemMeta}>
-                      {t("products.list.purchaseDate")}: {formatDate(item.purchaseDate, t("products.list.noDate"))}
-                    </Text>
-                    <Text style={styles.itemMeta}>
-                      {t("products.list.expirationDate")}: {formatDate(item.expirationDate, t("products.list.noDate"))}
-                    </Text>
-                  </View>
-                </View>
-
-                <Text style={[styles.itemLocation, { color: meta.color }]}>{meta.label}</Text>
-              </View>
-            );
-          })}
-        </View>
-      ) : null}
-    </View>
+      </View>
+    </Pressable>
   );
 }
 
@@ -286,9 +241,11 @@ export default function ProductsScreen({ navigation, route }: Props) {
     );
   };
 
-  useEffect(() => {
-    loadProducts(0, false);
-  }, [currentHouseholdId, filters]);
+  useFocusEffect(
+    useCallback(() => {
+      loadProducts(0, false);
+    }, [currentHouseholdId, filters])
+  );
 
   const onEndReached = () => {
     if (loadingFirst || loadingMore || !hasMore) return;
@@ -410,7 +367,13 @@ export default function ProductsScreen({ navigation, route }: Props) {
           <FlatList
             data={products}
             keyExtractor={(item) => String(item.id)}
-            renderItem={({ item }) => <ProductCard product={item} t={t} />}
+            renderItem={({ item }) => (
+              <ProductCard
+                product={item}
+                t={t}
+                onPress={() => navigation.navigate("ProductDetail", { productId: item.id })}
+              />
+            )}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.listContent}
             onEndReached={onEndReached}
@@ -676,56 +639,6 @@ const styles = StyleSheet.create({
     height: 116,
     borderRadius: 24,
     backgroundColor: THEME.mint2,
-  },
-  itemsContainer: {
-    borderTopWidth: 1,
-    borderTopColor: THEME.border,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  itemRow: {
-    minHeight: 72,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-    paddingVertical: 12,
-  },
-  itemRowBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: THEME.border,
-  },
-  itemLeft: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-  },
-  itemIconWrap: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 2,
-  },
-  itemTextBlock: {
-    flex: 1,
-  },
-  itemTitle: {
-    fontSize: 15,
-    fontWeight: "800",
-    color: THEME.text,
-    marginBottom: 2,
-  },
-  itemMeta: {
-    fontSize: 13,
-    lineHeight: 18,
-    color: THEME.muted,
-  },
-  itemLocation: {
-    fontSize: 13,
-    fontWeight: "800",
   },
   footerLoading: {
     paddingVertical: 18,

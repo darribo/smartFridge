@@ -25,6 +25,8 @@ const toExistingProductSeed = (barcodeProduct?: BarcodeProduct): ExistingProduct
     name: barcodeProduct.name ?? "",
     image: barcodeProduct.image ?? null,
     defaultPrice: barcodeProduct.defaultPrice != null ? String(barcodeProduct.defaultPrice) : null,
+    quantity: barcodeProduct.quantity != null ? String(barcodeProduct.quantity) : null,
+    unit: barcodeProduct.unit ?? null,
   };
 };
 
@@ -84,6 +86,11 @@ export default function AddProductScreen({ navigation, route }: Props) {
             barcodeProduct={barcodeProduct}
             onCreated={(product) => {
               setCreatedProductSeed(product);
+              setIsFirstTime(false);
+            }}
+            onScanPress={() => navigation.replace("ScanProduct", { householdId })}
+            onBarcodeLoaded={(found) => {
+              setCreatedProductSeed(toExistingProductSeed(found));
               setIsFirstTime(false);
             }}
           />

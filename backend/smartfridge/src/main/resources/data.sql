@@ -64,16 +64,16 @@ INSERT INTO UserHousehold (userId, householdId, joinedAt) VALUES
     (4, 14, '2026-02-20 09:12:00');
 
 INSERT INTO Product (
-    id, householdId, barcode, name, brand, image, quantity, unit, vegetarian, vegan, nutriScoreGrade, novaGroup, createdAt, defaultPrice
+    id, householdId, barcode, name, brand, image, quantity, unit, vegetarian, vegan, nutriScoreGrade, novaGroup, createdAt, defaultPrice, daysAfterOpening
 ) VALUES
-    (100, 10, '8437000010011', 'Leche Entera', 'Granja Norte', NULL, 1.00, 3, 1, 0, 1, 0, '2026-03-01 10:00:00', 1.35),
-    (101, 10, '8437000010012', 'Leche Semidesnatada', 'Granja Norte', NULL, 1.00, 3, 1, 0, 1, 0, '2026-03-01 10:10:00', 1.30),
-    (102, 10, '8437000010020', 'Yogur Natural', 'La Vaquera', NULL, 4.00, 4, 1, 0, 0, 0, '2026-03-01 10:20:00', 2.10),
-    (103, 10, '8437000010030', 'Arroz Redondo', 'Campo Vivo', NULL, 1.00, 1, 1, 1, 1, 0, '2026-03-01 10:30:00', 1.25),
-    (104, 10, '8437000010040', 'Pasta Espagueti', 'Trigo Oro', NULL, 500.00, 0, 1, 1, 1, 2, '2026-03-01 10:40:00', 1.05),
-    (105, 10, '8437000010050', 'Tomate Triturado', 'Huerta Casa', NULL, 400.00, 0, 1, 1, 2, 0, '2026-03-01 10:50:00', 0.95),
-    (106, 10, '8437000010060', 'Pan Integral', 'Horno Sur', NULL, 500.00, 0, 1, 1, 2, 0, '2026-03-01 11:00:00', 1.80),
-    (107, 10, '8437000010070', 'Queso Curado', 'Sierra Alta', NULL, 250.00, 0, 1, 0, 3, 2, '2026-03-01 11:10:00', 3.90);
+    (100, 10, '8437000010011', 'Leche Entera', 'Granja Norte', NULL, 1.00, 3, 1, 0, 1, 0, '2026-03-01 10:00:00', 1.35, 5),
+    (101, 10, '8437000010012', 'Leche Semidesnatada', 'Granja Norte', NULL, 1.00, 3, 1, 0, 1, 0, '2026-03-01 10:10:00', 1.30, 5),
+    (102, 10, '8437000010020', 'Yogur Natural', 'La Vaquera', NULL, 4.00, 4, 1, 0, 0, 0, '2026-03-01 10:20:00', 2.10, 7),
+    (103, 10, '8437000010030', 'Arroz Redondo', 'Campo Vivo', NULL, 1.00, 1, 1, 1, 1, 0, '2026-03-01 10:30:00', 1.25, NULL),
+    (104, 10, '8437000010040', 'Pasta Espagueti', 'Trigo Oro', NULL, 500.00, 0, 1, 1, 1, 2, '2026-03-01 10:40:00', 1.05, NULL),
+    (105, 10, '8437000010050', 'Tomate Triturado', 'Huerta Casa', NULL, 400.00, 0, 1, 1, 2, 0, '2026-03-01 10:50:00', 0.95, 3),
+    (106, 10, '8437000010060', 'Pan Integral', 'Horno Sur', NULL, 500.00, 0, 1, 1, 2, 0, '2026-03-01 11:00:00', 1.80, 4),
+    (107, 10, '8437000010070', 'Queso Curado', 'Sierra Alta', NULL, 250.00, 0, 1, 0, 3, 2, '2026-03-01 11:10:00', 3.90, 30);
 
 -- status enum (ordinal): 0 = ACCEPTED, 1 = PENDING, 2 = REJECTED
 /* INSERT INTO HouseholdInvitation (id, householdId, hostId, guestId, sendingDate, responseDate, status) VALUES
