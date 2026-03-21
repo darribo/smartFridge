@@ -197,6 +197,7 @@
       "quantityRequired": "Cantidade *",
       "unitRequired": "Unidade *",
       "defaultPrice": "Prezo por defecto (€)",
+      "daysAfterOpening": "Unha vez aberto, consumir en (días)",
       "vegetarian": "Vexetariano",
       "vegan": "Vegano",
       "nutriScore": "NutriScore",
@@ -205,6 +206,7 @@
       "expirationDate": "Data de caducidade",
       "storageLocationRequired": "Ubicación na casa *",
       "pricePaid": "Prezo pagado (€)",
+      "initialQuantityValue": "Cantidade que tes ({{unit}})",
       "itemsCount": "Número de items"
     },
     "placeholders": {
@@ -213,7 +215,8 @@
       "brand": "Ex. Marca",
       "searchProduct": "Buscar produto",
       "date": "AAAA-MM-DD",
-      "decimal": "0.00"
+      "decimal": "0.00",
+      "daysAfterOpening": "Ex. 5"
     },
     "moreInfo": {
       "title": "Queres engadir máis información?",
@@ -225,6 +228,7 @@
     },
     "actions": {
       "saveProduct": "Gardar produto",
+      "loadBarcodeData": "Cargar datos deste código",
       "addToPantry": "Engadir á despensa",
       "cancel": "Cancelar",
       "decrease": "Reducir cantidade",
@@ -297,6 +301,7 @@
       "searchPlaceholder": "Buscar produto",
       "showItems": "Ver items",
       "hideItems": "Ocultar items",
+      "viewDetail": "Ver detalle",
       "mixedLocations": "Varias localizacións",
       "itemNumber": "Item #{{id}}",
       "purchaseDate": "Compra",
@@ -306,6 +311,24 @@
       "errors": {
         "default": "Non se puideron cargar os produtos."
       }
+    },
+    "detail": {
+      "title": "Detalle do produto",
+      "loadError": "Non se puido cargar o produto.",
+      "barcode": "Código de barras",
+      "defaultPrice": "Prezo habitual",
+      "daysAfterOpening": "Consumir tras abrir en",
+      "daysAfterOpeningValue": "{{count}} días",
+      "addedOn": "Engadido o",
+      "vegetarian": "Vexetariano",
+      "vegan": "Vegano",
+      "itemsTitle": "Unidades na casa",
+      "addItem": "Engadir",
+      "noItems": "Non hai unidades rexistradas.",
+      "expires": "Caduca",
+      "noExpiration": "Sen caducidade",
+      "pricePaid": "Prezo pagado",
+      "quantity": "Cantidade"
     },
     "filters": {
       "title": "Filtros",

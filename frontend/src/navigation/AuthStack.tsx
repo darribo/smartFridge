@@ -14,6 +14,7 @@ import { ApiError } from "../api/appFetch";
 import AddProductScreen from "../screens/products/AddProductScreen";
 import ScanProductScreen from "../screens/products/ScanProductScreen";
 import MyProductsScreen from "../screens/products/MyProductsScreen";
+import ProductDetailScreen from "../screens/products/ProductDetailScreen";
 import ProductLocationSelectorScreen from "../screens/products/ProductLocationSelectorScreen";
 
 export type AuthStackParamList = {
@@ -29,6 +30,7 @@ export type AuthStackParamList = {
   ScanProduct: { householdId: number };
   ProductLocationSelector: undefined;
   MyProducts: { storageFilter: "ALL" | "PANTRY" | "FRIDGE" | "FREEZER" } | undefined;
+  ProductDetail: { productId: number };
 };
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
@@ -47,6 +49,7 @@ export function AuthStack() {
       <Stack.Screen name="ScanProduct" component={ScanProductScreen} />
       <Stack.Screen name="ProductLocationSelector" component={ProductLocationSelectorScreen} />
       <Stack.Screen name="MyProducts" component={MyProductsScreen} />
+      <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
       <Stack.Screen name="HouseholdDetail">
         {({ route, navigation }) => (
           <HouseholdDetailScreen

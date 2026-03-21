@@ -16,6 +16,8 @@ export type ExistingProduct = {
   name: string;
   image?: string | null;
   defaultPrice?: string | null;
+  quantity?: string | null;
+  unit?: string | null;
 };
 
 export type ProductFormErrors = Partial<{
@@ -718,5 +720,22 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     color: THEME.muted,
+  },
+  loadBarcodeBtn: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 6,
+    alignSelf: "flex-start" as const,
+    marginTop: -6,
+    marginBottom: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: THEME.mint2,
+  },
+  loadBarcodeBtnText: {
+    fontSize: 13,
+    fontWeight: "700" as const,
+    color: THEME.primary,
   },
 });

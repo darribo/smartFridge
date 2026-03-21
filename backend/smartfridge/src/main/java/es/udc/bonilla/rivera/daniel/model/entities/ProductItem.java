@@ -29,16 +29,23 @@ public class ProductItem {
     private LocalDateTime expirationDate;
     private BigDecimal pricePaid;
     private StorageLocation storageLocation;
+    private LocalDateTime openedAt;
+    private BigDecimal initialQuantityValue;
+    private BigDecimal quantityRemainingValue;
 
     public ProductItem() {}
 
     public ProductItem(Product product, LocalDateTime purchaseDate, LocalDateTime expirationDate, BigDecimal pricePaid,
-            StorageLocation storageLocation) {
+            StorageLocation storageLocation, LocalDateTime openedAt, BigDecimal initialQuantityValue,
+            BigDecimal quantityRemainingValue) {
         this.product = product;
         this.purchaseDate = purchaseDate;
         this.expirationDate = expirationDate;
         this.pricePaid = pricePaid;
         this.storageLocation = storageLocation;
+        this.openedAt = openedAt;
+        this.initialQuantityValue = initialQuantityValue;
+        this.quantityRemainingValue = quantityRemainingValue;
     }
 
     @Id
@@ -93,6 +100,32 @@ public class ProductItem {
 
     public void setStorageLocation(StorageLocation storageLocation) {
         this.storageLocation = storageLocation;
+    }
+
+    public LocalDateTime getOpenedAt() {
+        return openedAt;
+    }
+
+    public void setOpenedAt(LocalDateTime openedAt) {
+        this.openedAt = openedAt;
+    }
+
+    @Column(precision = 7, scale = 2)
+    public BigDecimal getInitialQuantityValue() {
+        return initialQuantityValue;
+    }
+
+    public void setInitialQuantityValue(BigDecimal initialQuantityValue) {
+        this.initialQuantityValue = initialQuantityValue;
+    }
+
+    @Column(precision = 7, scale = 2)
+    public BigDecimal getQuantityRemainingValue() {
+        return quantityRemainingValue;
+    }
+
+    public void setQuantityRemainingValue(BigDecimal quantityRemainingValue) {
+        this.quantityRemainingValue = quantityRemainingValue;
     }
 
 }

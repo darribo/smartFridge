@@ -62,7 +62,7 @@ public class ProductServiceImpl implements ProductService {
     /** {@inheritDoc} */
     public Product createProduct(Long userId, String barcode, String name, String brand, String defaultPrice, String image,
             String quantity, Product.Unit unit, Boolean isVegetarian, Boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
-            Product.NovaGroup novaGroup, Long householdId, List<Long> allergyIds)
+            Product.NovaGroup novaGroup, Long householdId, List<Long> allergyIds, Integer daysAfterOpening)
             throws InstanceNotFoundException, DuplicateInstanceException, IOException {
 
         permissionChecker.checkUserHouseholdExists(userId, householdId);
@@ -92,6 +92,7 @@ public class ProductServiceImpl implements ProductService {
                 nutriScoreGrade,
                 novaGroup,
                 LocalDateTime.now().withNano(0),
+                daysAfterOpening,
                 household
         );
 
@@ -172,7 +173,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     /** {@inheritDoc} */
     public ProductItem createProductItem(Long userId, Long productId, String purchaseDate, String expirationDate, String pricePaid,
-            ProductItem.StorageLocation storageLocation)
+            ProductItem.StorageLocation storageLocation, String initialQuantityValue)
             throws InstanceNotFoundException, InvalidExpirationDateException {
 
         Product product = permissionChecker.checkProductExists(productId);
@@ -181,6 +182,8 @@ public class ProductServiceImpl implements ProductService {
         LocalDateTime parsedPurchaseDate = purchaseDate != null ? LocalDateTime.parse(purchaseDate) : null;
         LocalDateTime parsedExpirationDate = expirationDate != null ? LocalDateTime.parse(expirationDate) : null;
         BigDecimal parsedPricePaid = parseBigDecimal(pricePaid);
+        BigDecimal parsedInitialQuantity = initialQuantityValue != null ? parseBigDecimal(initialQuantityValue) : null;
+        BigDecimal resolvedInitialQuantity = parsedInitialQuantity != null ? parsedInitialQuantity : product.getQuantity();
 
         validateDates(parsedPurchaseDate, parsedExpirationDate);
 
@@ -196,7 +199,10 @@ public class ProductServiceImpl implements ProductService {
                 parsedPurchaseDate,
                 parsedExpirationDate,
                 parsedPricePaid,
-                storageLocation
+                storageLocation,
+                null,
+                resolvedInitialQuantity,
+                resolvedInitialQuantity
         );
 
         return productItemDao.save(productItem);

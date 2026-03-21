@@ -15,6 +15,7 @@ export type NewProductParams = {
     nutriScoreGrade?: ProductNutriScoreGrade | null;
     novaGroup?: ProductNovaGroup | null;
     allergyIds?: number[] | null;
+    daysAfterOpening?: number | null;
 }
 
 export type Product = {
@@ -31,6 +32,7 @@ export type Product = {
     nutriScoreGrade?: ProductNutriScoreGrade;
     novaGroup?: ProductNovaGroup;
     createdAt: string; // ISO 8601 format
+    daysAfterOpening?: number | null;
 }
 
 export type ProductItem = {
@@ -40,6 +42,27 @@ export type ProductItem = {
     expirationDate?: string | null;
     pricePaid?: string | null;
     storageLocation: ProductItemStorageLocation;
+    openedAt?: string | null;
+    initialQuantityValue?: string | null;
+    quantityRemainingValue?: string | null;
+}
+
+export type ProductDetail = {
+    id: number;
+    barcode?: string | null;
+    name: string;
+    brand?: string | null;
+    defaultPrice?: string | null;
+    image?: string | null;
+    quantity?: string | null;
+    unit: ProductUnit;
+    isVegetarian: boolean;
+    isVegan: boolean;
+    nutriScoreGrade?: ProductNutriScoreGrade | null;
+    novaGroup?: ProductNovaGroup | null;
+    createdAt: string;
+    daysAfterOpening?: number | null;
+    items: ProductItem[];
 }
 
 export type ProductWithItems = {
@@ -157,6 +180,7 @@ export const createProductItem = async (
     expirationDate: string | null,
     pricePaid: string | null,
     storageLocation: ProductItemStorageLocation,
+    initialQuantityValue: string | null,
     onSuccess?: () => void,
     onError?: (err: ApiError) => void
 ) => {
@@ -164,7 +188,8 @@ export const createProductItem = async (
         purchaseDate,
         expirationDate,
         pricePaid,
-        storageLocation
+        storageLocation,
+        initialQuantityValue,
     };
 
     const options = await fetchConfig("POST", body);
@@ -213,6 +238,21 @@ export const checkAllergiesByIds = async (
     onSuccess,
     onError
   );
+};
+
+export const getProductDetail = async (
+    productId: number,
+    onSuccess?: (product: ProductDetail) => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("GET");
+
+    return appFetch(
+        `/products/${productId}/detail`,
+        options,
+        onSuccess,
+        onError
+    );
 };
 
 export const uploadProductImage = async (

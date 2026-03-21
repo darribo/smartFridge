@@ -18,7 +18,10 @@ public class ProductItemConversor {
                 productItem.getPurchaseDate() != null ? productItem.getPurchaseDate().toString() : null,
                 productItem.getExpirationDate() != null ? productItem.getExpirationDate().toString() : null,
                 productItem.getPricePaid() != null ? productItem.getPricePaid().toString() : null,
-                productItem.getStorageLocation());
+                productItem.getStorageLocation(),
+                productItem.getOpenedAt() != null ? productItem.getOpenedAt().toString() : null,
+                productItem.getInitialQuantityValue() != null ? productItem.getInitialQuantityValue().toString() : null,
+                productItem.getQuantityRemainingValue() != null ? productItem.getQuantityRemainingValue().toString() : null);
     }
 
     public static List<ProductItemDto> toProductItemDtos(List<ProductItem> productItems) {

@@ -48,6 +48,9 @@ public class NewProductParamsDto {
     @Schema(description = "Grupo NOVA del producto", example = "GROUP_1", nullable = true, allowableValues = { "GROUP_1", "GROUP_2", "GROUP_3", "GROUP_4" })
     private Product.NovaGroup novaGroup;
 
+    @Schema(description = "Días recomendados para consumir el producto tras abrirlo", example = "3", nullable = true)
+    private Integer daysAfterOpening;
+
     @Schema(description = "Identificador del hogar al que se añadirá el producto", example = "10")
     private Long householdId;
 
@@ -181,6 +184,14 @@ public class NewProductParamsDto {
 
     public void setHouseholdId(Long householdId) {
         this.householdId = householdId;
+    }
+
+    public Integer getDaysAfterOpening() {
+        return daysAfterOpening;
+    }
+
+    public void setDaysAfterOpening(Integer daysAfterOpening) {
+        this.daysAfterOpening = daysAfterOpening;
     }
 
     public List<Long> getAllergyIds() {

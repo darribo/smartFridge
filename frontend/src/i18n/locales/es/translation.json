@@ -197,6 +197,7 @@
       "quantityRequired": "Cantidad *",
       "unitRequired": "Unidad *",
       "defaultPrice": "Precio por defecto (€)",
+      "daysAfterOpening": "Una vez abierto, consumir en (días)",
       "allergies": "Alérgenos",
       "vegetarian": "Vegetariano",
       "vegan": "Vegano",
@@ -206,6 +207,7 @@
       "expirationDate": "Fecha de Caducidad",
       "storageLocationRequired": "Ubicación en casa *",
       "pricePaid": "Precio Pagado (€)",
+      "initialQuantityValue": "Cantidad que tienes ({{unit}})",
       "itemsCount": "Número de items"
     },
     "placeholders": {
@@ -214,7 +216,8 @@
       "brand": "Ej. Pascual",
       "searchProduct": "Buscar producto",
       "date": "YYYY-MM-DD",
-      "decimal": "0.00"
+      "decimal": "0.00",
+      "daysAfterOpening": "Ej. 5"
     },
     "moreInfo": {
       "title": "¿Quieres añadir más información?",
@@ -226,6 +229,7 @@
     },
     "actions": {
       "saveProduct": "Guardar producto",
+      "loadBarcodeData": "Cargar datos de este código",
       "addToPantry": "Añadir a despensa",
       "cancel": "Cancelar",
       "decrease": "Reducir cantidad",
@@ -298,6 +302,7 @@
       "searchPlaceholder": "Buscar producto",
       "showItems": "Ver items",
       "hideItems": "Ocultar items",
+      "viewDetail": "Ver detalle",
       "mixedLocations": "Varias ubicaciones",
       "itemNumber": "Item #{{id}}",
       "purchaseDate": "Compra",
@@ -307,6 +312,24 @@
       "errors": {
         "default": "No se pudieron cargar los productos."
       }
+    },
+    "detail": {
+      "title": "Detalle del producto",
+      "loadError": "No se pudo cargar el producto.",
+      "barcode": "Código de barras",
+      "defaultPrice": "Precio habitual",
+      "daysAfterOpening": "Consumir tras abrir en",
+      "daysAfterOpeningValue": "{{count}} días",
+      "addedOn": "Añadido el",
+      "vegetarian": "Vegetariano",
+      "vegan": "Vegano",
+      "itemsTitle": "Unidades en casa",
+      "addItem": "Añadir",
+      "noItems": "No hay unidades registradas.",
+      "expires": "Caduca",
+      "noExpiration": "Sin caducidad",
+      "pricePaid": "Precio pagado",
+      "quantity": "Cantidad"
     },
     "filters": {
       "title": "Filtros",

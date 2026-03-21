@@ -80,6 +80,7 @@ CREATE TABLE Product (
     novaGroup TINYINT,
     createdAt DATETIME NOT NULL,
     defaultPrice DECIMAL(5,2),
+    daysAfterOpening INTEGER,
     --isFavorite BOOLEAN NOT NULL,
     FOREIGN KEY (householdId) REFERENCES Household(id) ON DELETE CASCADE
 );
@@ -98,9 +99,10 @@ CREATE TABLE ProductItem (
     purchaseDate DATETIME NOT NULL,
     expirationDate DATETIME,
     storageLocation VARCHAR(20) NOT NULL,
-    -- openedAt DATETIME,
-    -- daysSinceProductWasOpened INTEGER,
-    pricePaid DECIMAL(5,2), --TODO: Si es diferente actualizar el por defecto del producto o dejarlo?
+    pricePaid DECIMAL(5,2),
+    openedAt DATETIME,
+    initialQuantityValue DECIMAL(7,2),
+    quantityRemainingValue DECIMAL(7,2),
     FOREIGN KEY (productId) REFERENCES Product(id) ON DELETE CASCADE
 );
 

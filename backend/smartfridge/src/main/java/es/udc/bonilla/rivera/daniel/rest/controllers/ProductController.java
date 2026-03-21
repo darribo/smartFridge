@@ -42,6 +42,7 @@ import es.udc.bonilla.rivera.daniel.rest.dtos.NewProductItemParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewProductParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.AllergyConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductConversor;
+import es.udc.bonilla.rivera.daniel.rest.dtos.ProductDetailDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductItemConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductItemDto;
@@ -122,7 +123,7 @@ public class ProductController {
         Product product = productService.createProduct(userId, params.getBarcode(), params.getName(), params.getBrand(),
                 params.getDefaultPrice(), params.getImage(), params.getQuantity(), params.getUnit(),
                 params.getIsVegetarian(), params.getIsVegan(), params.getNutriScoreGrade(), params.getNovaGroup(),
-                params.getHouseholdId(), params.getAllergyIds());
+                params.getHouseholdId(), params.getAllergyIds(), params.getDaysAfterOpening());
 
         return ProductConversor.toProductDto(product);
     }
@@ -146,7 +147,8 @@ public class ProductController {
             throws InstanceNotFoundException, InvalidExpirationDateException {
 
         return ProductItemConversor.toProductItemDto(productService.createProductItem(userId, productId,
-                params.getPurchaseDate(), params.getExpirationDate(), params.getPricePaid(), params.getStorageLocation()));
+                params.getPurchaseDate(), params.getExpirationDate(), params.getPricePaid(), params.getStorageLocation(),
+                params.getInitialQuantityValue()));
     }
 
     @GetMapping("/{householdId}/search")
@@ -243,6 +245,20 @@ public class ProductController {
         return ProductConversor.toProductDto(product);
     }
 
+
+    @GetMapping("/{productId}/detail")
+    @Operation(
+        summary = "Obtener detalle de un producto",
+        description = "Devuelve la información completa de un producto junto con todos sus items."
+    )
+    public ProductDetailDto getProductDetail(@RequestAttribute Long userId, @PathVariable Long productId)
+            throws InstanceNotFoundException {
+
+        Product product = productService.getProduct(userId, productId);
+        List<ProductItem> items = productService.findProductItems(userId, productId);
+
+        return ProductConversor.toProductDetailDto(product, items);
+    }
 
     @GetMapping("/{householdId}/checkAllergies")
     public List<SimplifiedUserDto> checkAllergiesByIds(

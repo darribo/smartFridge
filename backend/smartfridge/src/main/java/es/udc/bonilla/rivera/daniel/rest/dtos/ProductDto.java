@@ -50,12 +50,15 @@ public class ProductDto {
     @Schema(description = "Fecha de creación del producto", example = "2026-03-02T14:15:00")
     private LocalDateTime createdAt;
 
+    @Schema(description = "Días recomendados para consumir tras abrir", example = "3", nullable = true)
+    private Integer daysAfterOpening;
+
     public ProductDto() {
     }
 
     public ProductDto(Long id, String barcode, String name, String brand, String defaultPrice, String image, String quantity,
             Product.Unit unit, boolean isVegetarian, boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
-            Product.NovaGroup novaGroup, LocalDateTime createdAt) {
+            Product.NovaGroup novaGroup, LocalDateTime createdAt, Integer daysAfterOpening) {
         this.id = id;
         this.barcode = barcode;
         this.name = name;
@@ -69,6 +72,7 @@ public class ProductDto {
         this.nutriScoreGrade = nutriScoreGrade;
         this.novaGroup = novaGroup;
         this.createdAt = createdAt;
+        this.daysAfterOpening = daysAfterOpening;
     }
 
     public Long getId() {
@@ -173,5 +177,13 @@ public class ProductDto {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Integer getDaysAfterOpening() {
+        return daysAfterOpening;
+    }
+
+    public void setDaysAfterOpening(Integer daysAfterOpening) {
+        this.daysAfterOpening = daysAfterOpening;
     }
 }

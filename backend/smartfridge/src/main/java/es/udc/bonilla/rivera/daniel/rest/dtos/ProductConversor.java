@@ -26,7 +26,8 @@ public class ProductConversor {
                 Boolean.TRUE.equals(product.isVegan()),
                 product.getNutriScoreGrade(),
                 product.getNovaGroup(),
-                product.getCreatedAt());
+                product.getCreatedAt(),
+                product.getDaysAfterOpening());
     }
 
     public static List<ProductDto> toProductDtos(List<Product> products) {
@@ -49,6 +50,26 @@ public class ProductConversor {
                 product.getQuantity() != null ? product.getQuantity().toString() : null,
                 product.getUnit(),
                 countItems,
+                ProductItemConversor.toProductItemDtos(productItems));
+    }
+
+    public static ProductDetailDto toProductDetailDto(Product product, List<ProductItem> productItems) {
+
+        return new ProductDetailDto(
+                product.getId(),
+                product.getBarcode(),
+                product.getName(),
+                product.getBrand(),
+                product.getDefaultPrice() != null ? product.getDefaultPrice().toString() : null,
+                product.getImage(),
+                product.getQuantity() != null ? product.getQuantity().toString() : null,
+                product.getUnit(),
+                Boolean.TRUE.equals(product.isVegetarian()),
+                Boolean.TRUE.equals(product.isVegan()),
+                product.getNutriScoreGrade(),
+                product.getNovaGroup(),
+                product.getCreatedAt(),
+                product.getDaysAfterOpening(),
                 ProductItemConversor.toProductItemDtos(productItems));
     }
 }

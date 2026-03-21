@@ -86,7 +86,7 @@ class ProductServiceTest {
     private Product createProduct(Household household, String name) {
         Product product = new Product("1234567890123", name, "Brand", new BigDecimal("2.15"), "image.png",
                 new BigDecimal("1.00"), Product.Unit.KG, true, false, Product.NutriScoreGrade.B,
-                Product.NovaGroup.GROUP_2, LocalDateTime.now().withNano(0), household);
+                Product.NovaGroup.GROUP_2, LocalDateTime.now().withNano(0), null, household);
         return productDao.save(product);
     }
 
@@ -99,7 +99,7 @@ class ProductServiceTest {
 
         Product created = productService.createProduct(member.getId(), "8437015942011", "Leche Entera", "Marca",
                 "1.55", "milk.png", "1.00", Product.Unit.L, true, false, Product.NutriScoreGrade.B,
-                Product.NovaGroup.GROUP_1, household.getId(), null);
+                Product.NovaGroup.GROUP_1, household.getId(), null, null);
 
         assertNotNull(created);
         assertNotNull(created.getId());
@@ -117,10 +117,10 @@ class ProductServiceTest {
         assertThrows(DuplicateInstanceException.class, () -> {
             productService.createProduct(member.getId(), "1111111111111", "Pasta", "Brand", "1.00", "a.png", "1.00",
                     Product.Unit.KG, true, true, Product.NutriScoreGrade.A, Product.NovaGroup.GROUP_1,
-                    household.getId(), null);
+                    household.getId(), null, null);
             productService.createProduct(member.getId(), "2222222222222", "Pasta", "Brand", "1.10", "b.png", "1.00",
                     Product.Unit.KG, true, true, Product.NutriScoreGrade.A, Product.NovaGroup.GROUP_1,
-                    household.getId(), null);
+                    household.getId(), null, null);
         });
     }
 
@@ -134,10 +134,10 @@ class ProductServiceTest {
         assertThrows(DuplicateInstanceException.class, () -> {
             productService.createProduct(member.getId(), "9999999999999", "Pasta", "Brand", "1.00", "a.png", "1.00",
                     Product.Unit.KG, true, true, Product.NutriScoreGrade.A, Product.NovaGroup.GROUP_1,
-                    household.getId(), null);
+                    household.getId(), null, null);
             productService.createProduct(member.getId(), "9999999999999", "Arroz", "Brand", "1.10", "b.png", "1.00",
                     Product.Unit.KG, true, true, Product.NutriScoreGrade.A, Product.NovaGroup.GROUP_1,
-                    household.getId(), null);
+                    household.getId(), null, null);
         });
     }
 
@@ -190,7 +190,7 @@ class ProductServiceTest {
 
         assertThrows(InvalidExpirationDateException.class, () -> productService.createProductItem(
                 admin.getId(), product.getId(), "2026-03-20T10:00:00", "2026-03-19T10:00:00", "2.50",
-                ProductItem.StorageLocation.FRIDGE));
+                ProductItem.StorageLocation.FRIDGE, null));
     }
 
     @Test
@@ -202,7 +202,7 @@ class ProductServiceTest {
         Product product = createProduct(household, "Pollo");
 
         ProductItem created = productService.createProductItem(admin.getId(), product.getId(), "2026-03-01T10:00:00",
-                "2026-03-10T10:00:00", "3.10", ProductItem.StorageLocation.FRIDGE);
+                "2026-03-10T10:00:00", "3.10", ProductItem.StorageLocation.FRIDGE, null);
 
         ProductItem updated = productService.updateProductItem(admin.getId(), created.getId(), "2026-03-02T10:00:00",
                 "2026-03-12T10:00:00", "3.40", ProductItem.StorageLocation.FREEZER);
@@ -222,7 +222,7 @@ class ProductServiceTest {
         Product product = createProduct(household, "Huevos");
 
         ProductItem created = productService.createProductItem(admin.getId(), product.getId(), "2026-03-01T10:00:00",
-                "2026-03-10T10:00:00", "2.20", ProductItem.StorageLocation.PANTRY);
+                "2026-03-10T10:00:00", "2.20", ProductItem.StorageLocation.PANTRY, null);
 
         productService.deleteProductItem(admin.getId(), created.getId());
 
@@ -238,7 +238,7 @@ class ProductServiceTest {
         Product product = createProduct(household, "Garbanzos");
 
         productService.createProductItem(admin.getId(), product.getId(), "2026-03-01T10:00:00",
-                "2026-03-10T10:00:00", "4.35", ProductItem.StorageLocation.FRIDGE);
+                "2026-03-10T10:00:00", "4.35", ProductItem.StorageLocation.FRIDGE, null);
 
         Product updatedProduct = productDao.findById(product.getId()).orElseThrow();
 
@@ -271,7 +271,7 @@ class ProductServiceTest {
 
         Product localProduct = new Product("8480000168641", "Sal Fina", "Marca", new BigDecimal("1.10"), null,
                 new BigDecimal("1.00"), Product.Unit.KG, true, true, Product.NutriScoreGrade.A,
-                Product.NovaGroup.GROUP_1, LocalDateTime.now().withNano(0), household);
+                Product.NovaGroup.GROUP_1, LocalDateTime.now().withNano(0), null, household);
         localProduct = productDao.save(localProduct);
 
         ResolvedBarcodeProduct found = productService.findProductByBarcode(admin.getId(), household.getId(), "8480000168641");
@@ -315,7 +315,7 @@ class ProductServiceTest {
         Product product = createProduct(household, "Mantequilla");
 
         ProductItem created = productService.createProductItem(admin.getId(), product.getId(), "2026-03-01T10:00:00",
-                "2026-03-10T10:00:00", "2.20", ProductItem.StorageLocation.FRIDGE);
+                "2026-03-10T10:00:00", "2.20", ProductItem.StorageLocation.FRIDGE, null);
 
         assertEquals(ProductItem.StorageLocation.FRIDGE, created.getStorageLocation());
     }

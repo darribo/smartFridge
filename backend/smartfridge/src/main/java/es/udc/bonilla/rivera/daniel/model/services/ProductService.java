@@ -38,7 +38,7 @@ public interface ProductService {
      */
     Product createProduct(Long userId, String barcode, String name, String brand, String defaultPrice, String image,
             String quantity, Product.Unit unit, Boolean isVegetarian, Boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
-            Product.NovaGroup novaGroup, Long householdId, List<Long> allergyIds)
+            Product.NovaGroup novaGroup, Long householdId, List<Long> allergyIds, Integer daysAfterOpening)
             throws InstanceNotFoundException, DuplicateInstanceException, IOException;
 
     /**
@@ -89,7 +89,7 @@ public interface ProductService {
      * @throws InvalidExpirationDateException Si la fecha de caducidad es anterior a la fecha de compra.
      */
     ProductItem createProductItem(Long userId, Long productId, String purchaseDate, String expirationDate, String pricePaid,
-            ProductItem.StorageLocation storageLocation)
+            ProductItem.StorageLocation storageLocation, String initialQuantityValue)
             throws InstanceNotFoundException, InvalidExpirationDateException;
 
     /**

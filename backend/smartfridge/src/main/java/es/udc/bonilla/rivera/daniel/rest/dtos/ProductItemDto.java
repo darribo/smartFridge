@@ -27,17 +27,30 @@ public class ProductItemDto {
     @Schema(description = "Ubicación de la casa donde se guarda el item", example = "FRIDGE")
     private ProductItem.StorageLocation storageLocation;
 
+    @Schema(description = "Fecha en la que se abrió el item", example = "2026-03-10T08:00:00", nullable = true)
+    private String openedAt;
+
+    @Schema(description = "Cantidad inicial del item al añadirlo", example = "1.00", nullable = true)
+    private String initialQuantityValue;
+
+    @Schema(description = "Cantidad restante del item", example = "0.50", nullable = true)
+    private String quantityRemainingValue;
+
     public ProductItemDto() {
     }
 
     public ProductItemDto(Long id, Long productId, String purchaseDate, String expirationDate, String pricePaid,
-            ProductItem.StorageLocation storageLocation) {
+            ProductItem.StorageLocation storageLocation, String openedAt, String initialQuantityValue,
+            String quantityRemainingValue) {
         this.id = id;
         this.productId = productId;
         this.purchaseDate = purchaseDate;
         this.expirationDate = expirationDate;
         this.pricePaid = pricePaid;
         this.storageLocation = storageLocation;
+        this.openedAt = openedAt;
+        this.initialQuantityValue = initialQuantityValue;
+        this.quantityRemainingValue = quantityRemainingValue;
     }
 
     public Long getId() {
@@ -86,5 +99,29 @@ public class ProductItemDto {
 
     public void setStorageLocation(ProductItem.StorageLocation storageLocation) {
         this.storageLocation = storageLocation;
+    }
+
+    public String getOpenedAt() {
+        return openedAt;
+    }
+
+    public void setOpenedAt(String openedAt) {
+        this.openedAt = openedAt;
+    }
+
+    public String getInitialQuantityValue() {
+        return initialQuantityValue;
+    }
+
+    public void setInitialQuantityValue(String initialQuantityValue) {
+        this.initialQuantityValue = initialQuantityValue;
+    }
+
+    public String getQuantityRemainingValue() {
+        return quantityRemainingValue;
+    }
+
+    public void setQuantityRemainingValue(String quantityRemainingValue) {
+        this.quantityRemainingValue = quantityRemainingValue;
     }
 }
