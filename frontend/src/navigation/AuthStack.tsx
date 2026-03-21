@@ -15,6 +15,7 @@ import AddProductScreen from "../screens/products/AddProductScreen";
 import ScanProductScreen from "../screens/products/ScanProductScreen";
 import MyProductsScreen from "../screens/products/MyProductsScreen";
 import ProductDetailScreen from "../screens/products/ProductDetailScreen";
+import EditProductScreen from "../screens/products/EditProductScreen";
 import ProductLocationSelectorScreen from "../screens/products/ProductLocationSelectorScreen";
 
 export type AuthStackParamList = {
@@ -31,6 +32,7 @@ export type AuthStackParamList = {
   ProductLocationSelector: undefined;
   MyProducts: { storageFilter: "ALL" | "PANTRY" | "FRIDGE" | "FREEZER" } | undefined;
   ProductDetail: { productId: number };
+  EditProduct: { productId: number };
 };
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
@@ -50,6 +52,7 @@ export function AuthStack() {
       <Stack.Screen name="ProductLocationSelector" component={ProductLocationSelectorScreen} />
       <Stack.Screen name="MyProducts" component={MyProductsScreen} />
       <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
+      <Stack.Screen name="EditProduct" component={EditProductScreen} />
       <Stack.Screen name="HouseholdDetail">
         {({ route, navigation }) => (
           <HouseholdDetailScreen

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 
@@ -240,9 +241,11 @@ export default function ProductsScreen({ navigation, route }: Props) {
     );
   };
 
-  useEffect(() => {
-    loadProducts(0, false);
-  }, [currentHouseholdId, filters]);
+  useFocusEffect(
+    useCallback(() => {
+      loadProducts(0, false);
+    }, [currentHouseholdId, filters])
+  );
 
   const onEndReached = () => {
     if (loadingFirst || loadingMore || !hasMore) return;

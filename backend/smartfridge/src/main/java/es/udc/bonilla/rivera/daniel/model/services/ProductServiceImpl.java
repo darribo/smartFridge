@@ -123,7 +123,10 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     /** {@inheritDoc} */
-    public Product updateProduct(Long userId, Long productId, String name, String defaultPrice, String image, String quantity)
+    public Product updateProduct(Long userId, Long productId, String name, String brand,
+            String defaultPrice, String quantity, Product.Unit unit,
+            Boolean isVegetarian, Boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
+            Product.NovaGroup novaGroup, Integer daysAfterOpening)
             throws InstanceNotFoundException, DuplicateInstanceException {
 
         Product product = permissionChecker.checkProductExists(productId);
@@ -138,13 +141,15 @@ public class ProductServiceImpl implements ProductService {
         }
 
         product.setName(name);
+        product.setBrand(brand != null && brand.isBlank() ? null : brand);
         product.setDefaultPrice(parseBigDecimal(defaultPrice));
-
-        if (image != null && !image.isBlank()) {
-            product.setImage(image);
-        }
-
         product.setQuantity(parseBigDecimal(quantity));
+        product.setUnit(unit);
+        product.setVegetarian(isVegetarian);
+        product.setVegan(isVegan);
+        product.setNutriScoreGrade(nutriScoreGrade);
+        product.setNovaGroup(novaGroup);
+        product.setDaysAfterOpening(daysAfterOpening);
 
         return product;
     }
@@ -210,22 +215,26 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     /** {@inheritDoc} */
-    public ProductItem updateProductItem(Long userId, Long productItemId, String purchaseDate, String expirationDate, String pricePaid,
-            ProductItem.StorageLocation storageLocation)
+    public ProductItem updateProductItem(Long userId, Long productItemId, String expirationDate, String pricePaid,
+            ProductItem.StorageLocation storageLocation, String initialQuantityValue)
             throws InstanceNotFoundException, InvalidExpirationDateException {
 
         ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
         permissionChecker.checkUserHouseholdExists(userId, productItem.getProduct().getHousehold().getId());
 
-        LocalDateTime parsedPurchaseDate = purchaseDate != null ? LocalDateTime.parse(purchaseDate) : null;
         LocalDateTime parsedExpirationDate = expirationDate != null ? LocalDateTime.parse(expirationDate) : null;
 
-        validateDates(parsedPurchaseDate, parsedExpirationDate);
+        validateDates(productItem.getPurchaseDate(), parsedExpirationDate);
 
-        productItem.setPurchaseDate(parsedPurchaseDate);
         productItem.setExpirationDate(parsedExpirationDate);
         productItem.setPricePaid(parseBigDecimal(pricePaid));
         productItem.setStorageLocation(storageLocation);
+
+        if (initialQuantityValue != null) {
+            BigDecimal parsed = parseBigDecimal(initialQuantityValue);
+            productItem.setInitialQuantityValue(parsed);
+            productItem.setQuantityRemainingValue(parsed);
+        }
 
         return productItem;
     }

@@ -152,7 +152,8 @@ class ProductServiceTest {
         Product second = createProduct(household, "Lentejas");
 
         assertThrows(DuplicateInstanceException.class,
-                () -> productService.updateProduct(member.getId(), second.getId(), first.getName(), "2.55", "new.png", "2.00"));
+                () -> productService.updateProduct(member.getId(), second.getId(), first.getName(), null, "2.55", "2.00",
+                        Product.Unit.KG, null, null, null, null, null));
     }
 
     @Test
@@ -204,10 +205,9 @@ class ProductServiceTest {
         ProductItem created = productService.createProductItem(admin.getId(), product.getId(), "2026-03-01T10:00:00",
                 "2026-03-10T10:00:00", "3.10", ProductItem.StorageLocation.FRIDGE, null);
 
-        ProductItem updated = productService.updateProductItem(admin.getId(), created.getId(), "2026-03-02T10:00:00",
-                "2026-03-12T10:00:00", "3.40", ProductItem.StorageLocation.FREEZER);
+        ProductItem updated = productService.updateProductItem(admin.getId(), created.getId(),
+                "2026-03-12T10:00:00", "3.40", ProductItem.StorageLocation.FREEZER, null);
 
-        assertEquals(LocalDateTime.parse("2026-03-02T10:00:00"), updated.getPurchaseDate());
         assertEquals(LocalDateTime.parse("2026-03-12T10:00:00"), updated.getExpirationDate());
         assertEquals(new BigDecimal("3.40"), updated.getPricePaid());
         assertEquals(ProductItem.StorageLocation.FREEZER, updated.getStorageLocation());

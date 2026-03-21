@@ -13,7 +13,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,6 +42,8 @@ import es.udc.bonilla.rivera.daniel.rest.dtos.BarcodeProductDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.BlockDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewProductItemParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewProductParamsDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.UpdateProductItemParamsDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.UpdateProductParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.AllergyConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductDetailDto;
@@ -258,6 +262,45 @@ public class ProductController {
         List<ProductItem> items = productService.findProductItems(userId, productId);
 
         return ProductConversor.toProductDetailDto(product, items);
+    }
+
+    @PutMapping("/{productId}")
+    public ProductDto updateProduct(@RequestAttribute Long userId, @PathVariable Long productId,
+            @Validated @RequestBody UpdateProductParamsDto params)
+            throws InstanceNotFoundException, DuplicateInstanceException {
+
+        Product product = productService.updateProduct(userId, productId,
+                params.getName(), params.getBrand(), params.getDefaultPrice(),
+                params.getQuantity(), params.getUnit(), params.getIsVegetarian(), params.getIsVegan(),
+                params.getNutriScoreGrade(), params.getNovaGroup(), params.getDaysAfterOpening());
+
+        return ProductConversor.toProductDto(product);
+    }
+
+    @DeleteMapping("/{productId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteProduct(@RequestAttribute Long userId, @PathVariable Long productId)
+            throws InstanceNotFoundException {
+
+        productService.deleteProduct(userId, productId);
+    }
+
+    @PutMapping("/{productId}/items/{itemId}")
+    public ProductItemDto updateProductItem(@RequestAttribute Long userId, @PathVariable Long productId,
+            @PathVariable Long itemId, @Validated @RequestBody UpdateProductItemParamsDto params)
+            throws InstanceNotFoundException, InvalidExpirationDateException {
+
+        return ProductItemConversor.toProductItemDto(productService.updateProductItem(userId, itemId,
+                params.getExpirationDate(), params.getPricePaid(), params.getStorageLocation(),
+                params.getInitialQuantityValue()));
+    }
+
+    @DeleteMapping("/{productId}/items/{itemId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteProductItem(@RequestAttribute Long userId, @PathVariable Long productId,
+            @PathVariable Long itemId) throws InstanceNotFoundException {
+
+        productService.deleteProductItem(userId, itemId);
     }
 
     @GetMapping("/{householdId}/checkAllergies")

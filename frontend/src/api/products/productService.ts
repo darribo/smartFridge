@@ -255,6 +255,66 @@ export const getProductDetail = async (
     );
 };
 
+export type UpdateProductParams = {
+    name: string;
+    brand?: string | null;
+    defaultPrice?: string | null;
+    quantity: string;
+    unit: ProductUnit;
+    isVegetarian?: boolean | null;
+    isVegan?: boolean | null;
+    nutriScoreGrade?: ProductNutriScoreGrade | null;
+    novaGroup?: ProductNovaGroup | null;
+    daysAfterOpening?: number | null;
+}
+
+export type UpdateProductItemParams = {
+    expirationDate?: string | null;
+    pricePaid?: string | null;
+    storageLocation: ProductItemStorageLocation;
+    initialQuantityValue?: string | null;
+}
+
+export const updateProduct = async (
+    productId: number,
+    params: UpdateProductParams,
+    onSuccess?: (product: Product) => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("PUT", params);
+    return appFetch(`/products/${productId}`, options, onSuccess, onError);
+};
+
+export const deleteProduct = async (
+    productId: number,
+    onSuccess?: () => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("DELETE");
+    return appFetch(`/products/${productId}`, options, onSuccess, onError);
+};
+
+export const updateProductItem = async (
+    productId: number,
+    itemId: number,
+    params: UpdateProductItemParams,
+    onSuccess?: (item: ProductItem) => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("PUT", params);
+    return appFetch(`/products/${productId}/items/${itemId}`, options, onSuccess, onError);
+};
+
+export const deleteProductItem = async (
+    productId: number,
+    itemId: number,
+    onSuccess?: () => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("DELETE");
+    return appFetch(`/products/${productId}/items/${itemId}`, options, onSuccess, onError);
+};
+
 export const uploadProductImage = async (
   productId: number,
   localUri: string,

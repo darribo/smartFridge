@@ -266,6 +266,22 @@
       "cancel": "Cancelar"
     }
   },
+  "editProduct": {
+    "title": "Editar produto",
+    "save": "Gardar cambios",
+    "saveFailed": "Non se puido gardar o produto.",
+    "deleteTitle": "Eliminar produto",
+    "deleteMessage": "Seguro que queres eliminar este produto? Eliminaranse tamén todos os seus items.",
+    "deleteConfirm": "Eliminar",
+    "deleteCancel": "Cancelar",
+    "deleteFailed": "Non se puido eliminar o produto.",
+    "editItem": "Editar item",
+    "deleteItem": "Eliminar item",
+    "deleteItemTitle": "Eliminar item",
+    "deleteItemMessage": "Seguro que queres eliminar este item?",
+    "deleteItemFailed": "Non se puido eliminar o item.",
+    "saveItemFailed": "Non se puido gardar o item."
+  },
   "scanProduct": {
     "title": "Escanear produto",
     "subtitle": "Coloca o código de barras dentro do recadro",

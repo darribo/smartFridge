@@ -266,6 +266,22 @@
       "cancel": "Cancel"
     }
   },
+  "editProduct": {
+    "title": "Edit product",
+    "save": "Save changes",
+    "saveFailed": "Unable to save the product.",
+    "deleteTitle": "Delete product",
+    "deleteMessage": "Are you sure you want to delete this product? All its items will also be deleted.",
+    "deleteConfirm": "Delete",
+    "deleteCancel": "Cancel",
+    "deleteFailed": "Unable to delete the product.",
+    "editItem": "Edit item",
+    "deleteItem": "Delete item",
+    "deleteItemTitle": "Delete item",
+    "deleteItemMessage": "Are you sure you want to delete this item?",
+    "deleteItemFailed": "Unable to delete the item.",
+    "saveItemFailed": "Unable to save the item."
+  },
   "scanProduct": {
     "title": "Scan product",
     "subtitle": "Place the barcode inside the frame",
