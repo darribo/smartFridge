@@ -37,14 +37,20 @@ import {
   parseNonNegativeDecimal,
   PRICE_LIMIT,
   QUANTITY_LIMIT,
+  toIsoDateTimeOrNull,
 } from "./AddProductShared";
+import { DatePickerField } from "../../components/common/DatePickerField";
 import { FormLabel } from "../../components/FormLabel";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "ProductDetail">;
 
 function formatDate(date: string | null | undefined, emptyText: string) {
   if (!date) return emptyText;
-  return date.slice(0, 10);
+  const d = new Date(date);
+  const day = `${d.getDate()}`.padStart(2, "0");
+  const month = `${d.getMonth() + 1}`.padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}-${month}-${year}`;
 }
 
 function formatQuantity(quantity?: string | null, unit?: ProductUnit | null) {
@@ -190,7 +196,7 @@ type EditItemModalProps = {
 };
 
 function EditItemModal({ item, product, visible, onClose, onSaved, t }: EditItemModalProps) {
-  const [expirationDate, setExpirationDate] = useState("");
+  const [expirationDate, setExpirationDate] = useState<Date | null>(null);
   const [pricePaid, setPricePaid] = useState("");
   const [storageLocation, setStorageLocation] = useState<ProductItemStorageLocation>("FRIDGE");
   const [initialQuantityValue, setInitialQuantityValue] = useState("");
@@ -200,7 +206,7 @@ function EditItemModal({ item, product, visible, onClose, onSaved, t }: EditItem
 
   React.useEffect(() => {
     if (item) {
-      setExpirationDate(item.expirationDate ? item.expirationDate.slice(0, 10) : "");
+      setExpirationDate(item.expirationDate ? new Date(item.expirationDate) : null);
       setPricePaid(item.pricePaid ?? "");
       setStorageLocation(item.storageLocation);
       setInitialQuantityValue(item.initialQuantityValue ?? "");
@@ -236,9 +242,7 @@ function EditItemModal({ item, product, visible, onClose, onSaved, t }: EditItem
     setSaving(true);
     setErrors([]);
 
-    const expDateFormatted = expirationDate.trim()
-      ? `${expirationDate.trim()}T00:00:00`
-      : null;
+    const expDateFormatted = toIsoDateTimeOrNull(expirationDate);
 
     updateProductItem(
       product.id,
@@ -272,13 +276,12 @@ function EditItemModal({ item, product, visible, onClose, onSaved, t }: EditItem
 
           {errors.length > 0 ? <GlobalErrorBox messages={errors} /> : null}
 
-          <FormLabel text={t("addProduct.fields.expirationDate")} />
-          <TextInput
-            style={styles.sheetInput}
+          <DatePickerField
+            label={t("addProduct.fields.expirationDate")}
             value={expirationDate}
-            onChangeText={setExpirationDate}
+            onChange={setExpirationDate}
             placeholder={t("addProduct.placeholders.date")}
-            placeholderTextColor={THEME.muted}
+            clearable
           />
 
           <FormLabel text={t("addProduct.fields.pricePaid")} />

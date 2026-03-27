@@ -93,13 +93,20 @@
   "home": {
     "eyebrow": "Vista xeral",
     "titleFallback": "O teu fogar",
-    "subtitle": "{{count}} produtos precisan atención esta semana",
+    "subtitle": "A túa cociña intelixente ao día",
     "hero": {
       "badge": "Prioridade de hoxe",
-      "title": "{{count}} produtos van xustos",
+      "title": "{{count}} produtos caducan pronto",
       "body": "Comeza revisando o que caduca pronto e engade o que falte sen saír da pantalla principal.",
       "primary": "Revisar despensa",
-      "secondary": "Escanear"
+      "secondaryExpiring": "Ver caducidades",
+      "badgeLowStock": "Atención ao stock",
+      "titleLowStock": "{{count}} produtos con pouco stock",
+      "bodyLowStock": "Repon os produtos que se están esgotando para non quedarte sen eles.",
+      "secondaryLowStock": "Engadir produto",
+      "titleAllGood": "A túa despensa está ao día",
+      "bodyAllGood": "Non hai caducidades próximas nin produtos con pouco stock.",
+      "primaryAllGood": "Ver despensa"
     },
     "metrics": {
       "expiring": "Caducan pronto",
@@ -124,6 +131,16 @@
       "subtitle": "Un oco para recomendacións futuras",
       "cardTitle": "Cociña co que xa tes",
       "cardBody": "Aqui poderías ensinar receitas suxeridas, compras recomendadas ou produtos que convén consumir antes."
+    },
+    "alerts": {
+      "title": "Avisos",
+      "expiring_one": "{{count}} produto caduca pronto",
+      "expiring_other": "{{count}} produtos caducan pronto",
+      "lowStock_one": "{{count}} produto con pouco stock",
+      "lowStock_other": "{{count}} produtos con pouco stock",
+      "see": "Ver",
+      "allGood": "Todo en orde",
+      "allGoodSub": "Non tes ningún aviso pendente"
     },
     "footer": {
       "home": "Inicio",
@@ -355,6 +372,19 @@
       "nutriScore": "NutriScore",
       "novaGroup": "Grupo NOVA",
       "any": "Calquera"
+    },
+    "expiring": {
+      "title": "Caducan pronto",
+      "subtitle": "Nos próximos 3 días",
+      "expired": "Caducado",
+      "today": "Caduca hoxe",
+      "tomorrow": "Caduca mañá",
+      "inDays_one": "Caduca en 1 día",
+      "inDays_other": "Caduca en {{count}} días",
+      "empty": "Non hai produtos a piques de caducar",
+      "errors": {
+        "default": "Non se puideron cargar os produtos."
+      }
     }
   }
 }

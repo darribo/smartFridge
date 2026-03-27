@@ -17,6 +17,7 @@ import MyProductsScreen from "../screens/products/MyProductsScreen";
 import ProductDetailScreen from "../screens/products/ProductDetailScreen";
 import EditProductScreen from "../screens/products/EditProductScreen";
 import ProductLocationSelectorScreen from "../screens/products/ProductLocationSelectorScreen";
+import ExpiringProductsScreen from "../screens/products/ExpiringProductsScreen";
 
 export type AuthStackParamList = {
   Register: { backendError?: ApiError } | undefined;
@@ -31,6 +32,7 @@ export type AuthStackParamList = {
   ScanProduct: { householdId: number };
   ProductLocationSelector: undefined;
   MyProducts: { storageFilter: "ALL" | "PANTRY" | "FRIDGE" | "FREEZER" } | undefined;
+  ExpiringProducts: undefined;
   ProductDetail: { productId: number };
   EditProduct: { productId: number };
 };
@@ -53,6 +55,7 @@ export function AuthStack() {
       <Stack.Screen name="MyProducts" component={MyProductsScreen} />
       <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
       <Stack.Screen name="EditProduct" component={EditProductScreen} />
+      <Stack.Screen name="ExpiringProducts" component={ExpiringProductsScreen} />
       <Stack.Screen name="HouseholdDetail">
         {({ route, navigation }) => (
           <HouseholdDetailScreen

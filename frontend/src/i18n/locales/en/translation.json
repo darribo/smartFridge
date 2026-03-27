@@ -93,13 +93,20 @@
   "home": {
     "eyebrow": "Overview",
     "titleFallback": "Your household",
-    "subtitle": "{{count}} products need attention this week",
+    "subtitle": "Your smart kitchen up to date",
     "hero": {
       "badge": "Today's priority",
-      "title": "{{count}} products are getting close",
+      "title": "{{count}} products are expiring soon",
       "body": "Start by reviewing what expires soon and add what is missing without leaving the main screen.",
       "primary": "Review pantry",
-      "secondary": "Scan"
+      "secondaryExpiring": "See expiring",
+      "badgeLowStock": "Stock alert",
+      "titleLowStock": "{{count}} products running low",
+      "bodyLowStock": "Restock the products that are running out before you're left with nothing.",
+      "secondaryLowStock": "Add product",
+      "titleAllGood": "Your pantry is up to date",
+      "bodyAllGood": "No products expiring soon and nothing running low.",
+      "primaryAllGood": "View pantry"
     },
     "metrics": {
       "expiring": "Expiring soon",
@@ -124,6 +131,16 @@
       "subtitle": "A slot for future recommendations",
       "cardTitle": "Cook with what you already have",
       "cardBody": "This area could show suggested recipes, recommended purchases or products you should consume first."
+    },
+    "alerts": {
+      "title": "Alerts",
+      "expiring_one": "{{count}} product expires soon",
+      "expiring_other": "{{count}} products expire soon",
+      "lowStock_one": "{{count}} product running low",
+      "lowStock_other": "{{count}} products running low",
+      "see": "See",
+      "allGood": "All good",
+      "allGoodSub": "You have no pending alerts"
     },
     "footer": {
       "home": "Home",
@@ -355,6 +372,19 @@
       "nutriScore": "NutriScore",
       "novaGroup": "NOVA group",
       "any": "Any"
+    },
+    "expiring": {
+      "title": "Expiring soon",
+      "subtitle": "Within the next 3 days",
+      "expired": "Expired",
+      "today": "Expires today",
+      "tomorrow": "Expires tomorrow",
+      "inDays_one": "Expires in 1 day",
+      "inDays_other": "Expires in {{count}} days",
+      "empty": "No products about to expire",
+      "errors": {
+        "default": "Could not load products."
+      }
     }
   }
 }

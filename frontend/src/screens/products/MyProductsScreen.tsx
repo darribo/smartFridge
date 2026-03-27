@@ -21,7 +21,7 @@ import { useHouseholdStore } from "../../store/householdStore";
 import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
 import NoHouseholdModal from "../../components/common/NoHouseholdModal";
 import { DropdownField } from "./AddProductShared";
-import { findProducts, type ProductFilters, type ProductItemStorageLocation, type ProductNutriScoreGrade, type ProductWithItems, type ProductUnit } from "../../api/products/productService";
+import { findProducts, type ProductFilters, type ProductItem, type ProductItemStorageLocation, type ProductNutriScoreGrade, type ProductWithItems, type ProductUnit } from "../../api/products/productService";
 import { resolveProductImage } from "../../utils/image";
 
 type StorageFilter = "ALL" | "PANTRY" | "FRIDGE" | "FREEZER";
@@ -57,6 +57,29 @@ function getLocationMeta(location: ProductItemStorageLocation, t: (key: string) 
         bg: THEME.mint,
       };
   }
+}
+
+function getSoonestExpiryBadge(
+  items: ProductItem[],
+  t: (key: string, options?: any) => string
+): { text: string; color: string; bg: string } | null {
+  let minDays: number | null = null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  for (const item of items) {
+    if (!item.expirationDate) continue;
+    const exp = new Date(item.expirationDate);
+    exp.setHours(0, 0, 0, 0);
+    const days = Math.round((exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    if (minDays === null || days < minDays) minDays = days;
+  }
+
+  if (minDays === null || minDays > 3) return null;
+  if (minDays < 0) return { text: t("products.expiring.expired"), color: "#B91C1C", bg: "#FEE2E2" };
+  if (minDays === 0) return { text: t("products.expiring.today"), color: "#C2670A", bg: "#FFF3E5" };
+  if (minDays === 1) return { text: t("products.expiring.tomorrow"), color: "#C2670A", bg: "#FFF3E5" };
+  return { text: t("products.expiring.inDays", { count: minDays }), color: "#B45309", bg: "#FEF3C7" };
 }
 
 function getFilterLabel(filter: StorageFilter, t: (key: string) => string) {
@@ -106,6 +129,7 @@ function ProductCard({
   const allSameLocation = product.items.every((item) => item.storageLocation === firstLocation);
   const locationMeta = allSameLocation && firstLocation ? getLocationMeta(firstLocation, t) : null;
   const subtitle = formatQuantity(product.quantity, product.unit);
+  const expiryBadge = getSoonestExpiryBadge(product.items, t);
 
   return (
     <Pressable style={styles.card} onPress={onPress}>
@@ -129,6 +153,13 @@ function ProductCard({
             <Text style={styles.countPillText}>{product.countItems}</Text>
           </View>
         </View>
+
+        {expiryBadge && (
+          <View style={[styles.badge, { alignSelf: "flex-start", backgroundColor: expiryBadge.bg }]}>
+            <MaterialCommunityIcons name="clock-alert-outline" size={13} color={expiryBadge.color} />
+            <Text style={[styles.badgeText, { color: expiryBadge.color }]}>{expiryBadge.text}</Text>
+          </View>
+        )}
 
         <View style={styles.mainRow}>
           <View style={styles.textBlock}>

@@ -108,6 +108,14 @@ export type BarcodeProduct = {
     allergies?: Allergy[] | null;
 }
 
+export type ExpiringProduct = {
+    id: number | null;
+    productId: number;
+    productName: string;
+    productImage?: string | null;
+    daysRemaining: number;
+}
+
 
 export const createProduct = async (householdId: number, params: NewProductParams, onSuccess?: (product: Product) => void, onError?: (err: ApiError) => void) => {
 
@@ -337,4 +345,48 @@ export const uploadProductImage = async (
     onSuccess,
     onError
   );
+};
+
+
+export const getExpiringProducts = async (
+    householdId: number,
+    page: number,
+    onSuccess?: (block: Block<ExpiringProduct>) => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("GET");
+
+    return appFetch(
+        `/products/${householdId}/expiring?page=${page}`,
+        options,
+        onSuccess,
+        onError
+    );
+};
+
+export const countExpiringProducts = async (
+    householdId: number,
+    onSuccess?: (count: number) => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("GET");
+    return appFetch(`/products/${householdId}/count/expiring`, options, onSuccess, onError);
+};
+
+export const countLittleStockProducts = async (
+    householdId: number,
+    onSuccess?: (count: number) => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("GET");
+    return appFetch(`/products/${householdId}/count/littleStock`, options, onSuccess, onError);
+};
+
+export const countPantryItems = async (
+    householdId: number,
+    onSuccess?: (count: number) => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("GET");
+    return appFetch(`/products/${householdId}/count/items`, options, onSuccess, onError);
 };

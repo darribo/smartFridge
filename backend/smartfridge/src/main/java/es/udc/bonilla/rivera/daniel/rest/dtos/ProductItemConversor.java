@@ -39,8 +39,19 @@ public class ProductItemConversor {
 
         return new ExpiringProductItemDto(
                 productItem.getId(),
+                productItem.getProduct().getId(),
                 productItem.getProduct().getName(),
                 productItem.getProduct().getImage(),
                 daysRemaining);
+    }
+
+    public static ProductWithLittleStockDto toProductWithLittleStockDto(ProductItem productItem) {
+
+        return new ProductWithLittleStockDto(
+                productItem.getId(),
+                productItem.getProduct().getName(),
+                productItem.getProduct().getImage(),
+                productItem.getQuantityRemainingValue() != null ? productItem.getQuantityRemainingValue().toString() : null,
+                productItem.getInitialQuantityValue() != null ? productItem.getInitialQuantityValue().toString() : null);
     }
 }

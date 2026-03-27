@@ -1,0 +1,317 @@
+import React, { useCallback, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
+
+import type { AuthStackParamList } from "../../navigation/AuthStack";
+import { THEME } from "../../theme/theme";
+import { useHouseholdStore } from "../../store/householdStore";
+import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
+import { getExpiringProducts, type ExpiringProduct } from "../../api/products/productService";
+import { resolveProductImage } from "../../utils/image";
+
+type Props = NativeStackScreenProps<AuthStackParamList, "ExpiringProducts">;
+
+function getExpiryBadge(days: number, t: (key: string, opts?: any) => string) {
+  if (days < 0) {
+    return { label: t("products.expiring.expired"), color: "#C00000", bg: "#FFE8E8" };
+  }
+  if (days === 0) {
+    return { label: t("products.expiring.today"), color: "#C2670A", bg: "#FFF0E5" };
+  }
+  if (days === 1) {
+    return { label: t("products.expiring.tomorrow"), color: "#C2670A", bg: "#FFF0E5" };
+  }
+  return {
+    label: t("products.expiring.inDays", { count: days }),
+    color: "#8B6A00",
+    bg: "#FFF8E0",
+  };
+}
+
+function ExpiringCard({
+  item,
+  t,
+  onPress,
+}: {
+  item: ExpiringProduct;
+  t: (key: string, opts?: any) => string;
+  onPress: () => void;
+}) {
+  const badge = getExpiryBadge(item.daysRemaining, t);
+
+  return (
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
+      <View style={styles.cardContent}>
+        <View style={styles.cardTopRow}>
+          <View style={[styles.badge, { backgroundColor: badge.bg }]}>
+            <MaterialCommunityIcons name="clock-alert-outline" size={14} color={badge.color} />
+            <Text style={[styles.badgeText, { color: badge.color }]}>{badge.label}</Text>
+          </View>
+        </View>
+        <View style={styles.mainRow}>
+          <View style={styles.textBlock}>
+            <Text style={styles.productName} numberOfLines={2}>{item.productName}</Text>
+          </View>
+          <Image
+            source={{ uri: resolveProductImage(item.productImage) }}
+            style={styles.productImage}
+          />
+        </View>
+      </View>
+    </Pressable>
+  );
+}
+
+export default function ExpiringProductsScreen({ navigation }: Props) {
+  const { t } = useTranslation();
+  const currentHouseholdId = useHouseholdStore((s) => s.currentHouseholdId);
+
+  const [items, setItems] = useState<ExpiringProduct[]>([]);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingFirst, setLoadingFirst] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [globalErrors, setGlobalErrors] = useState<string[]>([]);
+
+  const requestIdRef = useRef(0);
+
+  const loadItems = (targetPage: number, append: boolean) => {
+    if (!currentHouseholdId) {
+      setItems([]);
+      setHasMore(false);
+      setLoadingFirst(false);
+      return;
+    }
+
+    const requestId = ++requestIdRef.current;
+
+    if (append) {
+      setLoadingMore(true);
+    } else {
+      setLoadingFirst(true);
+      setGlobalErrors([]);
+    }
+
+    getExpiringProducts(
+      currentHouseholdId,
+      targetPage,
+      (block) => {
+        if (requestId !== requestIdRef.current) return;
+        setItems((prev) => (append ? [...prev, ...block.items] : block.items));
+        setHasMore(block.existMoreItems);
+        setPage(targetPage);
+        setLoadingFirst(false);
+        setLoadingMore(false);
+      },
+      (err) => {
+        if (requestId !== requestIdRef.current) return;
+        setGlobalErrors(err.globalErrors ?? [t("products.expiring.errors.default")]);
+        setLoadingFirst(false);
+        setLoadingMore(false);
+      }
+    );
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadItems(0, false);
+    }, [currentHouseholdId])
+  );
+
+  const onEndReached = () => {
+    if (loadingFirst || loadingMore || !hasMore) return;
+    loadItems(page + 1, true);
+  };
+
+  return (
+    <SafeAreaView style={styles.safe}>
+      <View style={styles.screen}>
+        <View style={styles.header}>
+          <View style={styles.headerRow}>
+            <Pressable onPress={() => navigation.goBack()} hitSlop={10} style={styles.backBtn}>
+              <MaterialCommunityIcons name="chevron-left" size={26} color={THEME.text} />
+            </Pressable>
+            <View style={styles.headerTextWrap}>
+              <Text style={styles.title}>{t("products.expiring.title")}</Text>
+              <Text style={styles.subtitle}>{t("products.expiring.subtitle")}</Text>
+            </View>
+          </View>
+        </View>
+
+        {globalErrors.length > 0 ? (
+          <View style={styles.errorsWrap}>
+            <GlobalErrorBox messages={globalErrors} />
+          </View>
+        ) : null}
+
+        {loadingFirst ? (
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={THEME.primary} />
+          </View>
+        ) : (
+          <FlatList
+            data={items}
+            keyExtractor={(item, index) => item.id != null ? String(item.id) : String(index)}
+            renderItem={({ item }) => (
+              <ExpiringCard
+                item={item}
+                t={t}
+                onPress={() => navigation.navigate("ProductDetail", { productId: item.productId })}
+              />
+            )}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.listContent}
+            onEndReached={onEndReached}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              loadingMore ? (
+                <View style={styles.footerLoading}>
+                  <ActivityIndicator color={THEME.primary} />
+                </View>
+              ) : null
+            }
+            ListEmptyComponent={
+              <View style={styles.emptyWrap}>
+                <Text style={styles.emptyText}>{t("products.expiring.empty")}</Text>
+              </View>
+            }
+          />
+        )}
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: THEME.bg,
+  },
+  screen: {
+    flex: 1,
+    backgroundColor: THEME.bg,
+    paddingTop: 8,
+  },
+  header: {
+    paddingHorizontal: 20,
+    marginBottom: 14,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  backBtn: {
+    width: 36,
+    height: 36,
+    marginRight: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerTextWrap: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 32,
+    lineHeight: 36,
+    fontWeight: "900",
+    color: THEME.text,
+    letterSpacing: -0.7,
+  },
+  subtitle: {
+    marginTop: 4,
+    fontSize: 14,
+    color: THEME.muted,
+  },
+  errorsWrap: {
+    marginHorizontal: 20,
+    marginBottom: 12,
+  },
+  center: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  listContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 28,
+    gap: 16,
+  },
+  card: {
+    backgroundColor: THEME.surface,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: THEME.border,
+    overflow: "hidden",
+  },
+  cardPressed: {
+    opacity: 0.75,
+  },
+  cardContent: {
+    padding: 16,
+    gap: 14,
+  },
+  cardTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  badge: {
+    alignSelf: "flex-start",
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  mainRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  },
+  textBlock: {
+    flex: 1,
+    minWidth: 0,
+  },
+  productName: {
+    fontSize: 28,
+    lineHeight: 31,
+    fontWeight: "900",
+    color: THEME.text,
+  },
+  productImage: {
+    width: 116,
+    height: 116,
+    borderRadius: 24,
+    backgroundColor: THEME.mint2,
+  },
+  footerLoading: {
+    paddingVertical: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyWrap: {
+    paddingVertical: 36,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyText: {
+    fontSize: 15,
+    color: THEME.muted,
+  },
+});

@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import { ApiError } from "../api/appFetch";
 import { Block } from "../api/block";
 import { getUserHouseholds, UserHouseholdListItem } from "../api/households/householdService";
+import { countExpiringProducts, countLittleStockProducts, countPantryItems } from "../api/products/productService";
 import { GlobalErrorBox } from "../components/common/GlobalErrorBox";
 import NoHouseholdModal from "../components/common/NoHouseholdModal";
 import type { AuthStackParamList } from "../navigation/AuthStack";
@@ -82,6 +83,9 @@ export default function HomeScreen({ navigation }: Props) {
   const [loadingFirst, setLoadingFirst] = useState(true);
   const [globalErrors, setGlobalErrors] = useState<string[]>([]);
   const [showNoHousehold, setShowNoHousehold] = useState(false);
+  const [expiringSoonCount, setExpiringSoonCount] = useState(0);
+  const [pantryItemsCount, setPantryItemsCount] = useState(0);
+  const [lowStockCount, setLowStockCount] = useState(0);
 
   const extractErrorMessages = (err: ApiError): string[] => {
     if (Array.isArray(err.globalErrors) && err.globalErrors.length > 0) {
@@ -141,6 +145,15 @@ export default function HomeScreen({ navigation }: Props) {
     }, [])
   );
 
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!currentHouseholdId) return;
+      countExpiringProducts(currentHouseholdId, (c) => setExpiringSoonCount(c), () => {});
+      countPantryItems(currentHouseholdId, (c) => setPantryItemsCount(c), () => {});
+      countLittleStockProducts(currentHouseholdId, (c) => setLowStockCount(c), () => {});
+    }, [currentHouseholdId])
+  );
+
   useEffect(() => {
     if (households.length === 0) return;
 
@@ -157,9 +170,8 @@ export default function HomeScreen({ navigation }: Props) {
     households.find((household) => household.id === currentHouseholdId) ?? households[0] ?? null;
   const resolvedHouseholdId = currentHousehold?.id ?? null;
   const totalMembers = households.reduce((sum, household) => sum + household.membersNumber, 0);
-  const expiringSoon = currentHousehold ? Math.max(2, currentHousehold.membersNumber) : 3;
-  const pantryItems = currentHousehold ? currentHousehold.membersNumber * 7 + 12 : 24;
-  const lowStock = households.length > 0 ? Math.max(1, households.length - 1) : 2;
+  const heroMode: "expiring" | "lowStock" | "allGood" =
+    expiringSoonCount > 0 ? "expiring" : lowStockCount > 0 ? "lowStock" : "allGood";
 
   const requireHousehold = (action: (id: number) => void) => {
     if (resolvedHouseholdId) {
@@ -194,7 +206,7 @@ export default function HomeScreen({ navigation }: Props) {
               <Text style={styles.headerEyebrow}>{t("home.eyebrow")}</Text>
               <Text style={styles.headerTitle}>{currentHousehold?.name ?? t("home.titleFallback")}</Text>
               <Text style={styles.headerSubtitle}>
-                {t("home.subtitle", { count: expiringSoon })}
+                {t("home.subtitle", { count: expiringSoonCount })}
               </Text>
             </View>
             <Pressable style={styles.headerAvatar}>
@@ -205,46 +217,94 @@ export default function HomeScreen({ navigation }: Props) {
           {globalErrors.length > 0 ? <GlobalErrorBox messages={globalErrors} /> : null}
 
           <View style={styles.heroCard}>
-            <View style={styles.heroBadge}>
-              <MaterialCommunityIcons name="clock-alert-outline" size={18} color="#0B2817" />
-              <Text style={styles.heroBadgeText}>{t("home.hero.badge")}</Text>
-            </View>
-            <Text style={styles.heroTitle}>{t("home.hero.title", { count: expiringSoon })}</Text>
-            <Text style={styles.heroBody}>{t("home.hero.body")}</Text>
+            {heroMode !== "allGood" && (
+              <View style={styles.heroBadge}>
+                <MaterialCommunityIcons
+                  name={heroMode === "expiring" ? "clock-alert-outline" : "package-variant-minus"}
+                  size={18}
+                  color="#0B2817"
+                />
+                <Text style={styles.heroBadgeText}>
+                  {t(heroMode === "expiring" ? "home.hero.badge" : "home.hero.badgeLowStock")}
+                </Text>
+              </View>
+            )}
+            <Text style={styles.heroTitle}>
+              {heroMode === "expiring"
+                ? t("home.hero.title", { count: expiringSoonCount })
+                : heroMode === "lowStock"
+                ? t("home.hero.titleLowStock", { count: lowStockCount })
+                : t("home.hero.titleAllGood")}
+            </Text>
+            <Text style={styles.heroBody}>
+              {t(heroMode === "expiring"
+                ? "home.hero.body"
+                : heroMode === "lowStock"
+                ? "home.hero.bodyLowStock"
+                : "home.hero.bodyAllGood")}
+            </Text>
             <View style={styles.heroActions}>
               <Pressable
                 style={styles.heroPrimaryBtn}
-                onPress={() =>
-                  requireHousehold((id) => navigation.navigate("HouseholdDetail", { householdId: id }))
-                }
+                onPress={() => navigation.navigate("ProductLocationSelector")}
               >
-                <Text style={styles.heroPrimaryBtnText}>{t("home.hero.primary")}</Text>
+                <Text style={styles.heroPrimaryBtnText}>
+                  {t(heroMode === "allGood" ? "home.hero.primaryAllGood" : "home.hero.primary")}
+                </Text>
               </Pressable>
-              <Pressable
-                style={styles.heroGhostBtn}
-                onPress={() =>
-                  requireHousehold((id) => navigation.navigate("ScanProduct", { householdId: id }))
-                }
-              >
-                <MaterialCommunityIcons name="qrcode-scan" size={18} color="#E8FFF1" />
-                <Text style={styles.heroGhostBtnText}>{t("home.hero.secondary")}</Text>
-              </Pressable>
+              {heroMode !== "allGood" && (
+                <Pressable
+                  style={styles.heroGhostBtn}
+                  onPress={() =>
+                    heroMode === "lowStock"
+                      ? requireHousehold((id) => navigation.navigate("AddProduct", { householdId: id }))
+                      : navigation.navigate("ExpiringProducts")
+                  }
+                >
+                  <MaterialCommunityIcons
+                    name={heroMode === "expiring" ? "clock-alert-outline" : "plus"}
+                    size={18}
+                    color="#E8FFF1"
+                  />
+                  <Text style={styles.heroGhostBtnText}>
+                    {t(heroMode === "expiring" ? "home.hero.secondaryExpiring" : "home.hero.secondaryLowStock")}
+                  </Text>
+                </Pressable>
+              )}
             </View>
           </View>
 
           <View style={styles.statsRow}>
-            <View style={styles.metricCard}>
+            <Pressable
+              style={({ pressed }) => [styles.metricCard, pressed && styles.metricCardPressed, expiringSoonCount === 0 && styles.metricCardDisabled]}
+              onPress={() => expiringSoonCount > 0 ? navigation.navigate("ExpiringProducts") : undefined}
+            >
+              <View style={[styles.metricIconWrap, { backgroundColor: "#FFF3E5" }]}>
+                <MaterialCommunityIcons name="clock-alert-outline" size={16} color="#C2670A" />
+              </View>
               <Text style={styles.metricLabel}>{t("home.metrics.expiring")}</Text>
-              <Text style={styles.metricValue}>{expiringSoon}</Text>
-            </View>
-            <View style={styles.metricCard}>
+              <Text style={styles.metricValue}>{expiringSoonCount}</Text>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [styles.metricCard, pressed && styles.metricCardPressed, pantryItemsCount === 0 && styles.metricCardDisabled]}
+              onPress={() => pantryItemsCount > 0 ? navigation.navigate("ProductLocationSelector") : undefined}
+            >
+              <View style={[styles.metricIconWrap, { backgroundColor: "#E9F7EE" }]}>
+                <MaterialCommunityIcons name="archive-outline" size={16} color="#3A815F" />
+              </View>
               <Text style={styles.metricLabel}>{t("home.metrics.items")}</Text>
-              <Text style={styles.metricValue}>{pantryItems}</Text>
-            </View>
-            <View style={styles.metricCard}>
+              <Text style={styles.metricValue}>{pantryItemsCount}</Text>
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [styles.metricCard, pressed && styles.metricCardPressed, lowStockCount === 0 && styles.metricCardDisabled]}
+              onPress={() => lowStockCount > 0 ? navigation.navigate("MyProducts", { storageFilter: "ALL" }) : undefined}
+            >
+              <View style={[styles.metricIconWrap, { backgroundColor: "#F0EBFC" }]}>
+                <MaterialCommunityIcons name="trending-down" size={16} color="#7B54C9" />
+              </View>
               <Text style={styles.metricLabel}>{t("home.metrics.lowStock")}</Text>
-              <Text style={styles.metricValue}>{lowStock}</Text>
-            </View>
+              <Text style={styles.metricValue}>{lowStockCount}</Text>
+            </Pressable>
           </View>
 
           <View style={styles.section}>
@@ -499,6 +559,20 @@ const styles = StyleSheet.create({
     padding: 16,
     minHeight: 108,
     justifyContent: "space-between",
+  },
+  metricCardPressed: {
+    transform: [{ scale: 0.97 }],
+  },
+  metricCardDisabled: {
+    opacity: 0.45,
+  },
+  metricIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 6,
   },
   metricLabel: {
     fontSize: 13,

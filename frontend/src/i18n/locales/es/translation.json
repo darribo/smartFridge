@@ -93,13 +93,20 @@
   "home": {
     "eyebrow": "Vista general",
     "titleFallback": "Tu hogar",
-    "subtitle": "{{count}} productos necesitan atención esta semana",
+    "subtitle": "Tu cocina inteligente al día",
     "hero": {
       "badge": "Prioridad de hoy",
-      "title": "{{count}} productos van justos",
+      "title": "{{count}} productos caducan pronto",
       "body": "Empieza por revisar lo que caduca pronto y añade lo que falte sin salir de la pantalla principal.",
       "primary": "Revisar despensa",
-      "secondary": "Escanear"
+      "secondaryExpiring": "Ver caducidades",
+      "badgeLowStock": "Atención al stock",
+      "titleLowStock": "{{count}} productos con poco stock",
+      "bodyLowStock": "Repón los productos que se están agotando para no quedarte sin ellos.",
+      "secondaryLowStock": "Añadir producto",
+      "titleAllGood": "Tu despensa está al día",
+      "bodyAllGood": "No hay caducidades próximas ni productos con poco stock.",
+      "primaryAllGood": "Ver despensa"
     },
     "metrics": {
       "expiring": "Caducan pronto",
@@ -124,6 +131,16 @@
       "subtitle": "Un hueco para recomendaciones futuras",
       "cardTitle": "Cocina con lo que ya tienes",
       "cardBody": "Aqui podrias enseñar recetas sugeridas, compras recomendadas o productos que conviene consumir antes."
+    },
+    "alerts": {
+      "title": "Avisos",
+      "expiring_one": "{{count}} producto caduca pronto",
+      "expiring_other": "{{count}} productos caducan pronto",
+      "lowStock_one": "{{count}} producto con poco stock",
+      "lowStock_other": "{{count}} productos con poco stock",
+      "see": "Ver",
+      "allGood": "Todo en orden",
+      "allGoodSub": "No tienes ningún aviso pendiente"
     },
     "footer": {
       "home": "Inicio",
@@ -356,6 +373,19 @@
       "nutriScore": "NutriScore",
       "novaGroup": "Grupo NOVA",
       "any": "Cualquiera"
+    },
+    "expiring": {
+      "title": "Caducan pronto",
+      "subtitle": "En los próximos 3 días",
+      "expired": "Caducado",
+      "today": "Caduca hoy",
+      "tomorrow": "Caduca mañana",
+      "inDays_one": "Caduca en 1 día",
+      "inDays_other": "Caduca en {{count}} días",
+      "empty": "No hay productos a punto de caducar",
+      "errors": {
+        "default": "No se pudieron cargar los productos."
+      }
     }
   }
 }

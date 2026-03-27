@@ -2,7 +2,9 @@ package es.udc.bonilla.rivera.daniel.model.services;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -31,8 +33,6 @@ import es.udc.bonilla.rivera.daniel.model.entities.ProductAllergyId;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItem.StorageLocation;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItemTransaction;
-import java.time.temporal.ChronoUnit;
-
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationDateException;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidProductItemTransactionException;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.ProductIsNotFoodException;
@@ -456,7 +456,10 @@ public class ProductServiceImpl implements ProductService {
 
         Slice<ProductItem> productItemSlice = productItemDao.findExpiringProducts(householdId, LocalDateTime.now().plusDays(3).withNano(0), PageRequest.of(page, size));
 
-        return new Block<>(productItemSlice.getContent(), productItemSlice.hasNext());
+        List<ProductItem> items = productItemSlice.getContent();
+        items.forEach(item -> item.getProduct().getName()); // forzar carga del proxy lazy dentro de la transacción
+
+        return new Block<>(items, productItemSlice.hasNext());
     }
 
     @Override
@@ -465,17 +468,17 @@ public class ProductServiceImpl implements ProductService {
 
         ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDate today = LocalDate.now();
         int minDays = Integer.MAX_VALUE;
 
         if (productItem.getExpirationDate() != null) {
-            int days = (int) ChronoUnit.DAYS.between(now, productItem.getExpirationDate());
+            int days = (int) ChronoUnit.DAYS.between(today, productItem.getExpirationDate().toLocalDate());
             minDays = Math.min(minDays, days);
         }
 
         if (productItem.getOpenedAt() != null && productItem.getProduct().getDaysAfterOpening() != null) {
-            LocalDateTime expiresAfterOpening = productItem.getOpenedAt().plusDays(productItem.getProduct().getDaysAfterOpening());
-            int days = (int) ChronoUnit.DAYS.between(now, expiresAfterOpening);
+            LocalDate expiresAfterOpening = productItem.getOpenedAt().toLocalDate().plusDays(productItem.getProduct().getDaysAfterOpening());
+            int days = (int) ChronoUnit.DAYS.between(today, expiresAfterOpening);
             minDays = Math.min(minDays, days);
         }
 
@@ -518,5 +521,39 @@ public class ProductServiceImpl implements ProductService {
 
         return productItemTransactionDao.save(transaction);
 
+    }
+
+    @Override
+    public Block<ProductItem> findProductsWithLittleStock(Long userId, Long householdId, int page, int size) throws InstanceNotFoundException {
+
+        permissionChecker.checkUserHouseholdExists(userId, householdId);
+
+        Slice<ProductItem> productItemSlice = productItemDao.findProductsWithLittleStock(householdId, PageRequest.of(page, size));
+
+        List<ProductItem> items = productItemSlice.getContent();
+        items.forEach(item -> item.getProduct().getName()); // forzar carga del proxy lazy dentro de la transacción
+
+        return new Block<>(items, productItemSlice.hasNext());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int countExpiringProducts(Long userId, Long householdId) throws InstanceNotFoundException {
+        permissionChecker.checkUserHouseholdExists(userId, householdId);
+        return (int) productItemDao.countExpiringProducts(householdId, LocalDateTime.now().plusDays(3).withNano(0));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int countProductsWithLittleStock(Long userId, Long householdId) throws InstanceNotFoundException {
+        permissionChecker.checkUserHouseholdExists(userId, householdId);
+        return (int) productItemDao.countProductsWithLittleStock(householdId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int countProductItemsByHousehold(Long userId, Long householdId) throws InstanceNotFoundException {
+        permissionChecker.checkUserHouseholdExists(userId, householdId);
+        return (int) productItemDao.countProductItemsByHousehold(householdId);
     }
 }

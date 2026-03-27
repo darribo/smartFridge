@@ -188,5 +188,12 @@ public interface ProductService {
     ProductItemTransaction createProductItemTransaction(Long userId, Long productItemId, ProductItemTransaction.TransactionType type, BigDecimal quantityDeltaValue) throws InstanceNotFoundException, InvalidProductItemTransactionException;
 
 
+    Block<ProductItem> findProductsWithLittleStock(Long userId, Long householdId, int page, int size) throws InstanceNotFoundException;
+
+    int countExpiringProducts(Long userId, Long householdId) throws InstanceNotFoundException;
+
+    int countProductsWithLittleStock(Long userId, Long householdId) throws InstanceNotFoundException;
+
+    int countProductItemsByHousehold(Long userId, Long householdId) throws InstanceNotFoundException;
 
 }

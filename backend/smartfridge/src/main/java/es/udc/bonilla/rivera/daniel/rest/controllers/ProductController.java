@@ -53,6 +53,7 @@ import es.udc.bonilla.rivera.daniel.rest.dtos.ProductDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductItemConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductItemDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductWithItemsDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.ProductWithLittleStockDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.SimplifiedUserDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.UserConversor;
 import io.swagger.v3.oas.annotations.Operation;
@@ -317,7 +318,7 @@ public class ProductController {
 
     @GetMapping("/{householdId}/expiring")
     public BlockDto<ExpiringProductItemDto> findExpiringProducts(@RequestAttribute Long userId,
-            @PathVariable Long householdId, @RequestParam int page) throws InstanceNotFoundException {
+            @PathVariable Long householdId, @RequestParam(defaultValue = "0") int page) throws InstanceNotFoundException {
 
         Block<ProductItem> block = productService.findExpiringProducts(userId, householdId, page, SEARCH_PRODUCTS_SIZE);
 
@@ -328,6 +329,40 @@ public class ProductController {
         }
 
         return new BlockDto<>(dtos, block.getExistMoreItems());
+    }
+
+    @GetMapping("/{householdId}/littleStock")
+    public BlockDto<ProductWithLittleStockDto> findProductsWithLittleStock(@RequestAttribute Long userId,
+            @PathVariable Long householdId, @RequestParam(defaultValue = "0") int page) throws InstanceNotFoundException {
+
+        Block<ProductItem> block = productService.findProductsWithLittleStock(userId, householdId, page, SEARCH_PRODUCTS_SIZE);
+
+        List<ProductWithLittleStockDto> dtos = new ArrayList<>();
+        for (ProductItem item : block.getItems()) {
+            dtos.add(ProductItemConversor.toProductWithLittleStockDto(item));
+        }
+
+        return new BlockDto<>(dtos, block.getExistMoreItems());
+    }
+
+
+
+    @GetMapping("/{householdId}/count/expiring")
+    public int countExpiringProducts(@RequestAttribute Long userId, @PathVariable Long householdId)
+            throws InstanceNotFoundException {
+        return productService.countExpiringProducts(userId, householdId);
+    }
+
+    @GetMapping("/{householdId}/count/littleStock")
+    public int countProductsWithLittleStock(@RequestAttribute Long userId, @PathVariable Long householdId)
+            throws InstanceNotFoundException {
+        return productService.countProductsWithLittleStock(userId, householdId);
+    }
+
+    @GetMapping("/{householdId}/count/items")
+    public int countProductItems(@RequestAttribute Long userId, @PathVariable Long householdId)
+            throws InstanceNotFoundException {
+        return productService.countProductItemsByHousehold(userId, householdId);
     }
 
     @GetMapping("/{householdId}/checkAllergies")
