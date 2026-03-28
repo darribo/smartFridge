@@ -10,10 +10,10 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
@@ -29,6 +29,7 @@ import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
+import es.udc.bonilla.rivera.daniel.model.entities.ProductItemTransaction;
 import es.udc.bonilla.rivera.daniel.model.entities.User;
 import es.udc.bonilla.rivera.daniel.model.services.Block;
 import es.udc.bonilla.rivera.daniel.model.services.ProductService;
@@ -38,15 +39,13 @@ import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationD
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidProductItemTransactionException;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.ProductIsNotFoodException;
 import es.udc.bonilla.rivera.daniel.rest.common.ErrorsDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.AllergyConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.BarcodeProductConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.BarcodeProductDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.BlockDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.ExpiringProductItemDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewProductItemParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewProductParamsDto;
-import es.udc.bonilla.rivera.daniel.rest.dtos.UpdateProductItemParamsDto;
-import es.udc.bonilla.rivera.daniel.rest.dtos.UpdateProductParamsDto;
-import es.udc.bonilla.rivera.daniel.rest.dtos.AllergyConversor;
-import es.udc.bonilla.rivera.daniel.rest.dtos.ExpiringProductItemDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductDetailDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductDto;
@@ -55,6 +54,8 @@ import es.udc.bonilla.rivera.daniel.rest.dtos.ProductItemDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductWithItemsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductWithLittleStockDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.SimplifiedUserDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.UpdateProductItemParamsDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.UpdateProductParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.UserConversor;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -161,7 +162,8 @@ public class ProductController {
     @ResponseStatus(HttpStatus.CREATED)
     public ProductItemDto createProductItem(@RequestAttribute Long userId, @PathVariable Long productId,
             @Validated @RequestBody NewProductItemParamsDto params)
-            throws InstanceNotFoundException, InvalidExpirationDateException {
+            throws InstanceNotFoundException, InvalidExpirationDateException, InvalidProductItemTransactionException {
+
 
         return ProductItemConversor.toProductItemDto(productService.createProductItem(userId, productId,
                 params.getPurchaseDate(), params.getExpirationDate(), params.getPricePaid(), params.getStorageLocation(),
@@ -304,8 +306,7 @@ public class ProductController {
             throws InstanceNotFoundException, InvalidExpirationDateException {
 
         return ProductItemConversor.toProductItemDto(productService.updateProductItem(userId, itemId,
-                params.getExpirationDate(), params.getPricePaid(), params.getStorageLocation(),
-                params.getInitialQuantityValue()));
+                params.getExpirationDate(), params.getPricePaid(), params.getStorageLocation()));
     }
 
     @DeleteMapping("/{productId}/items/{itemId}")
@@ -316,6 +317,15 @@ public class ProductController {
         productService.deleteProductItem(userId, itemId);
     }
 
+    @Operation(
+        summary = "Listar productos próximos a caducar",
+        description = "Devuelve los items de producto del hogar que caducan en los próximos 3 días, paginados."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Lista de items próximos a caducar"),
+        @ApiResponse(responseCode = "404", description = "Usuario/hogar no encontrado o usuario fuera del hogar",
+            content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
+    })
     @GetMapping("/{householdId}/expiring")
     public BlockDto<ExpiringProductItemDto> findExpiringProducts(@RequestAttribute Long userId,
             @PathVariable Long householdId, @RequestParam(defaultValue = "0") int page) throws InstanceNotFoundException {
@@ -331,6 +341,15 @@ public class ProductController {
         return new BlockDto<>(dtos, block.getExistMoreItems());
     }
 
+    @Operation(
+        summary = "Listar productos con poco stock",
+        description = "Devuelve los items del hogar cuya cantidad restante es inferior al 25 % de la inicial, paginados."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Lista de items con poco stock"),
+        @ApiResponse(responseCode = "404", description = "Usuario/hogar no encontrado o usuario fuera del hogar",
+            content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
+    })
     @GetMapping("/{householdId}/littleStock")
     public BlockDto<ProductWithLittleStockDto> findProductsWithLittleStock(@RequestAttribute Long userId,
             @PathVariable Long householdId, @RequestParam(defaultValue = "0") int page) throws InstanceNotFoundException {
@@ -345,20 +364,45 @@ public class ProductController {
         return new BlockDto<>(dtos, block.getExistMoreItems());
     }
 
-
-
+    @Operation(
+        summary = "Contar productos próximos a caducar",
+        description = "Devuelve el número de items del hogar que caducan en los próximos 3 días."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Número de items próximos a caducar"),
+        @ApiResponse(responseCode = "404", description = "Usuario/hogar no encontrado o usuario fuera del hogar",
+            content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
+    })
     @GetMapping("/{householdId}/count/expiring")
     public int countExpiringProducts(@RequestAttribute Long userId, @PathVariable Long householdId)
             throws InstanceNotFoundException {
         return productService.countExpiringProducts(userId, householdId);
     }
 
+    @Operation(
+        summary = "Contar productos con poco stock",
+        description = "Devuelve el número de items del hogar cuya cantidad restante es inferior al 25 % de la inicial."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Número de items con poco stock"),
+        @ApiResponse(responseCode = "404", description = "Usuario/hogar no encontrado o usuario fuera del hogar",
+            content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
+    })
     @GetMapping("/{householdId}/count/littleStock")
     public int countProductsWithLittleStock(@RequestAttribute Long userId, @PathVariable Long householdId)
             throws InstanceNotFoundException {
         return productService.countProductsWithLittleStock(userId, householdId);
     }
 
+    @Operation(
+        summary = "Contar items activos del hogar",
+        description = "Devuelve el número total de items no descartados del hogar."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Número total de items activos"),
+        @ApiResponse(responseCode = "404", description = "Usuario/hogar no encontrado o usuario fuera del hogar",
+            content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
+    })
     @GetMapping("/{householdId}/count/items")
     public int countProductItems(@RequestAttribute Long userId, @PathVariable Long householdId)
             throws InstanceNotFoundException {
@@ -375,6 +419,22 @@ public class ProductController {
 
         return UserConversor.toSimplifiedUserDtos(users);
     }
-    
-    
+
+    @Operation(
+        summary = "Tirar un item de producto",
+        description = "Registra el item como descartado, resta la cantidad restante y establece la fecha de descarte."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Item descartado correctamente",
+            content = @Content(schema = @Schema(implementation = ProductItemDto.class))),
+        @ApiResponse(responseCode = "404", description = "Item no encontrado o usuario fuera del hogar",
+            content = @Content(schema = @Schema(implementation = ErrorsDto.class))),
+        @ApiResponse(responseCode = "400", description = "El item ya ha sido descartado o no tiene stock",
+            content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
+    })
+    @PostMapping("/{productItemId}/discard")
+    public ProductItemDto discardProductItem(@RequestAttribute Long userId, @PathVariable Long productItemId) throws InstanceNotFoundException, InvalidProductItemTransactionException {
+        return ProductItemConversor.toProductItemDto(productService.discardProductItem(userId, productItemId));
+    }
+
 }

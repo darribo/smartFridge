@@ -8,7 +8,6 @@ public class UpdateProductItemParamsDto {
     private String expirationDate;
     private String pricePaid;
     private ProductItem.StorageLocation storageLocation;
-    private String initialQuantityValue;
 
     public UpdateProductItemParamsDto() {
     }
@@ -36,13 +35,5 @@ public class UpdateProductItemParamsDto {
 
     public void setStorageLocation(ProductItem.StorageLocation storageLocation) {
         this.storageLocation = storageLocation;
-    }
-
-    public String getInitialQuantityValue() {
-        return initialQuantityValue;
-    }
-
-    public void setInitialQuantityValue(String initialQuantityValue) {
-        this.initialQuantityValue = initialQuantityValue;
     }
 }

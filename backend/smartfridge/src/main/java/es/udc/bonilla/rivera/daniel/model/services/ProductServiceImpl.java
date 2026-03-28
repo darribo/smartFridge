@@ -187,7 +187,7 @@ public class ProductServiceImpl implements ProductService {
     /** {@inheritDoc} */
     public ProductItem createProductItem(Long userId, Long productId, String purchaseDate, String expirationDate, String pricePaid,
             ProductItem.StorageLocation storageLocation, String initialQuantityValue)
-            throws InstanceNotFoundException, InvalidExpirationDateException {
+            throws InstanceNotFoundException, InvalidExpirationDateException, InvalidProductItemTransactionException {
 
         Product product = permissionChecker.checkProductExists(productId);
         permissionChecker.checkUserHouseholdExists(userId, product.getHousehold().getId());
@@ -207,7 +207,7 @@ public class ProductServiceImpl implements ProductService {
             }
         }
 
-        ProductItem productItem = new ProductItem(
+        ProductItem productItem = productItemDao.save(new ProductItem(
                 product,
                 parsedPurchaseDate,
                 parsedExpirationDate,
@@ -215,16 +215,17 @@ public class ProductServiceImpl implements ProductService {
                 storageLocation,
                 null,
                 resolvedInitialQuantity,
-                resolvedInitialQuantity
-        );
+                BigDecimal.ZERO));
 
-        return productItemDao.save(productItem);
+        createProductItemTransaction(userId, productItem.getId(), ProductItemTransaction.TransactionType.CREATE, productItem.getInitialQuantityValue());
+
+        return productItem;
     }
 
     @Override
     /** {@inheritDoc} */
     public ProductItem updateProductItem(Long userId, Long productItemId, String expirationDate, String pricePaid,
-            ProductItem.StorageLocation storageLocation, String initialQuantityValue)
+            ProductItem.StorageLocation storageLocation)
             throws InstanceNotFoundException, InvalidExpirationDateException {
 
         ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
@@ -237,12 +238,6 @@ public class ProductServiceImpl implements ProductService {
         productItem.setExpirationDate(parsedExpirationDate);
         productItem.setPricePaid(parseBigDecimal(pricePaid));
         productItem.setStorageLocation(storageLocation);
-
-        if (initialQuantityValue != null) {
-            BigDecimal parsed = parseBigDecimal(initialQuantityValue);
-            productItem.setInitialQuantityValue(parsed);
-            productItem.setQuantityRemainingValue(parsed);
-        }
 
         return productItem;
     }
@@ -364,7 +359,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = permissionChecker.checkProductExists(productId);
         permissionChecker.checkUserHouseholdExists(userId, product.getHousehold().getId());
 
-        return productItemDao.findByProductId(productId); //TODO: En su momento devolver solo los productos a los que les quede cantidad, o aplicar algún criterio de ordenación (por ejemplo, fecha de caducidad) para mostrar primero los que caduquen antes.
+        return productItemDao.findActiveByProductId(productId);
     }
 
     @Override
@@ -486,44 +481,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductItemTransaction createProductItemTransaction(Long userId, Long productItemId, ProductItemTransaction.TransactionType type, BigDecimal quantityDeltaValue) throws InstanceNotFoundException, InvalidProductItemTransactionException {
-
-        ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
-        permissionChecker.checkUserHouseholdExists(userId, productItem.getProduct().getHousehold().getId());
-
-        //Si el tipo es crear y ya existe alguna transaccion para ese item de producto lanzar excepcion
-        if(type == ProductItemTransaction.TransactionType.CREATE && productItemTransactionDao.existsByProductItemId(productItemId)) {
-            throw new InvalidProductItemTransactionException(InvalidProductItemTransactionException.ALREADY_CREATED);
-        }
-
-        //Si el tipo es tirar y ya se ha tirado lanzar excepcion
-        if(type == ProductItemTransaction.TransactionType.DISCARD && productItem.getDiscardDate() != null) {
-            throw new InvalidProductItemTransactionException(InvalidProductItemTransactionException.ALREADY_DISCARDED);
-        }
-
-        //Si ya no queda o se ha tirado, no se pueden hacer transacciones (abrir, consumir, ajustar) sobre el producto
-        if(productItem.getQuantityRemainingValue().compareTo(BigDecimal.ZERO) == 0 || productItem.getDiscardDate() != null) {
-            throw new InvalidProductItemTransactionException(InvalidProductItemTransactionException.ITEM_NOT_OPERABLE);
-        }
-
-        //Si el tipo es abrir y ya se ha abierto lanzar excepcion
-        if(type == ProductItemTransaction.TransactionType.OPEN && productItem.getOpenedAt() != null) {
-            throw new InvalidProductItemTransactionException(InvalidProductItemTransactionException.ALREADY_OPENED);
-        }
-
-        ProductItemTransaction transaction = new ProductItemTransaction(
-                productItem,
-                permissionChecker.checkUserExists(userId),
-                type,
-                quantityDeltaValue,
-                LocalDateTime.now().withNano(0)
-        );
-
-        return productItemTransactionDao.save(transaction);
-
-    }
-
-    @Override
     public Block<ProductItem> findProductsWithLittleStock(Long userId, Long householdId, int page, int size) throws InstanceNotFoundException {
 
         permissionChecker.checkUserHouseholdExists(userId, householdId);
@@ -555,5 +512,65 @@ public class ProductServiceImpl implements ProductService {
     public int countProductItemsByHousehold(Long userId, Long householdId) throws InstanceNotFoundException {
         permissionChecker.checkUserHouseholdExists(userId, householdId);
         return (int) productItemDao.countProductItemsByHousehold(householdId);
+    }
+
+    @Override
+    public ProductItem discardProductItem(Long userId, Long productItemId) throws InstanceNotFoundException, InvalidProductItemTransactionException {
+        ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
+        permissionChecker.checkUserHouseholdExists(userId, productItem.getProduct().getHousehold().getId());
+
+        createProductItemTransaction(userId, productItemId, ProductItemTransaction.TransactionType.DISCARD, productItem.getQuantityRemainingValue().negate());
+
+        return productItem;
+    }
+
+    private ProductItemTransaction createProductItemTransaction(Long userId, Long productItemId, ProductItemTransaction.TransactionType type, BigDecimal quantityDeltaValue) throws InstanceNotFoundException, InvalidProductItemTransactionException {
+
+        ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
+        permissionChecker.checkUserHouseholdExists(userId, productItem.getProduct().getHousehold().getId());
+
+        //Si el tipo es crear y ya existe alguna transaccion para ese item de producto lanzar excepcion
+        if(type == ProductItemTransaction.TransactionType.CREATE && productItemTransactionDao.existsByProductItemId(productItemId)) {
+            throw new InvalidProductItemTransactionException(InvalidProductItemTransactionException.ALREADY_CREATED);
+        }
+
+        //Si el tipo es tirar y ya se ha tirado lanzar excepcion
+        if(type == ProductItemTransaction.TransactionType.DISCARD && productItem.getDiscardDate() != null) {
+            throw new InvalidProductItemTransactionException(InvalidProductItemTransactionException.ALREADY_DISCARDED);
+        }
+
+        //Si ya no queda o se ha tirado, no se pueden hacer transacciones (abrir, consumir, ajustar) sobre el producto
+        if(type != ProductItemTransaction.TransactionType.CREATE &&
+                (productItem.getQuantityRemainingValue().compareTo(BigDecimal.ZERO) == 0 || productItem.getDiscardDate() != null)) {
+            throw new InvalidProductItemTransactionException(InvalidProductItemTransactionException.ITEM_NOT_OPERABLE);
+        }
+
+        //Si el tipo es abrir y ya se ha abierto lanzar excepcion
+        if(type == ProductItemTransaction.TransactionType.OPEN && productItem.getOpenedAt() != null) {
+            throw new InvalidProductItemTransactionException(InvalidProductItemTransactionException.ALREADY_OPENED);
+        }
+
+        ProductItemTransaction transaction = new ProductItemTransaction(
+                productItem,
+                permissionChecker.checkUserExists(userId),
+                type,
+                quantityDeltaValue,
+                LocalDateTime.now().withNano(0)
+        );
+
+        if (quantityDeltaValue != null) {
+            productItem.setQuantityRemainingValue(productItem.getQuantityRemainingValue().add(quantityDeltaValue));
+        }
+
+        if (type == ProductItemTransaction.TransactionType.DISCARD) {
+            productItem.setDiscardDate(LocalDateTime.now().withNano(0));
+        }
+
+        if (type == ProductItemTransaction.TransactionType.OPEN) {
+            productItem.setOpenedAt(LocalDateTime.now().withNano(0));
+        }
+
+        return productItemTransactionDao.save(transaction);
+
     }
 }
