@@ -297,7 +297,12 @@
     "deleteItemTitle": "Eliminar item",
     "deleteItemMessage": "Seguro que queres eliminar este item?",
     "deleteItemFailed": "Non se puido eliminar o item.",
-    "saveItemFailed": "Non se puido gardar o item."
+    "saveItemFailed": "Non se puido gardar o item.",
+    "discardItem": "Tirar",
+    "discardItemTitle": "Tirar este item?",
+    "discardItemMessage": "Rexistrarase como descartado e desaparecerá da lista.",
+    "discardConfirm": "Tirar",
+    "discardItemFailed": "Non se puido tirar o item."
   },
   "scanProduct": {
     "title": "Escanear produto",

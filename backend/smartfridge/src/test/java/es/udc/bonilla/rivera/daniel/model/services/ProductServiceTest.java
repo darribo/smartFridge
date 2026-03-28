@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -32,6 +33,7 @@ import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
 import es.udc.bonilla.rivera.daniel.model.entities.User;
 import es.udc.bonilla.rivera.daniel.model.entities.UserHousehold;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationDateException;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidProductItemTransactionException;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -206,7 +208,7 @@ class ProductServiceTest {
                 "2026-03-10T10:00:00", "3.10", ProductItem.StorageLocation.FRIDGE, null);
 
         ProductItem updated = productService.updateProductItem(admin.getId(), created.getId(),
-                "2026-03-12T10:00:00", "3.40", ProductItem.StorageLocation.FREEZER, null);
+                "2026-03-12T10:00:00", "3.40", ProductItem.StorageLocation.FREEZER);
 
         assertEquals(LocalDateTime.parse("2026-03-12T10:00:00"), updated.getExpirationDate());
         assertEquals(new BigDecimal("3.40"), updated.getPricePaid());
@@ -318,5 +320,75 @@ class ProductServiceTest {
                 "2026-03-10T10:00:00", "2.20", ProductItem.StorageLocation.FRIDGE, null);
 
         assertEquals(ProductItem.StorageLocation.FRIDGE, created.getStorageLocation());
+    }
+
+    @Test
+    void createProductItemSetsQuantityRemainingViaCreateTransaction() throws Exception {
+
+        User admin = createUser("item_quantity_create");
+        Household household = createHousehold("Home product item quantity", admin);
+        addUserToHousehold(admin, household);
+        Product product = createProduct(household, "Arroz integral");
+
+        ProductItem created = productService.createProductItem(admin.getId(), product.getId(), "2026-03-01T10:00:00",
+                null, null, ProductItem.StorageLocation.PANTRY, "500");
+
+        assertEquals(new BigDecimal("500.00"), created.getInitialQuantityValue());
+        assertEquals(new BigDecimal("500.00"), created.getQuantityRemainingValue());
+    }
+
+    @Test
+    void discardProductItemSetsDiscardDateAndZeroQuantity() throws Exception {
+
+        User admin = createUser("item_discard");
+        Household household = createHousehold("Home product item discard", admin);
+        addUserToHousehold(admin, household);
+        Product product = createProduct(household, "Leche entera");
+
+        ProductItem created = productService.createProductItem(admin.getId(), product.getId(), "2026-03-01T10:00:00",
+                "2026-03-10T10:00:00", null, ProductItem.StorageLocation.FRIDGE, "1000");
+
+        ProductItem discarded = productService.discardProductItem(admin.getId(), created.getId());
+
+        assertNotNull(discarded.getDiscardDate());
+        assertEquals(BigDecimal.ZERO, discarded.getQuantityRemainingValue().stripTrailingZeros());
+    }
+
+    @Test
+    void discardProductItemFailsWhenAlreadyDiscarded() throws Exception {
+
+        User admin = createUser("item_discard_twice");
+        Household household = createHousehold("Home product item discard twice", admin);
+        addUserToHousehold(admin, household);
+        Product product = createProduct(household, "Yogur natural");
+
+        ProductItem created = productService.createProductItem(admin.getId(), product.getId(), "2026-03-01T10:00:00",
+                "2026-03-10T10:00:00", null, ProductItem.StorageLocation.FRIDGE, "200");
+
+        productService.discardProductItem(admin.getId(), created.getId());
+
+        assertThrows(InvalidProductItemTransactionException.class,
+                () -> productService.discardProductItem(admin.getId(), created.getId()));
+    }
+
+    @Test
+    void findProductItemsExcludesDiscardedItems() throws Exception {
+
+        User admin = createUser("item_find_active");
+        Household household = createHousehold("Home product item find active", admin);
+        addUserToHousehold(admin, household);
+        Product product = createProduct(household, "Atún en lata");
+
+        ProductItem active = productService.createProductItem(admin.getId(), product.getId(), "2026-03-01T10:00:00",
+                "2026-03-10T10:00:00", null, ProductItem.StorageLocation.PANTRY, "150");
+        ProductItem toDiscard = productService.createProductItem(admin.getId(), product.getId(), "2026-03-01T10:00:00",
+                "2026-03-15T10:00:00", null, ProductItem.StorageLocation.PANTRY, "150");
+
+        productService.discardProductItem(admin.getId(), toDiscard.getId());
+
+        List<ProductItem> result = productService.findProductItems(admin.getId(), product.getId());
+
+        assertEquals(1, result.size());
+        assertEquals(active.getId(), result.get(0).getId());
     }
 }

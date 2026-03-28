@@ -1,7 +1,6 @@
 package es.udc.bonilla.rivera.daniel.model.services;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -11,7 +10,6 @@ import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductAllergy;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
-import es.udc.bonilla.rivera.daniel.model.entities.ProductItemTransaction;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationDateException;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidProductItemTransactionException;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.ProductIsNotFoodException;
@@ -89,10 +87,11 @@ public interface ProductService {
      * @return La entidad {@code ProductItem} creada.
      * @throws InstanceNotFoundException Si el producto no existe o el usuario no pertenece al hogar del producto.
      * @throws InvalidExpirationDateException Si la fecha de caducidad es anterior a la fecha de compra.
+ * @throws InvalidProductItemTransactionException 
      */
     ProductItem createProductItem(Long userId, Long productId, String purchaseDate, String expirationDate, String pricePaid,
             ProductItem.StorageLocation storageLocation, String initialQuantityValue)
-            throws InstanceNotFoundException, InvalidExpirationDateException;
+            throws InstanceNotFoundException, InvalidExpirationDateException, InvalidProductItemTransactionException;
 
     /**
      * Actualiza los datos editables de un item de producto.
@@ -107,7 +106,7 @@ public interface ProductService {
      * @throws InvalidExpirationDateException Si la fecha de caducidad es anterior a la fecha de compra.
      */
     ProductItem updateProductItem(Long userId, Long productItemId, String expirationDate, String pricePaid,
-            ProductItem.StorageLocation storageLocation, String initialQuantityValue)
+            ProductItem.StorageLocation storageLocation)
             throws InstanceNotFoundException, InvalidExpirationDateException;
 
     /**
@@ -185,9 +184,6 @@ public interface ProductService {
 
     int getDaysUntilExpiration(Long productItemId) throws InstanceNotFoundException;
 
-    ProductItemTransaction createProductItemTransaction(Long userId, Long productItemId, ProductItemTransaction.TransactionType type, BigDecimal quantityDeltaValue) throws InstanceNotFoundException, InvalidProductItemTransactionException;
-
-
     Block<ProductItem> findProductsWithLittleStock(Long userId, Long householdId, int page, int size) throws InstanceNotFoundException;
 
     int countExpiringProducts(Long userId, Long householdId) throws InstanceNotFoundException;
@@ -195,5 +191,7 @@ public interface ProductService {
     int countProductsWithLittleStock(Long userId, Long householdId) throws InstanceNotFoundException;
 
     int countProductItemsByHousehold(Long userId, Long householdId) throws InstanceNotFoundException;
+
+    ProductItem discardProductItem(Long userId, Long productItemId) throws InstanceNotFoundException, InvalidProductItemTransactionException;
 
 }

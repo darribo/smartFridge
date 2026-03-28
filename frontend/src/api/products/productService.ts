@@ -323,6 +323,15 @@ export const deleteProductItem = async (
     return appFetch(`/products/${productId}/items/${itemId}`, options, onSuccess, onError);
 };
 
+export const discardProductItem = async (
+    itemId: number,
+    onSuccess?: (item: ProductItem) => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("POST");
+    return appFetch(`/products/${itemId}/discard`, options, onSuccess, onError);
+};
+
 export const uploadProductImage = async (
   productId: number,
   localUri: string,

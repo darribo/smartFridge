@@ -24,6 +24,7 @@ import {
   deleteProductItem,
   getProductDetail,
   updateProductItem,
+  discardProductItem,
   type ProductDetail,
   type ProductItem,
   type ProductItemStorageLocation,
@@ -119,9 +120,10 @@ type ItemCardProps = {
   t: (key: string, opts?: any) => string;
   onEdit: () => void;
   onDelete: () => void;
+  onDiscard: () => void;
 };
 
-function ItemCard({ item, product, t, onEdit, onDelete }: ItemCardProps) {
+function ItemCard({ item, product, t, onEdit, onDelete, onDiscard }: ItemCardProps) {
   const meta = getLocationMeta(item.storageLocation, t);
   const expColor = getExpirationColor(item.expirationDate);
   const noDate = t("products.list.noDate");
@@ -176,6 +178,10 @@ function ItemCard({ item, product, t, onEdit, onDelete }: ItemCardProps) {
         <Pressable onPress={onEdit} style={styles.itemActionBtn}>
           <MaterialCommunityIcons name="pencil-outline" size={16} color={THEME.primary} />
           <Text style={styles.itemActionText}>{t("editProduct.editItem")}</Text>
+        </Pressable>
+        <Pressable onPress={onDiscard} style={styles.itemActionBtn}>
+          <MaterialCommunityIcons name="delete-sweep-outline" size={16} color="#D97706" />
+          <Text style={[styles.itemActionText, styles.itemActionTextDiscard]}>{t("editProduct.discardItem")}</Text>
         </Pressable>
         <Pressable onPress={onDelete} style={[styles.itemActionBtn, styles.itemActionBtnDelete]}>
           <MaterialCommunityIcons name="trash-can-outline" size={16} color="#DC2626" />
@@ -413,6 +419,30 @@ export default function ProductDetailScreen({ navigation, route }: Props) {
     );
   };
 
+  const handleDiscardItem = (item: ProductItem) => {
+    if (!product) return;
+    Alert.alert(
+      t("editProduct.discardItemTitle"),
+      t("editProduct.discardItemMessage"),
+      [
+        { text: t("editProduct.deleteCancel"), style: "cancel" },
+        {
+          text: t("editProduct.discardConfirm"),
+          style: "destructive",
+          onPress: () => {
+            discardProductItem(
+              item.id,
+              () => setProduct((prev) =>
+                prev ? { ...prev, items: prev.items.filter((i) => i.id !== item.id) } : prev
+              ),
+              (err) => Alert.alert(t("editProduct.discardItemFailed"), err.globalErrors?.[0] ?? "")
+            );
+          },
+        },
+      ]
+    );
+  };
+
   const handleEditItem = (item: ProductItem) => {
     setEditingItem(item);
     setEditItemVisible(true);
@@ -579,6 +609,7 @@ export default function ProductDetailScreen({ navigation, route }: Props) {
                     t={t}
                     onEdit={() => handleEditItem(item)}
                     onDelete={() => handleDeleteItem(item)}
+                    onDiscard={() => handleDiscardItem(item)}
                   />
                 ))}
               </View>
@@ -834,6 +865,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
     color: THEME.primary,
+  },
+  itemActionTextDiscard: {
+    color: "#D97706",
   },
   itemActionTextDelete: {
     color: "#DC2626",

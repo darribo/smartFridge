@@ -15,6 +15,12 @@ public interface ProductItemDao extends JpaRepository<ProductItem, Long>{
 
     List<ProductItem> findByProductId(Long productId);
 
+    @Query("SELECT pi FROM ProductItem pi WHERE pi.product.id = :productId " +
+           "AND pi.discardDate IS NULL " +
+           "AND (pi.initialQuantityValue IS NULL OR pi.quantityRemainingValue > 0) " +
+           "ORDER BY pi.expirationDate ASC NULLS LAST")
+    List<ProductItem> findActiveByProductId(@Param("productId") Long productId);
+
     int countByProductId(Long productId);
 
     // Que vaya a expirar supone que:
