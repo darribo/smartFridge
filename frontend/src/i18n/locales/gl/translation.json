@@ -10,7 +10,11 @@
     "retry": "Tentar de novo",
     "understood": "Entendido",
     "networkError": "Produciuse un erro de rede. Téntao de novo.",
-    "timeoutError": "A petición tardou demasiado. Téntao de novo."
+    "timeoutError": "A petición tardou demasiado. Téntao de novo.",
+    "yes": "Si",
+    "no": "Non",
+    "cancel": "Cancelar",
+    "saving": "Gardando…"
   },
   "genericErrors": {
     "requiredField": "Campo obligatorio",
@@ -146,7 +150,7 @@
       "home": "Inicio",
       "pantry": "Despensa",
       "households": "Fogares",
-      "stats": "Stats"
+      "recipes": "Receitas"
     }
   },
   "household": {
@@ -321,6 +325,65 @@
       "invalidBarcode": "Código de barras inválido.",
       "notFound": "Non se atopou ningún produto con ese código.",
       "default": "Non se puido escanear o produto."
+    }
+  },
+  "addRecipe": {
+    "title": "Nova receita",
+    "sections": {
+      "basic": "Información básica",
+      "instructions": "Instrucións",
+      "times": "Tempos e racións",
+      "characteristics": "Características",
+      "ingredients": "Ingredientes"
+    },
+    "fields": {
+      "title": "Nome da receita *",
+      "description": "Descrición",
+      "instructions": "Pasos de preparación *",
+      "notes": "Notas",
+      "prepMinutes": "Preparación (min)",
+      "cookMinutes": "Cocción (min)",
+      "servings": "Racións",
+      "difficulty": "Dificultade",
+      "cuisineType": "Tipo de cociña",
+      "dietType": "Tipo de dieta",
+      "mealType": "Momento do día",
+      "seasonType": "Tempada",
+      "none": "Sen especificar",
+      "vegetarian": "Vexetariana",
+      "vegan": "Vegana",
+      "optional": "Ingrediente opcional"
+    },
+    "placeholders": {
+      "title": "Ex. Tortilla de patacas",
+      "description": "Breve descrición da receita…",
+      "instructions": "1. Pelar as patacas…",
+      "notes": "Consellos ou variacións…",
+      "ingredientName": "Ex. Ovo",
+      "quantity": "Cantidade",
+      "ingredientNotes": "Notas (ex. picado fino, en dados…)"
+    },
+    "difficulty": {
+      "none": "Sen especificar",
+      "EASY": "Fácil",
+      "MEDIUM": "Media",
+      "HARD": "Difícil"
+    },
+    "actions": {
+      "save": "Gardar receita",
+      "addIngredient": "Engadir ingrediente"
+    },
+    "errors": {
+      "titleRequired": "O nome da receita é obrigatorio.",
+      "instructionsRequired": "Os pasos de preparación son obrigatorios.",
+      "saveFailed": "Non se puido gardar a receita."
+    },
+    "ingredient": {
+      "link": "Vincular produto",
+      "linked": "Produto vinculado",
+      "linkTitle": "Buscar produto",
+      "searchPlaceholder": "Busca por nome…",
+      "noResults": "Non se atoparon produtos"
     }
   },
   "products": {

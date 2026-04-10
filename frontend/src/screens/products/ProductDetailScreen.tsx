@@ -31,7 +31,7 @@ import {
   type ProductUnit,
 } from "../../api/products/productService";
 import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
-import { resolveProductImage } from "../../utils/image";
+import { resolveImage } from "../../utils/image";
 import { useHouseholdStore } from "../../store/householdStore";
 import {
   DropdownField,
@@ -503,7 +503,7 @@ export default function ProductDetailScreen({ navigation, route }: Props) {
         <>
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
             {/* Hero image */}
-            <Image source={{ uri: resolveProductImage(product.image) }} style={styles.heroImage} />
+            <Image source={{ uri: resolveImage(true, product.image) }} style={styles.heroImage} />
 
             {/* Product header */}
             <View style={styles.section}>

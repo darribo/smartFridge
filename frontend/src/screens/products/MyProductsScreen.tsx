@@ -22,7 +22,7 @@ import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
 import NoHouseholdModal from "../../components/common/NoHouseholdModal";
 import { DropdownField } from "./AddProductShared";
 import { findProducts, type ProductFilters, type ProductItem, type ProductItemStorageLocation, type ProductNutriScoreGrade, type ProductWithItems, type ProductUnit } from "../../api/products/productService";
-import { resolveProductImage } from "../../utils/image";
+import { resolveImage } from "../../utils/image";
 
 type StorageFilter = "ALL" | "PANTRY" | "FRIDGE" | "FREEZER";
 type NovaFilter = "ANY" | "GROUP_1" | "GROUP_2" | "GROUP_3" | "GROUP_4";
@@ -172,7 +172,7 @@ function ProductCard({
             </View>
           </View>
 
-          <Image source={{ uri: resolveProductImage(product.image) }} style={styles.productImage} />
+          <Image source={{ uri: resolveImage(true, product.image) }} style={styles.productImage} />
         </View>
       </View>
     </Pressable>

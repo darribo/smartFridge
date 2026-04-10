@@ -52,7 +52,14 @@ public interface ProductItemDao extends JpaRepository<ProductItem, Long>{
         "AND pi.quantityRemainingValue IS NOT NULL " +
         "AND pi.initialQuantityValue IS NOT NULL " +
         "AND pi.initialQuantityValue > 0 " +
-        "AND pi.quantityRemainingValue / pi.initialQuantityValue < 0.25",
+        "AND pi.quantityRemainingValue / pi.initialQuantityValue < 0.25 " +
+        "AND pi.id = (" +
+            "SELECT pi2.id FROM ProductItem pi2 " +
+            "WHERE pi2.productId = pi.productId " +
+            "AND pi2.discardDate IS NULL " +
+            "AND pi2.quantityRemainingValue IS NOT NULL " +
+            "ORDER BY pi2.quantityRemainingValue DESC LIMIT 1" +
+        ")",
         nativeQuery = true
     )
     Slice<ProductItem> findProductsWithLittleStock(
@@ -83,7 +90,14 @@ public interface ProductItemDao extends JpaRepository<ProductItem, Long>{
         "AND pi.quantityRemainingValue IS NOT NULL " +
         "AND pi.initialQuantityValue IS NOT NULL " +
         "AND pi.initialQuantityValue > 0 " +
-        "AND pi.quantityRemainingValue / pi.initialQuantityValue < 0.25",
+        "AND pi.quantityRemainingValue / pi.initialQuantityValue < 0.25 " +
+        "AND pi.id = (" +
+            "SELECT pi2.id FROM ProductItem pi2 " +
+            "WHERE pi2.productId = pi.productId " +
+            "AND pi2.discardDate IS NULL " +
+            "AND pi2.quantityRemainingValue IS NOT NULL " +
+            "ORDER BY pi2.quantityRemainingValue DESC LIMIT 1" +
+        ")",
         nativeQuery = true
     )
     long countProductsWithLittleStock(@Param("householdId") Long householdId);

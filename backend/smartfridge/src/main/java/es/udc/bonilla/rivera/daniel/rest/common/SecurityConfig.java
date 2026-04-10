@@ -33,6 +33,7 @@ public class SecurityConfig {
                 .requestMatchers("/households/*").permitAll()
                 .requestMatchers("/households/**").permitAll()
                 .requestMatchers("/products/**").permitAll()
+                .requestMatchers("/recipes/**").permitAll()
                 .anyRequest().authenticated() //El resto de rutas requieren autenticación
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); //Se añade el filtro JWT antes del filtro de autenticación por defecto

@@ -1,4 +1,6 @@
 /* DROP TABLE IF EXISTS HouseholdInvitation; */
+DROP TABLE IF EXISTS RecipeIngredient;
+DROP TABLE IF EXISTS Recipe;
 DROP TABLE IF EXISTS ProductItemTransaction;
 DROP TABLE IF EXISTS ProductItem;
 DROP TABLE IF EXISTS ProductAllergy;
@@ -118,6 +120,61 @@ CREATE TABLE ProductItemTransaction (
     FOREIGN KEY (productItemId) REFERENCES ProductItem(id) ON DELETE CASCADE,
     FOREIGN KEY (userId) REFERENCES users(id) ON DELETE SET NULL
 );
-
---TODO: ALERGIAS
 --TODO: CATEGORY TAGS
+
+CREATE TABLE Recipe (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+
+    createdByUserId BIGINT NOT NULL,
+
+    title VARCHAR(150) NOT NULL,
+    description VARCHAR(2000),
+    image VARCHAR(1000),
+
+    servings INT,
+    preparationMinutes INT,
+    cookingMinutes INT,
+    totalMinutes INT,
+
+    difficulty TINYINT,
+
+    -- TODO: estimatedCaloriesPerServing DECIMAL(7,2),
+    -- TODO: estimatedTotalCost DECIMAL(7,2),
+    -- TODO: estimatedCostPerServing DECIMAL(7,2),
+
+    cuisineType TINYINT,
+    dietType TINYINT,
+    mealType TINYINT,
+    seasonType TINYINT,
+
+    vegetarian BOOLEAN,
+    vegan BOOLEAN,
+
+    instructions TEXT NOT NULL,
+    notes TEXT,
+
+    generationSource VARCHAR(20) NOT NULL,
+
+    createdAt DATETIME NOT NULL,
+    updatedAt DATETIME NOT NULL,
+
+    FOREIGN KEY (createdByUserId) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE RecipeIngredient (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+
+    recipeId BIGINT NOT NULL,
+
+    name VARCHAR(100) NOT NULL,
+    quantityValue DECIMAL(7,2),
+    unit TINYINT,
+    notes VARCHAR(255),
+    optionalIngredient BOOLEAN NOT NULL DEFAULT FALSE,
+    displayOrder INT NOT NULL,
+
+    productId BIGINT,
+
+    FOREIGN KEY (recipeId) REFERENCES Recipe(id) ON DELETE CASCADE,
+    FOREIGN KEY (productId) REFERENCES Product(id) ON DELETE SET NULL
+);

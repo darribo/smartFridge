@@ -42,7 +42,7 @@ import {
   styles,
   ExistingProduct,
 } from "./AddProductShared";
-import { resolveProductImage } from "../../utils/image";
+import { resolveImage } from "../../utils/image";
 
 import * as ImagePicker from "expo-image-picker";
 
@@ -411,7 +411,7 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
         {image ? (
           <>
             <Image
-              source={{ uri: resolveProductImage(image) }}
+              source={{ uri: resolveImage(true, image) }}
               style={styles.imagePreview}
               resizeMode="contain"
               onLoadStart={() => setImagePreviewLoading(true)}

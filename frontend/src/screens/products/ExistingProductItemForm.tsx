@@ -26,7 +26,7 @@ import {
   styles,
   toIsoDateTimeOrNull,
 } from "./AddProductShared";
-import { GENERIC_PRODUCT_IMAGE, resolveProductImage } from "../../utils/image";
+import { GENERIC_PRODUCT_IMAGE, resolveImage } from "../../utils/image";
 
 type Props = {
   householdId: number;
@@ -235,7 +235,7 @@ export default function ExistingProductItemForm({
                 }}
               >
                 <View style={styles.searchResultRow}>
-                  <Image source={{ uri: resolveProductImage(item.image) }} style={styles.searchResultImage} />
+                  <Image source={{ uri: resolveImage(true, item.image) }} style={styles.searchResultImage} />
                   <Text style={styles.searchResultText}>{item.name}</Text>
                 </View>
               </Pressable>
@@ -256,7 +256,7 @@ export default function ExistingProductItemForm({
                   style={[styles.selectedProductImage, styles.selectedProductImageLayer]}
                 />
                 <Image
-                  source={{ uri: resolveProductImage(selectedProduct.image) }}
+                  source={{ uri: resolveImage(true, selectedProduct.image) }}
                   style={[
                     styles.selectedProductImage,
                     styles.selectedProductImageLayer,

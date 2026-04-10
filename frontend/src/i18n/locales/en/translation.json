@@ -10,7 +10,11 @@
     "retry": "Retry",
     "understood": "Got it",
     "networkError": "A network error occurred. Please try again.",
-    "timeoutError": "The request took too long. Please try again."
+    "timeoutError": "The request took too long. Please try again.",
+    "yes": "Yes",
+    "no": "No",
+    "cancel": "Cancel",
+    "saving": "Saving…"
   },
   "genericErrors": {
     "requiredField": "Field required",
@@ -146,7 +150,7 @@
       "home": "Home",
       "pantry": "Pantry",
       "households": "Homes",
-      "stats": "Stats"
+      "recipes": "Recipes"
     }
   },
   "household": {
@@ -321,6 +325,65 @@
       "invalidBarcode": "Invalid barcode.",
       "notFound": "No product was found for this barcode.",
       "default": "Unable to scan the product."
+    }
+  },
+  "addRecipe": {
+    "title": "New recipe",
+    "sections": {
+      "basic": "Basic info",
+      "instructions": "Instructions",
+      "times": "Times & servings",
+      "characteristics": "Characteristics",
+      "ingredients": "Ingredients"
+    },
+    "fields": {
+      "title": "Recipe name *",
+      "description": "Description",
+      "instructions": "Preparation steps *",
+      "notes": "Notes",
+      "prepMinutes": "Preparation (min)",
+      "cookMinutes": "Cooking (min)",
+      "servings": "Servings",
+      "difficulty": "Difficulty",
+      "cuisineType": "Cuisine type",
+      "dietType": "Diet type",
+      "mealType": "Meal type",
+      "seasonType": "Season",
+      "none": "Not specified",
+      "vegetarian": "Vegetarian",
+      "vegan": "Vegan",
+      "optional": "Optional ingredient"
+    },
+    "placeholders": {
+      "title": "E.g. Spanish omelette",
+      "description": "Brief description of the recipe…",
+      "instructions": "1. Peel the potatoes…",
+      "notes": "Tips or variations…",
+      "ingredientName": "E.g. Egg",
+      "quantity": "Amount",
+      "ingredientNotes": "Notes (e.g. finely chopped, diced…)"
+    },
+    "difficulty": {
+      "none": "Not specified",
+      "EASY": "Easy",
+      "MEDIUM": "Medium",
+      "HARD": "Hard"
+    },
+    "actions": {
+      "save": "Save recipe",
+      "addIngredient": "Add ingredient"
+    },
+    "errors": {
+      "titleRequired": "Recipe name is required.",
+      "instructionsRequired": "Preparation steps are required.",
+      "saveFailed": "Could not save the recipe."
+    },
+    "ingredient": {
+      "link": "Link product",
+      "linked": "Product linked",
+      "linkTitle": "Search product",
+      "searchPlaceholder": "Search by name…",
+      "noResults": "No products found"
     }
   },
   "products": {

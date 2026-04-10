@@ -405,7 +405,11 @@ export default function HomeScreen({ navigation }: Props) {
             label={t("home.footer.households")}
             onPress={() => navigation.navigate("MyHouseholds")}
           />
-          <FooterItem icon="chart-box-outline" label={t("home.footer.stats")} />
+          <FooterItem
+            icon="silverware-fork-knife"
+            label={t("home.footer.recipes")}
+            onPress={() => navigation.navigate("MyRecipes")}
+          />
         </View>
       </View>
     </SafeAreaView>

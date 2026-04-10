@@ -19,7 +19,7 @@ import { THEME } from "../../theme/theme";
 import { useHouseholdStore } from "../../store/householdStore";
 import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
 import { getExpiringProducts, type ExpiringProduct } from "../../api/products/productService";
-import { resolveProductImage } from "../../utils/image";
+import { resolveImage } from "../../utils/image";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "ExpiringProducts">;
 
@@ -65,7 +65,7 @@ function ExpiringCard({
             <Text style={styles.productName} numberOfLines={2}>{item.productName}</Text>
           </View>
           <Image
-            source={{ uri: resolveProductImage(item.productImage) }}
+            source={{ uri: resolveImage(true, item.productImage) }}
             style={styles.productImage}
           />
         </View>
