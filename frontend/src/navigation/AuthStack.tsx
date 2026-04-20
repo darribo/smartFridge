@@ -9,6 +9,7 @@ import UpdateHouseholdScreen from "../screens/households/UpdateHouseholdScreen";
 import type { NewUserParams } from "../api/users/userService";
 import type { Household } from "../api/households/householdService";
 import type { BarcodeProduct } from "../api/products/productService";
+import type { NewRecipeParams } from "../api/recipes/recipeService";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ApiError } from "../api/appFetch";
 import AddProductScreen from "../screens/products/AddProductScreen";
@@ -36,7 +37,7 @@ export type AuthStackParamList = {
   MyProducts: { storageFilter: "ALL" | "PANTRY" | "FRIDGE" | "FREEZER" } | undefined;
   ExpiringProducts: undefined;
   ProductDetail: { productId: number };
-  AddRecipe: { householdId: number } | undefined;
+  AddRecipe: { householdId?: number; initialRecipe?: NewRecipeParams } | undefined;
   EditProduct: { productId: number };
   MyRecipes: undefined;
 };

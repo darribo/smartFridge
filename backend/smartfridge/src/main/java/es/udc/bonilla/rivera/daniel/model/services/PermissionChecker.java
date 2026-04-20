@@ -22,6 +22,8 @@ public interface PermissionChecker {
 
     Product checkProductExistsInHousehold(Long productId, Long householdId) throws InstanceNotFoundException;
 
+    Product checkProductBelongsToUserHousehold(Long productId, Long userId) throws InstanceNotFoundException;
+
     ProductItem checkProductItemExists(Long productItemId) throws InstanceNotFoundException;
 
     ProductAllergy checkProductAllergyExists(Long productId, Long allergyId) throws InstanceNotFoundException;

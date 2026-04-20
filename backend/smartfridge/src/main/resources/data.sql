@@ -102,10 +102,10 @@ INSERT INTO Product (id, householdId, barcode, name, brand, image, quantity, uni
 -- ProductItems para household 10 (algunos productos con stock)
 -- storageLocation: PANTRY, FRIDGE, FREEZER
 INSERT INTO ProductItem (id, productId, purchaseDate, expirationDate, storageLocation, pricePaid, openedAt, initialQuantityValue, quantityRemainingValue, discardDate) VALUES
-    (200, 100, '2026-03-20 10:00:00', '2026-04-05 00:00:00', 'FRIDGE',  1.35, NULL,  1000.00, 1000.00, NULL),
-    (201, 100, '2026-03-28 10:00:00', '2026-04-10 00:00:00', 'FRIDGE',  1.35, NULL,  1000.00, 1000.00, NULL),
+    (200, 100, '2026-03-20 10:00:00', '2026-04-05 00:00:00', 'FRIDGE',  1.35, NULL,  1.00, 1.00, NULL),
+    (201, 100, '2026-03-28 10:00:00', '2026-04-10 00:00:00', 'FRIDGE',  1.35, NULL,  1.00, 1.00, NULL),
     (202, 102, '2026-03-15 10:00:00', '2026-04-01 00:00:00', 'FRIDGE',  2.10, NULL,  NULL,    NULL,    NULL),
-    (203, 103, '2026-03-01 10:00:00', NULL,                  'PANTRY',  1.25, NULL,  1000.00, 750.00,  NULL),
+    (203, 103, '2026-03-01 10:00:00', NULL,                  'PANTRY',  1.25, NULL,  1.00, 0.75, NULL),
     (204, 104, '2026-03-10 10:00:00', NULL,                  'PANTRY',  1.05, '2026-03-10 12:00:00', 500.00, 320.00, NULL),
     (205, 105, '2026-03-18 10:00:00', '2026-06-01 00:00:00', 'PANTRY',  0.95, NULL,  400.00,  400.00,  NULL),
     (206, 106, '2026-03-29 10:00:00', '2026-04-02 00:00:00', 'PANTRY',  1.80, '2026-03-29 12:00:00', 500.00, 380.00, NULL),
@@ -113,14 +113,14 @@ INSERT INTO ProductItem (id, productId, purchaseDate, expirationDate, storageLoc
     (208, 108, '2026-03-25 10:00:00', '2026-04-10 00:00:00', 'FRIDGE',  2.90, NULL,  NULL,    NULL,    NULL),
     (209, 109, '2026-03-01 10:00:00', NULL,                  'PANTRY',  4.50, '2026-03-01 12:00:00', 750.00, 600.00, NULL),
     (210, 110, '2026-03-30 10:00:00', '2026-04-01 00:00:00', 'FRIDGE',  3.80, NULL,  500.00,  500.00,  NULL),
-    (211, 111, '2026-03-20 10:00:00', NULL,                  'PANTRY',  1.20, NULL,  2000.00, 1500.00, NULL),
-    (212, 112, '2026-03-20 10:00:00', NULL,                  'PANTRY',  0.90, NULL,  1000.00, 800.00,  NULL),
+    (211, 111, '2026-03-20 10:00:00', NULL,                  'PANTRY',  1.20, NULL,  2.00, 1.50, NULL),
+    (212, 112, '2026-03-20 10:00:00', NULL,                  'PANTRY',  0.90, NULL,  1.00, 0.80, NULL),
     (213, 115, '2026-03-15 10:00:00', '2026-04-15 00:00:00', 'FRIDGE',  2.20, '2026-03-20 09:00:00', 250.00, 200.00, NULL),
-    (214, 117, '2026-03-01 10:00:00', NULL,                  'PANTRY',  0.95, NULL,  1000.00, 900.00,  NULL),
+    (214, 117, '2026-03-01 10:00:00', NULL,                  'PANTRY',  0.95, NULL,  1.00, 0.90, NULL),
     (215, 118, '2026-03-10 10:00:00', '2026-07-01 00:00:00', 'PANTRY',  2.60, NULL,  NULL,    NULL,    NULL),
     (216, 119, '2026-03-01 10:00:00', NULL,                  'PANTRY',  1.30, NULL,  500.00,  500.00,  NULL),
     (217, 122, '2026-03-15 10:00:00', '2026-06-01 00:00:00', 'PANTRY',  1.20, NULL,  350.00,  350.00,  NULL),
-    (218, 123, '2026-03-10 10:00:00', '2026-09-01 00:00:00', 'PANTRY',  2.80, NULL,  1000.00, 1000.00, NULL),
+    (218, 123, '2026-03-10 10:00:00', '2026-09-01 00:00:00', 'PANTRY',  2.80, NULL,  1.00, 1.00, NULL),
     (219, 125, '2026-03-30 10:00:00', '2026-04-02 00:00:00', 'FRIDGE',  2.20, NULL,  300.00,  300.00,  NULL);
 
 -- Recipes para usuario 1 (admin_home)

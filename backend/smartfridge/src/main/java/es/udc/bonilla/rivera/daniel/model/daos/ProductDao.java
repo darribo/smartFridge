@@ -22,6 +22,12 @@ public interface ProductDao extends JpaRepository<Product, Long>, CustomizedProd
     @Query("SELECT p FROM Product p WHERE p.household.id = :householdId AND LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))")
     Slice<Product> findByName(String name, Long householdId, Pageable pageable);
 
+    @Query("SELECT p FROM Product p WHERE p.household.id = :householdId AND p.vegan = true")
+    Slice<Product> findVeganByHousehold(Long householdId, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.household.id = :householdId AND p.vegetarian = true")
+    Slice<Product> findVegetarianByHousehold(Long householdId, Pageable pageable);
+
     Optional<Product> findByBarcodeAndHouseholdId(String barcode, Long householdId);
 
     boolean existsByBarcodeAndHouseholdId(String barcode, Long householdId);

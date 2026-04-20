@@ -95,6 +95,29 @@ export const getRecipe = async (
     return appFetch(`/recipes/${recipeId}`, options, onSuccess, onError);
 };
 
+export type GenerateAiRecipeParams = {
+    difficulty?: RecipeDifficulty | null;
+    cuisineType?: RecipeCuisineType | null;
+    dietType?: RecipeDietType | null;
+    mealType?: RecipeMealType | null;
+    seasonType?: RecipeSeasonType | null;
+    servings?: number | null;
+    vegetarian?: boolean | null;
+    vegan?: boolean | null;
+    mustIncludeProductIds?: number[] | null;
+    excludeTitles?: string[] | null;
+};
+
+export const generateAiRecipe = async (
+    householdId: number,
+    params: GenerateAiRecipeParams,
+    onSuccess?: (recipe: NewRecipeParams) => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("POST", params);
+    return appFetch(`/recipes/generate-ai?householdId=${householdId}`, options, onSuccess, onError);
+};
+
 export type RecipeFilters = {
     title?: string | null;
     minMinutes?: number | null;

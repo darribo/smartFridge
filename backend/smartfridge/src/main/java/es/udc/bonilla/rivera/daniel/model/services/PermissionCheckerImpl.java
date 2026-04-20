@@ -155,6 +155,21 @@ public class PermissionCheckerImpl implements PermissionChecker {
     }
 
     @Override
+    public Product checkProductBelongsToUserHousehold(Long productId, Long userId) throws InstanceNotFoundException {
+
+        Product product = checkProductExists(productId);
+        Long householdId = product.getHousehold().getId();
+
+        Optional<UserHousehold> optional = userHouseholdDao.findById(new UserHouseholdId(userId, householdId));
+
+        if (!optional.isPresent()) {
+            throw new InstanceNotFoundException("project.entities.product", productId);
+        }
+
+        return product;
+    }
+
+    @Override
     public UserHousehold checkUserHouseholdExists(Long userId, Long householdId) throws InstanceNotFoundException {
         
         Optional<UserHousehold> optional = userHouseholdDao.findById(new UserHouseholdId(userId, householdId));

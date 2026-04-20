@@ -16,9 +16,12 @@ import { useTranslation } from "react-i18next";
 import { ApiError } from "../api/appFetch";
 import { Block } from "../api/block";
 import { getUserHouseholds, UserHouseholdListItem } from "../api/households/householdService";
-import { countExpiringProducts, countLittleStockProducts, countPantryItems } from "../api/products/productService";
+import { countExpiringProducts, countLittleStockProducts, countPantryItems, getExpiringProducts } from "../api/products/productService";
+import { generateAiRecipe } from "../api/recipes/recipeService";
+import type { GenerateAiRecipeParams, NewRecipeParams } from "../api/recipes/recipeService";
 import { GlobalErrorBox } from "../components/common/GlobalErrorBox";
 import NoHouseholdModal from "../components/common/NoHouseholdModal";
+import GenerateAiFiltersModal from "../components/recipes/GenerateAiFiltersModal";
 import type { AuthStackParamList } from "../navigation/AuthStack";
 import { useHouseholdStore } from "../store/householdStore";
 import { THEME } from "../theme/theme";
@@ -83,6 +86,10 @@ export default function HomeScreen({ navigation }: Props) {
   const [loadingFirst, setLoadingFirst] = useState(true);
   const [globalErrors, setGlobalErrors] = useState<string[]>([]);
   const [showNoHousehold, setShowNoHousehold] = useState(false);
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [generatingAi, setGeneratingAi] = useState(false);
+  const [loadingAiModal, setLoadingAiModal] = useState(false);
+  const [aiModalInitialProducts, setAiModalInitialProducts] = useState<Array<{ id: number; name: string }>>([]);
   const [expiringSoonCount, setExpiringSoonCount] = useState(0);
   const [pantryItemsCount, setPantryItemsCount] = useState(0);
   const [lowStockCount, setLowStockCount] = useState(0);
@@ -181,6 +188,55 @@ export default function HomeScreen({ navigation }: Props) {
     }
   };
 
+  const openAiModal = () => {
+    if (!resolvedHouseholdId) {
+      setShowNoHousehold(true);
+      return;
+    }
+    setAiModalInitialProducts([]);
+    setShowAiModal(true);
+  };
+
+  const openAiModalWithExpiring = async () => {
+    if (!resolvedHouseholdId) {
+      setShowNoHousehold(true);
+      return;
+    }
+    setLoadingAiModal(true);
+    await getExpiringProducts(
+      resolvedHouseholdId,
+      0,
+      (block) => {
+        const seen = new Set<number>();
+        const unique = block.items
+          .filter((p) => { if (seen.has(p.productId)) return false; seen.add(p.productId); return true; })
+          .map((p) => ({ id: p.productId, name: p.productName }));
+        setAiModalInitialProducts(unique);
+      },
+      () => setAiModalInitialProducts([])
+    );
+    setLoadingAiModal(false);
+    setShowAiModal(true);
+  };
+
+  const handleGenerateAi = async (params: GenerateAiRecipeParams) => {
+    if (!resolvedHouseholdId) return;
+    setShowAiModal(false);
+    setGeneratingAi(true);
+    await generateAiRecipe(
+      resolvedHouseholdId,
+      params,
+      (recipe: NewRecipeParams) => {
+        setGeneratingAi(false);
+        navigation.navigate("AddRecipe", { householdId: resolvedHouseholdId, initialRecipe: recipe });
+      },
+      () => {
+        setGeneratingAi(false);
+        setGlobalErrors([t("addRecipe.ai.error")]);
+      }
+    );
+  };
+
   if (loadingFirst) {
     return (
       <SafeAreaView edges={["top"]} style={styles.safe}>
@@ -198,6 +254,13 @@ export default function HomeScreen({ navigation }: Props) {
         onClose={() => setShowNoHousehold(false)}
         onCreateHousehold={() => { setShowNoHousehold(false); navigation.navigate("CreateHousehold"); }}
         onGoToHouseholds={() => { setShowNoHousehold(false); navigation.navigate("MyHouseholds"); }}
+      />
+      <GenerateAiFiltersModal
+        visible={showAiModal}
+        householdId={resolvedHouseholdId ?? 0}
+        initialProducts={aiModalInitialProducts}
+        onGenerate={handleGenerateAi}
+        onClose={() => setShowAiModal(false)}
       />
       <View style={styles.screen}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -244,14 +307,6 @@ export default function HomeScreen({ navigation }: Props) {
                 : "home.hero.bodyAllGood")}
             </Text>
             <View style={styles.heroActions}>
-              <Pressable
-                style={styles.heroPrimaryBtn}
-                onPress={() => navigation.navigate("ProductLocationSelector")}
-              >
-                <Text style={styles.heroPrimaryBtnText}>
-                  {t(heroMode === "allGood" ? "home.hero.primaryAllGood" : "home.hero.primary")}
-                </Text>
-              </Pressable>
               {heroMode !== "allGood" && (
                 <Pressable
                   style={styles.heroGhostBtn}
@@ -271,6 +326,27 @@ export default function HomeScreen({ navigation }: Props) {
                   </Text>
                 </Pressable>
               )}
+              <Pressable
+                style={[styles.heroPrimaryBtn, loadingAiModal && styles.heroPrimaryBtnDisabled]}
+                disabled={loadingAiModal}
+                onPress={() => {
+                  if (heroMode === "allGood") openAiModal();
+                  else if (heroMode === "expiring") openAiModalWithExpiring();
+                  else navigation.navigate("ProductLocationSelector");
+                }}
+              >
+                {loadingAiModal
+                  ? <ActivityIndicator size="small" color="#0B2817" />
+                  : heroMode === "expiring" && <MaterialCommunityIcons name="auto-fix" size={18} color="#0B2817" />
+                }
+                <Text style={styles.heroPrimaryBtnText}>
+                  {t(heroMode === "allGood"
+                    ? "home.hero.primaryAllGood"
+                    : heroMode === "expiring"
+                    ? "home.hero.primaryExpiring"
+                    : "home.hero.primary")}
+                </Text>
+              </Pressable>
             </View>
           </View>
 
@@ -307,7 +383,7 @@ export default function HomeScreen({ navigation }: Props) {
             </Pressable>
           </View>
 
-          <View style={styles.section}>
+          {/* <View style={styles.section}>
             <View style={styles.sectionHead}>
               <Text style={styles.sectionTitle}>{t("home.quickActions.title")}</Text>
               <Text style={styles.sectionMeta}>{t("home.quickActions.subtitle")}</Text>
@@ -366,7 +442,7 @@ export default function HomeScreen({ navigation }: Props) {
                 </Pressable>
               ))}
             </View>
-          </View>
+          </View> */}
 
           <View style={styles.section}>
             <View style={styles.sectionHead}>
@@ -374,12 +450,26 @@ export default function HomeScreen({ navigation }: Props) {
               <Text style={styles.sectionMeta}>{t("home.ideas.subtitle")}</Text>
             </View>
             <View style={styles.recipeCard}>
-              <View style={styles.recipeIconWrap}>
-                <MaterialCommunityIcons name="pot-steam-outline" size={24} color="#0B2817" />
+              <View style={styles.recipeBadge}>
+                <MaterialCommunityIcons name="auto-fix" size={14} color={THEME.primary} />
+                <Text style={styles.recipeBadgeText}>{t("home.ideas.badge")}</Text>
               </View>
-              <View style={styles.recipeTextBlock}>
-                <Text style={styles.recipeTitle}>{t("home.ideas.cardTitle")}</Text>
-                <Text style={styles.recipeBody}>{t("home.ideas.cardBody")}</Text>
+              <Text style={styles.recipeTitle}>{t("home.ideas.cardTitle")}</Text>
+              <Text style={styles.recipeBody}>{t("home.ideas.cardBody")}</Text>
+              <View style={styles.recipeActions}>
+                <Pressable
+                  style={({ pressed }) => [styles.recipeAiBtn, pressed && styles.recipeAiBtnPressed]}
+                  onPress={openAiModal}
+                >
+                  <MaterialCommunityIcons name="auto-fix" size={18} color="#0B2817" />
+                  <Text style={styles.recipeAiBtnText}>{t("home.ideas.btnAi")}</Text>
+                </Pressable>
+                <Pressable
+                  style={({ pressed }) => [styles.recipeGhostBtn, pressed && styles.recipeGhostBtnPressed]}
+                  onPress={() => navigation.navigate("MyRecipes")}
+                >
+                  <Text style={styles.recipeGhostBtnText}>{t("home.ideas.btnRecipes")}</Text>
+                </Pressable>
               </View>
             </View>
           </View>
@@ -401,17 +491,26 @@ export default function HomeScreen({ navigation }: Props) {
             <MaterialCommunityIcons name="qrcode-scan" size={28} color="#0B2817" />
           </Pressable>
           <FooterItem
-            icon="home-group"
-            label={t("home.footer.households")}
-            onPress={() => navigation.navigate("MyHouseholds")}
-          />
-          <FooterItem
             icon="silverware-fork-knife"
             label={t("home.footer.recipes")}
             onPress={() => navigation.navigate("MyRecipes")}
           />
+          <FooterItem
+            icon="home-group"
+            label={t("home.footer.households")}
+            onPress={() => navigation.navigate("MyHouseholds")}
+          />
         </View>
       </View>
+
+      {generatingAi && (
+        <View style={styles.aiOverlay}>
+          <View style={styles.aiOverlayCard}>
+            <ActivityIndicator size="large" color={THEME.primary} />
+            <Text style={styles.aiOverlayText}>{t("addRecipe.ai.generating")}</Text>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -524,9 +623,14 @@ const styles = StyleSheet.create({
     minHeight: 48,
     borderRadius: 18,
     backgroundColor: THEME.primary,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 14,
+    gap: 10,
+    paddingHorizontal: 20,
+  },
+  heroPrimaryBtnDisabled: {
+    opacity: 0.6,
   },
   heroPrimaryBtnText: {
     fontSize: 15,
@@ -693,36 +797,80 @@ const styles = StyleSheet.create({
     color: THEME.muted,
   },
   recipeCard: {
+    borderRadius: 28,
+    backgroundColor: THEME.surface,
+    borderWidth: 1,
+    borderColor: THEME.border,
+    padding: 20,
+  },
+  recipeBadge: {
+    alignSelf: "flex-start",
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
-    borderRadius: 24,
-    backgroundColor: "#FFFDF4",
-    borderWidth: 1,
-    borderColor: "#EFE7C2",
-    padding: 16,
+    gap: 6,
+    backgroundColor: THEME.mint2,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginBottom: 12,
   },
-  recipeIconWrap: {
-    width: 50,
-    height: 50,
-    borderRadius: 17,
-    backgroundColor: "#EEF7D2",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  recipeTextBlock: {
-    flex: 1,
+  recipeBadgeText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: THEME.primary,
   },
   recipeTitle: {
-    fontSize: 17,
-    fontWeight: "800",
+    fontSize: 22,
+    lineHeight: 26,
+    fontWeight: "900",
     color: THEME.text,
-    marginBottom: 4,
+    marginBottom: 8,
   },
   recipeBody: {
     fontSize: 14,
     lineHeight: 20,
     color: THEME.muted,
+    marginBottom: 16,
+  },
+  recipeActions: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  recipeAiBtn: {
+    flex: 1,
+    minHeight: 48,
+    borderRadius: 18,
+    backgroundColor: THEME.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+    paddingHorizontal: 14,
+  },
+  recipeAiBtnPressed: {
+    opacity: 0.85,
+  },
+  recipeAiBtnText: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#0B2817",
+  },
+  recipeGhostBtn: {
+    minHeight: 48,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: THEME.border,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  recipeGhostBtnPressed: {
+    opacity: 0.7,
+  },
+  recipeGhostBtnText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: THEME.text,
   },
   footer: {
     position: "absolute",
@@ -772,4 +920,24 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     elevation: 12,
   },
+  aiOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(14, 26, 19, 0.5)",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 99,
+  },
+  aiOverlayCard: {
+    backgroundColor: THEME.surface,
+    borderRadius: 20,
+    paddingHorizontal: 36,
+    paddingVertical: 28,
+    alignItems: "center",
+    gap: 14,
+    shadowColor: THEME.shadow,
+    shadowOpacity: 1,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  aiOverlayText: { fontSize: 15, fontWeight: "600", color: THEME.text },
 });

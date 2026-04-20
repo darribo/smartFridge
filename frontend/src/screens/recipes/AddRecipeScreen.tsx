@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+    ActivityIndicator,
+    Alert,
     Pressable,
     ScrollView,
     StyleSheet,
@@ -17,7 +19,7 @@ import { FormLabel } from "../../components/FormLabel";
 import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { DropdownField, OptionalBooleanField } from "../products/AddProductShared";
-import { createRecipe } from "../../api/recipes/recipeService";
+import { createRecipe, generateAiRecipe } from "../../api/recipes/recipeService";
 import type {
     RecipeDifficulty,
     RecipeCuisineType,
@@ -26,9 +28,12 @@ import type {
     RecipeSeasonType,
     RecipeIngredientUnit,
     NewRecipeIngredientParams,
+    NewRecipeParams,
 } from "../../api/recipes/recipeService";
 import LinkProductModal from "../../components/recipes/LinkProductModal";
 import type { LinkedProduct } from "../../components/recipes/LinkProductModal";
+import GenerateAiFiltersModal from "../../components/recipes/GenerateAiFiltersModal";
+import type { GenerateAiRecipeParams } from "../../api/recipes/recipeService";
 import { THEME } from "../../theme/theme";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "AddRecipe">;
@@ -40,6 +45,8 @@ type IngredientRow = {
     notes: string;
     optional: boolean;
     productId: number | null;
+    productIsVegetarian?: boolean;
+    productIsVegan?: boolean;
 };
 
 const DIFFICULTY_OPTIONS: Array<{ label: string; value: RecipeDifficulty }> = [
@@ -106,6 +113,7 @@ const emptyIngredient = (): IngredientRow => ({
 export default function AddRecipeScreen({ navigation, route }: Props) {
     const { t } = useTranslation();
     const householdId = route.params?.householdId ?? 10;
+    const initialRecipe = route.params?.initialRecipe;
 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -124,7 +132,38 @@ export default function AddRecipeScreen({ navigation, route }: Props) {
     const [ingredients, setIngredients] = useState<IngredientRow[]>([emptyIngredient()]);
     const [errors, setErrors] = useState<string[]>([]);
     const [saving, setSaving] = useState(false);
+    const [generatingAi, setGeneratingAi] = useState(false);
+    const [showAiModal, setShowAiModal] = useState(false);
+    const [generatedTitles, setGeneratedTitles] = useState<string[]>([]);
     const [linkModal, setLinkModal] = useState<{ open: boolean; index: number | null }>({ open: false, index: null });
+
+    useEffect(() => {
+        if (!initialRecipe) return;
+        setTitle(initialRecipe.title ?? "");
+        setDescription(initialRecipe.description ?? "");
+        setInstructions(initialRecipe.instructions ?? "");
+        setNotes(initialRecipe.notes ?? "");
+        setServings(initialRecipe.servings != null ? String(initialRecipe.servings) : "");
+        setPrepMinutes(initialRecipe.preparationMinutes != null ? String(initialRecipe.preparationMinutes) : "");
+        setCookMinutes(initialRecipe.cookingMinutes != null ? String(initialRecipe.cookingMinutes) : "");
+        setDifficulty(initialRecipe.difficulty ?? "");
+        setCuisineType(initialRecipe.cuisineType ?? "");
+        setDietType(initialRecipe.dietType ?? "");
+        setMealType(initialRecipe.mealType ?? "");
+        setSeasonType(initialRecipe.seasonType ?? "");
+        setVegetarian(initialRecipe.vegetarian ?? null);
+        setVegan(initialRecipe.vegan ?? null);
+        if (initialRecipe.ingredients && initialRecipe.ingredients.length > 0) {
+            setIngredients(initialRecipe.ingredients.map((ing) => ({
+                name: ing.name,
+                quantityValue: ing.quantityValue ?? "",
+                unit: (ing.unit ?? "") as RecipeIngredientUnit | "",
+                notes: ing.notes ?? "",
+                optional: ing.optionalIngredient ?? false,
+                productId: ing.productId ?? null,
+            })));
+        }
+    }, []);
 
     const updateIngredient = (index: number, patch: Partial<IngredientRow>) => {
         setIngredients((prev) =>
@@ -138,6 +177,47 @@ export default function AddRecipeScreen({ navigation, route }: Props) {
 
     const removeIngredient = (index: number) => {
         setIngredients((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const handleGenerateAi = async (params: GenerateAiRecipeParams) => {
+        setErrors([]);
+        setGeneratingAi(true);
+        await generateAiRecipe(
+            householdId,
+            { ...params, excludeTitles: generatedTitles.length > 0 ? generatedTitles : null },
+            (recipe: NewRecipeParams) => {
+                setGeneratingAi(false);
+                if (recipe.title) setGeneratedTitles((prev) => [...prev, recipe.title]);
+                setTitle(recipe.title ?? "");
+                setDescription(recipe.description ?? "");
+                setInstructions(recipe.instructions ?? "");
+                setNotes(recipe.notes ?? "");
+                setServings(recipe.servings != null ? String(recipe.servings) : "");
+                setPrepMinutes(recipe.preparationMinutes != null ? String(recipe.preparationMinutes) : "");
+                setCookMinutes(recipe.cookingMinutes != null ? String(recipe.cookingMinutes) : "");
+                setDifficulty(recipe.difficulty ?? "");
+                setCuisineType(recipe.cuisineType ?? "");
+                setDietType(recipe.dietType ?? "");
+                setMealType(recipe.mealType ?? "");
+                setSeasonType(recipe.seasonType ?? "");
+                setVegetarian(recipe.vegetarian ?? null);
+                setVegan(recipe.vegan ?? null);
+                if (recipe.ingredients && recipe.ingredients.length > 0) {
+                    setIngredients(recipe.ingredients.map((ing) => ({
+                        name: ing.name,
+                        quantityValue: ing.quantityValue ?? "",
+                        unit: (ing.unit ?? "") as RecipeIngredientUnit | "",
+                        notes: ing.notes ?? "",
+                        optional: ing.optionalIngredient ?? false,
+                        productId: ing.productId ?? null,
+                    })));
+                }
+            },
+            (err) => {
+                setGeneratingAi(false);
+                setErrors(err.globalErrors?.length ? err.globalErrors : [t("addRecipe.ai.error")]);
+            }
+        );
     };
 
     const handleSave = async () => {
@@ -190,11 +270,12 @@ export default function AddRecipeScreen({ navigation, route }: Props) {
             },
             () => {
                 setSaving(false);
+                setGeneratedTitles([]);
                 navigation.goBack();
             },
             (err) => {
                 setSaving(false);
-                setErrors([err.message ?? t("addRecipe.errors.saveFailed")]);
+                setErrors(err.globalErrors?.length ? err.globalErrors : [t("addRecipe.errors.saveFailed")]);
             }
         );
     };
@@ -206,7 +287,17 @@ export default function AddRecipeScreen({ navigation, route }: Props) {
                     <MaterialCommunityIcons name="arrow-left" size={26} color={THEME.text} />
                 </Pressable>
                 <Text style={styles.headerTitle}>{t("addRecipe.title")}</Text>
-                <View style={styles.headerSpacer} />
+                <Pressable
+                    style={[styles.aiBtn, (generatingAi || saving) && styles.aiBtnDisabled]}
+                    onPress={() => setShowAiModal(true)}
+                    disabled={generatingAi || saving}
+                    hitSlop={8}
+                >
+                    <MaterialCommunityIcons name="creation" size={18} color={generatingAi || saving ? THEME.muted : THEME.primary} />
+                    <Text style={[styles.aiBtnText, (generatingAi || saving) && styles.aiBtnTextDisabled]}>
+                        {t("addRecipe.actions.generateAi")}
+                    </Text>
+                </Pressable>
             </View>
 
             <ScrollView
@@ -497,6 +588,22 @@ export default function AddRecipeScreen({ navigation, route }: Props) {
                 </Pressable>
             </ScrollView>
 
+            {generatingAi && (
+                <View style={styles.aiOverlay}>
+                    <View style={styles.aiOverlayCard}>
+                        <ActivityIndicator size="large" color={THEME.primary} />
+                        <Text style={styles.aiOverlayText}>{t("addRecipe.ai.generating")}</Text>
+                    </View>
+                </View>
+            )}
+
+            <GenerateAiFiltersModal
+                visible={showAiModal}
+                householdId={householdId}
+                onGenerate={(params) => { setShowAiModal(false); handleGenerateAi(params); }}
+                onClose={() => setShowAiModal(false)}
+            />
+
             <LinkProductModal
                 visible={linkModal.open}
                 householdId={householdId}
@@ -628,4 +735,38 @@ const styles = StyleSheet.create({
 
     cancelBtn: { marginTop: 14, alignSelf: "center" },
     cancelBtnText: { fontSize: 16, fontWeight: "600", color: "#5E7388" },
+
+    aiBtn: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 4,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 999,
+        backgroundColor: THEME.mint2,
+    },
+    aiBtnDisabled: { backgroundColor: "#F0F0F0" },
+    aiBtnText: { fontSize: 12, fontWeight: "700", color: THEME.primary },
+    aiBtnTextDisabled: { color: THEME.muted },
+
+    aiOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: "rgba(14, 26, 19, 0.5)",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 99,
+    },
+    aiOverlayCard: {
+        backgroundColor: THEME.surface,
+        borderRadius: 20,
+        paddingHorizontal: 36,
+        paddingVertical: 28,
+        alignItems: "center",
+        gap: 14,
+        shadowColor: THEME.shadow,
+        shadowOpacity: 1,
+        shadowRadius: 12,
+        elevation: 8,
+    },
+    aiOverlayText: { fontSize: 15, fontWeight: "600", color: THEME.text },
 });

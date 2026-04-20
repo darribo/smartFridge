@@ -23,9 +23,13 @@ import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.entities.Recipe;
 import es.udc.bonilla.rivera.daniel.model.entities.RecipeIngredient;
 import es.udc.bonilla.rivera.daniel.model.services.Block;
+import es.udc.bonilla.rivera.daniel.model.services.LlmService;
 import es.udc.bonilla.rivera.daniel.model.services.RecipeService;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.DietaryConflictException;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.LlmServiceException;
 import es.udc.bonilla.rivera.daniel.rest.common.ErrorsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.BlockDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.GenerateAiRecipeParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewRecipeParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.RecipeConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.RecipeDto;
@@ -43,11 +47,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class RecipeController {
 
     private static final String INSTANCE_NOT_FOUND_EXCEPTION_CODE = "project.exceptions.InstanceNotFoundException";
+    private static final String LLM_SERVICE_EXCEPTION_CODE = "project.exceptions.LlmServiceException";
+    private static final String DIETARY_CONFLICT_VEGETARIAN_CODE = "project.exceptions.DietaryConflictException.VEGETARIAN";
+    private static final String DIETARY_CONFLICT_VEGAN_CODE = "project.exceptions.DietaryConflictException.VEGAN";
 
     private static final int size = 5;
 
     @Autowired
     private RecipeService recipeService;
+
+    @Autowired
+    private LlmService llmService;
 
     @Autowired
     private MessageSource messageSource;
@@ -59,6 +69,48 @@ public class RecipeController {
         String errorMessage = messageSource.getMessage(INSTANCE_NOT_FOUND_EXCEPTION_CODE, null,
                 INSTANCE_NOT_FOUND_EXCEPTION_CODE, locale);
         return new ErrorsDto(errorMessage);
+    }
+
+    @ExceptionHandler(LlmServiceException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    @ResponseBody
+    public ErrorsDto handleLlmServiceException(LlmServiceException exception, Locale locale) {
+        String errorMessage = messageSource.getMessage(LLM_SERVICE_EXCEPTION_CODE, null,
+                LLM_SERVICE_EXCEPTION_CODE, locale);
+        return new ErrorsDto(errorMessage);
+    }
+
+    @ExceptionHandler(DietaryConflictException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ErrorsDto handleDietaryConflictException(DietaryConflictException exception, Locale locale) {
+        String code = exception.getConflictType() == DietaryConflictException.ConflictType.VEGAN
+                ? DIETARY_CONFLICT_VEGAN_CODE
+                : DIETARY_CONFLICT_VEGETARIAN_CODE;
+        String errorMessage = messageSource.getMessage(code, new Object[]{ exception.getProductName() }, code, locale);
+        return new ErrorsDto(errorMessage);
+    }
+
+    @Operation(
+        summary = "Generar una sugerencia de receta con IA",
+        description = "Usa el LLM para generar una receta basada en los productos del hogar. No persiste nada, devuelve los campos para rellenar el formulario."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Sugerencia generada",
+            content = @Content(schema = @Schema(implementation = NewRecipeParamsDto.class))),
+        @ApiResponse(responseCode = "404", description = "Hogar no encontrado",
+            content = @Content(schema = @Schema(implementation = ErrorsDto.class))),
+        @ApiResponse(responseCode = "503", description = "Servicio LLM no disponible",
+            content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
+    })
+    @PostMapping("/generate-ai")
+    public NewRecipeParamsDto generateAiRecipe(
+            @RequestAttribute Long userId,
+            @RequestParam Long householdId,
+            @RequestBody GenerateAiRecipeParamsDto params,
+            Locale locale) throws InstanceNotFoundException, LlmServiceException {
+
+        return llmService.generateRecipe(userId, householdId, params, locale);
     }
 
     @Operation(
@@ -76,7 +128,7 @@ public class RecipeController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public RecipeDto createRecipe(@RequestAttribute Long userId,
-            @Validated @RequestBody NewRecipeParamsDto params) throws InstanceNotFoundException {
+            @Validated @RequestBody NewRecipeParamsDto params) throws InstanceNotFoundException, DietaryConflictException {
 
         Recipe recipe = recipeService.createRecipe(userId, params);
         List<RecipeIngredient> ingredients = recipeService.getRecipeIngredients(recipe.getId());

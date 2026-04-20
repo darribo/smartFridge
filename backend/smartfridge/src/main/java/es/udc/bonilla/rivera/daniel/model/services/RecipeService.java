@@ -3,13 +3,14 @@ package es.udc.bonilla.rivera.daniel.model.services;
 import java.util.List;
 
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.DietaryConflictException;
 import es.udc.bonilla.rivera.daniel.model.entities.Recipe;
 import es.udc.bonilla.rivera.daniel.model.entities.RecipeIngredient;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewRecipeParamsDto;
 
 public interface RecipeService {
 
-    Recipe createRecipe(Long userId, NewRecipeParamsDto params) throws InstanceNotFoundException;
+    Recipe createRecipe(Long userId, NewRecipeParamsDto params) throws InstanceNotFoundException, DietaryConflictException;
 
     Recipe getRecipe(Long userId, Long recipeId) throws InstanceNotFoundException;
 

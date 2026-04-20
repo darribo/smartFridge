@@ -1,5 +1,6 @@
 package es.udc.bonilla.rivera.daniel.model.daos;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -110,5 +111,13 @@ public interface ProductItemDao extends JpaRepository<ProductItem, Long>{
         nativeQuery = true
     )
     long countProductItemsByHousehold(@Param("householdId") Long householdId);
+
+    @Query("SELECT i.product.id, SUM(i.quantityRemainingValue) " +
+           "FROM ProductItem i " +
+           "WHERE i.product.household.id = :householdId " +
+           "AND i.discardDate IS NULL " +
+           "AND i.quantityRemainingValue IS NOT NULL " +
+           "GROUP BY i.product.id")
+    List<Object[]> sumRemainingQuantityByProduct(@Param("householdId") Long householdId);
 
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.DietaryConflictException;
 import es.udc.bonilla.rivera.daniel.model.daos.RecipeDao;
 import es.udc.bonilla.rivera.daniel.model.daos.RecipeIngredientDao;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
@@ -32,7 +33,7 @@ public class RecipeServiceImpl implements RecipeService {
     private PermissionChecker permissionChecker;
 
     @Override
-    public Recipe createRecipe(Long userId, NewRecipeParamsDto params) throws InstanceNotFoundException {
+    public Recipe createRecipe(Long userId, NewRecipeParamsDto params) throws InstanceNotFoundException, DietaryConflictException {
 
         User user = permissionChecker.checkUserExists(userId);
 
@@ -65,7 +66,11 @@ public class RecipeServiceImpl implements RecipeService {
             for (NewRecipeIngredientParamsDto ingredientParams : params.getIngredients()) {
                 Product product = null;
                 if (ingredientParams.getProductId() != null) {
-                    product = permissionChecker.checkProductExists(ingredientParams.getProductId());
+                    product = permissionChecker.checkProductBelongsToUserHousehold(ingredientParams.getProductId(), userId);
+                    if (Boolean.TRUE.equals(params.getVegetarian()) && !Boolean.TRUE.equals(product.isVegetarian()))
+                        throw new DietaryConflictException(DietaryConflictException.ConflictType.VEGETARIAN, product.getName());
+                    if (Boolean.TRUE.equals(params.getVegan()) && !Boolean.TRUE.equals(product.isVegan()))
+                        throw new DietaryConflictException(DietaryConflictException.ConflictType.VEGAN, product.getName());
                 }
 
                 BigDecimal quantityValue = ingredientParams.getQuantityValue() != null
@@ -93,8 +98,14 @@ public class RecipeServiceImpl implements RecipeService {
 
         permissionChecker.checkUserExists(userId);
 
-        return recipeDao.findById(recipeId)
+        Recipe recipe = recipeDao.findById(recipeId)
                 .orElseThrow(() -> new InstanceNotFoundException("project.entities.recipe", recipeId));
+
+        if (!recipe.getCreatedBy().getId().equals(userId)) {
+            throw new InstanceNotFoundException("project.entities.recipe", recipeId);
+        }
+
+        return recipe;
     }
 
     @Override

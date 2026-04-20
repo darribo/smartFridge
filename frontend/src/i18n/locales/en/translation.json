@@ -103,14 +103,15 @@
       "title": "{{count}} products are expiring soon",
       "body": "Start by reviewing what expires soon and add what is missing without leaving the main screen.",
       "primary": "Review pantry",
+      "primaryExpiring": "Suggest recipes",
       "secondaryExpiring": "See expiring",
       "badgeLowStock": "Stock alert",
       "titleLowStock": "{{count}} products running low",
       "bodyLowStock": "Restock the products that are running out before you're left with nothing.",
       "secondaryLowStock": "Add product",
-      "titleAllGood": "Your pantry is up to date",
-      "bodyAllGood": "No products expiring soon and nothing running low.",
-      "primaryAllGood": "View pantry"
+      "titleAllGood": "Ready to cook",
+      "bodyAllGood": "Nothing expiring and no low stock. What shall we make with what you have?",
+      "primaryAllGood": "Suggest a recipe with AI"
     },
     "metrics": {
       "expiring": "Expiring soon",
@@ -131,10 +132,13 @@
       "members": "{{count}} members"
     },
     "ideas": {
-      "title": "Ideas for today",
-      "subtitle": "A slot for future recommendations",
-      "cardTitle": "Cook with what you already have",
-      "cardBody": "This area could show suggested recipes, recommended purchases or products you should consume first."
+      "title": "Cook with what you have",
+      "subtitle": "Recipes tailored to your pantry",
+      "badge": "AI suggestions",
+      "cardTitle": "What should I cook today?",
+      "cardBody": "Let the AI suggest recipes based on the ingredients you already have at home.",
+      "btnAi": "Suggest with AI",
+      "btnRecipes": "My recipes"
     },
     "alerts": {
       "title": "Alerts",
@@ -371,7 +375,56 @@
     },
     "actions": {
       "save": "Save recipe",
-      "addIngredient": "Add ingredient"
+      "addIngredient": "Add ingredient",
+      "generateAi": "Suggest with AI"
+    },
+    "ai": {
+      "generating": "Generating recipe…",
+      "error": "Could not generate the recipe with AI",
+      "filtersTitle": "Customize your recipe",
+      "filtersSubtitle": "All filters are optional",
+      "generate": "Generate recipe",
+      "cancel": "Cancel",
+      "servingsPlaceholder": "No. of servings",
+      "mustIncludeProducts": "Products to include",
+      "searchProductsPlaceholder": "Search product…"
+    },
+    "cuisineType": {
+      "SPANISH": "Spanish",
+      "ITALIAN": "Italian",
+      "MEXICAN": "Mexican",
+      "ASIAN": "Asian",
+      "AMERICAN": "American",
+      "FRENCH": "French",
+      "JAPANESE": "Japanese",
+      "CHINESE": "Chinese",
+      "MEDITERRANEAN": "Mediterranean",
+      "OTHER": "Other"
+    },
+    "dietType": {
+      "STANDARD": "Standard",
+      "VEGETARIAN": "Vegetarian",
+      "VEGAN": "Vegan",
+      "GLUTEN_FREE": "Gluten-free",
+      "DAIRY_FREE": "Dairy-free",
+      "KETO": "Keto",
+      "PALEO": "Paleo",
+      "OTHER": "Other"
+    },
+    "mealType": {
+      "BREAKFAST": "Breakfast",
+      "LUNCH": "Lunch",
+      "DINNER": "Dinner",
+      "SNACK": "Snack",
+      "DESSERT": "Dessert",
+      "OTHER": "Other"
+    },
+    "seasonType": {
+      "SPRING": "Spring",
+      "SUMMER": "Summer",
+      "AUTUMN": "Autumn",
+      "WINTER": "Winter",
+      "ALL_YEAR": "All year"
     },
     "errors": {
       "titleRequired": "Recipe name is required.",
@@ -454,5 +507,9 @@
         "default": "Could not load products."
       }
     }
+  },
+  "myRecipes": {
+    "title": "My Recipes",
+    "empty": "You don't have any recipes yet"
   }
 }

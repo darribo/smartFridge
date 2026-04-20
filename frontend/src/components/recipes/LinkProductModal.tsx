@@ -8,6 +8,8 @@ export type LinkedProduct = {
     id: number;
     name: string;
     unit: string;
+    isVegetarian: boolean;
+    isVegan: boolean;
 }
 
 type Props = {
@@ -32,7 +34,7 @@ export default function LinkProductModal({ visible, householdId, onSelect, onClo
             householdId,
             query,
             0,
-            (block) => setProducts(block.items.map((p) => ({ id: p.id, name: p.name, unit: p.unit }))),
+            (block) => setProducts(block.items.map((p) => ({ id: p.id, name: p.name, unit: p.unit, isVegetarian: p.isVegetarian, isVegan: p.isVegan }))),
             () => setProducts([])
         );
     };

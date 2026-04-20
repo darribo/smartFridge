@@ -2,3 +2,9 @@
 .mvn/
 target/
 Agents.md
+.env
+.env.local
+*.pyc
+__pycache__/
+uploads/
+mi_entorno/

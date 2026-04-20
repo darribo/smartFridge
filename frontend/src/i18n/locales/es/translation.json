@@ -103,14 +103,15 @@
       "title": "{{count}} productos caducan pronto",
       "body": "Empieza por revisar lo que caduca pronto y añade lo que falte sin salir de la pantalla principal.",
       "primary": "Revisar despensa",
+      "primaryExpiring": "Sugerir recetas",
       "secondaryExpiring": "Ver caducidades",
       "badgeLowStock": "Atención al stock",
       "titleLowStock": "{{count}} productos con poco stock",
       "bodyLowStock": "Repón los productos que se están agotando para no quedarte sin ellos.",
       "secondaryLowStock": "Añadir producto",
-      "titleAllGood": "Tu despensa está al día",
-      "bodyAllGood": "No hay caducidades próximas ni productos con poco stock.",
-      "primaryAllGood": "Ver despensa"
+      "titleAllGood": "Todo listo para cocinar",
+      "bodyAllGood": "No hay caducidades ni poco stock. ¿Qué hacemos con lo que tienes?",
+      "primaryAllGood": "Sugerir receta con IA"
     },
     "metrics": {
       "expiring": "Caducan pronto",
@@ -131,10 +132,13 @@
       "members": "{{count}} miembros"
     },
     "ideas": {
-      "title": "Ideas para hoy",
-      "subtitle": "Un hueco para recomendaciones futuras",
-      "cardTitle": "Cocina con lo que ya tienes",
-      "cardBody": "Aqui podrias enseñar recetas sugeridas, compras recomendadas o productos que conviene consumir antes."
+      "title": "Cocina con lo que tienes",
+      "subtitle": "Recetas a medida para tu despensa",
+      "badge": "Sugerencias IA",
+      "cardTitle": "¿Qué cocino hoy?",
+      "cardBody": "Deja que la IA te proponga recetas basadas en los ingredientes que ya tienes en casa.",
+      "btnAi": "Sugerir con IA",
+      "btnRecipes": "Mis recetas"
     },
     "alerts": {
       "title": "Avisos",
@@ -372,7 +376,56 @@
     },
     "actions": {
       "save": "Guardar receta",
-      "addIngredient": "Añadir ingrediente"
+      "addIngredient": "Añadir ingrediente",
+      "generateAi": "Sugerir con IA"
+    },
+    "ai": {
+      "generating": "Generando receta…",
+      "error": "No se pudo generar la receta con IA",
+      "filtersTitle": "Personaliza tu receta",
+      "filtersSubtitle": "Todos los filtros son opcionales",
+      "generate": "Generar receta",
+      "cancel": "Cancelar",
+      "servingsPlaceholder": "Nº de raciones",
+      "mustIncludeProducts": "Productos que debe incluir",
+      "searchProductsPlaceholder": "Buscar producto…"
+    },
+    "cuisineType": {
+      "SPANISH": "Española",
+      "ITALIAN": "Italiana",
+      "MEXICAN": "Mexicana",
+      "ASIAN": "Asiática",
+      "AMERICAN": "Americana",
+      "FRENCH": "Francesa",
+      "JAPANESE": "Japonesa",
+      "CHINESE": "China",
+      "MEDITERRANEAN": "Mediterránea",
+      "OTHER": "Otra"
+    },
+    "dietType": {
+      "STANDARD": "Estándar",
+      "VEGETARIAN": "Vegetariana",
+      "VEGAN": "Vegana",
+      "GLUTEN_FREE": "Sin gluten",
+      "DAIRY_FREE": "Sin lácteos",
+      "KETO": "Keto",
+      "PALEO": "Paleo",
+      "OTHER": "Otra"
+    },
+    "mealType": {
+      "BREAKFAST": "Desayuno",
+      "LUNCH": "Comida",
+      "DINNER": "Cena",
+      "SNACK": "Snack",
+      "DESSERT": "Postre",
+      "OTHER": "Otro"
+    },
+    "seasonType": {
+      "SPRING": "Primavera",
+      "SUMMER": "Verano",
+      "AUTUMN": "Otoño",
+      "WINTER": "Invierno",
+      "ALL_YEAR": "Todo el año"
     },
     "errors": {
       "titleRequired": "El nombre de la receta es obligatorio.",
@@ -455,5 +508,9 @@
         "default": "No se pudieron cargar los productos."
       }
     }
+  },
+  "myRecipes": {
+    "title": "Mis Recetas",
+    "empty": "No tienes recetas todavía"
   }
 }

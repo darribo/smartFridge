@@ -103,14 +103,15 @@
       "title": "{{count}} produtos caducan pronto",
       "body": "Comeza revisando o que caduca pronto e engade o que falte sen saír da pantalla principal.",
       "primary": "Revisar despensa",
+      "primaryExpiring": "Suxerir receitas",
       "secondaryExpiring": "Ver caducidades",
       "badgeLowStock": "Atención ao stock",
       "titleLowStock": "{{count}} produtos con pouco stock",
       "bodyLowStock": "Repon os produtos que se están esgotando para non quedarte sen eles.",
       "secondaryLowStock": "Engadir produto",
-      "titleAllGood": "A túa despensa está ao día",
-      "bodyAllGood": "Non hai caducidades próximas nin produtos con pouco stock.",
-      "primaryAllGood": "Ver despensa"
+      "titleAllGood": "Todo listo para cociñar",
+      "bodyAllGood": "Sen caducidades nin pouco stock. Que facemos co que tes?",
+      "primaryAllGood": "Suxerir receita con IA"
     },
     "metrics": {
       "expiring": "Caducan pronto",
@@ -131,10 +132,13 @@
       "members": "{{count}} membros"
     },
     "ideas": {
-      "title": "Ideas para hoxe",
-      "subtitle": "Un oco para recomendacións futuras",
-      "cardTitle": "Cociña co que xa tes",
-      "cardBody": "Aqui poderías ensinar receitas suxeridas, compras recomendadas ou produtos que convén consumir antes."
+      "title": "Cociña co que tes",
+      "subtitle": "Receitas a medida para a túa despensa",
+      "badge": "Suxestións IA",
+      "cardTitle": "Que cociño hoxe?",
+      "cardBody": "Deixa que a IA che propoña receitas baseadas nos ingredientes que xa tes na casa.",
+      "btnAi": "Suxerir con IA",
+      "btnRecipes": "As miñas receitas"
     },
     "alerts": {
       "title": "Avisos",
@@ -371,7 +375,56 @@
     },
     "actions": {
       "save": "Gardar receita",
-      "addIngredient": "Engadir ingrediente"
+      "addIngredient": "Engadir ingrediente",
+      "generateAi": "Suxerir con IA"
+    },
+    "ai": {
+      "generating": "Xerando receita…",
+      "error": "Non se puido xerar a receita con IA",
+      "filtersTitle": "Personaliza a túa receita",
+      "filtersSubtitle": "Todos os filtros son opcionais",
+      "generate": "Xerar receita",
+      "cancel": "Cancelar",
+      "servingsPlaceholder": "Nº de racións",
+      "mustIncludeProducts": "Produtos que debe incluír",
+      "searchProductsPlaceholder": "Buscar produto…"
+    },
+    "cuisineType": {
+      "SPANISH": "Española",
+      "ITALIAN": "Italiana",
+      "MEXICAN": "Mexicana",
+      "ASIAN": "Asiática",
+      "AMERICAN": "Americana",
+      "FRENCH": "Francesa",
+      "JAPANESE": "Xaponesa",
+      "CHINESE": "China",
+      "MEDITERRANEAN": "Mediterránea",
+      "OTHER": "Outra"
+    },
+    "dietType": {
+      "STANDARD": "Estándar",
+      "VEGETARIAN": "Vexetariana",
+      "VEGAN": "Vegana",
+      "GLUTEN_FREE": "Sen glute",
+      "DAIRY_FREE": "Sen lácteos",
+      "KETO": "Keto",
+      "PALEO": "Paleo",
+      "OTHER": "Outra"
+    },
+    "mealType": {
+      "BREAKFAST": "Almorzo",
+      "LUNCH": "Xantar",
+      "DINNER": "Cea",
+      "SNACK": "Merenda",
+      "DESSERT": "Sobremesa",
+      "OTHER": "Outro"
+    },
+    "seasonType": {
+      "SPRING": "Primavera",
+      "SUMMER": "Verán",
+      "AUTUMN": "Outono",
+      "WINTER": "Inverno",
+      "ALL_YEAR": "Todo o ano"
     },
     "errors": {
       "titleRequired": "O nome da receita é obrigatorio.",
@@ -454,5 +507,9 @@
         "default": "Non se puideron cargar os produtos."
       }
     }
+  },
+  "myRecipes": {
+    "title": "As miñas Receitas",
+    "empty": "Aínda non tes receitas"
   }
 }
