@@ -7,10 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -146,6 +148,25 @@ public class RecipeController {
         @ApiResponse(responseCode = "404", description = "Receta no encontrada",
             content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
     })
+    @PutMapping("/{recipeId}")
+    public RecipeDto updateRecipe(@RequestAttribute Long userId,
+            @PathVariable Long recipeId,
+            @Validated @RequestBody NewRecipeParamsDto params) throws InstanceNotFoundException, DietaryConflictException {
+
+        Recipe recipe = recipeService.updateRecipe(userId, recipeId, params);
+        List<RecipeIngredient> ingredients = recipeService.getRecipeIngredients(recipe.getId());
+
+        return RecipeConversor.toRecipeDto(recipe, ingredients);
+    }
+
+    @DeleteMapping("/{recipeId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteRecipe(@RequestAttribute Long userId,
+            @PathVariable Long recipeId) throws InstanceNotFoundException {
+
+        recipeService.deleteRecipe(userId, recipeId);
+    }
+
     @GetMapping("/{recipeId}")
     public RecipeDto getRecipe(@RequestAttribute Long userId,
             @PathVariable Long recipeId) throws InstanceNotFoundException {

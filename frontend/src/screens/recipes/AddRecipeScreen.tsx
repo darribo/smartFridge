@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
-    Alert,
     Pressable,
     ScrollView,
     StyleSheet,
@@ -19,7 +18,7 @@ import { FormLabel } from "../../components/FormLabel";
 import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
 import { PrimaryButton } from "../../components/PrimaryButton";
 import { DropdownField, OptionalBooleanField } from "../products/AddProductShared";
-import { createRecipe, generateAiRecipe } from "../../api/recipes/recipeService";
+import { createRecipe, updateRecipe, generateAiRecipe } from "../../api/recipes/recipeService";
 import type {
     RecipeDifficulty,
     RecipeCuisineType,
@@ -29,11 +28,11 @@ import type {
     RecipeIngredientUnit,
     NewRecipeIngredientParams,
     NewRecipeParams,
+    GenerateAiRecipeParams,
 } from "../../api/recipes/recipeService";
 import LinkProductModal from "../../components/recipes/LinkProductModal";
 import type { LinkedProduct } from "../../components/recipes/LinkProductModal";
 import GenerateAiFiltersModal from "../../components/recipes/GenerateAiFiltersModal";
-import type { GenerateAiRecipeParams } from "../../api/recipes/recipeService";
 import { THEME } from "../../theme/theme";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "AddRecipe">;
@@ -114,6 +113,7 @@ export default function AddRecipeScreen({ navigation, route }: Props) {
     const { t } = useTranslation();
     const householdId = route.params?.householdId ?? 10;
     const initialRecipe = route.params?.initialRecipe;
+    const recipeId = route.params?.recipeId;
 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -248,36 +248,41 @@ export default function AddRecipeScreen({ navigation, route }: Props) {
         const cook = cookMinutes ? parseInt(cookMinutes, 10) : 0;
         const total = prep + cook > 0 ? prep + cook : null;
 
-        await createRecipe(
-            {
-                title: title.trim(),
-                description: description.trim() || null,
-                instructions: instructions.trim(),
-                notes: notes.trim() || null,
-                servings: servings ? parseInt(servings, 10) : null,
-                preparationMinutes: prep || null,
-                cookingMinutes: cook || null,
-                totalMinutes: total,
-                difficulty: difficulty || null,
-                cuisineType: cuisineType || null,
-                dietType: dietType || null,
-                mealType: mealType || null,
-                seasonType: seasonType || null,
-                vegetarian,
-                vegan,
-                generationSource: "USER",
-                ingredients: ingredientParams.length > 0 ? ingredientParams : null,
-            },
-            () => {
-                setSaving(false);
-                setGeneratedTitles([]);
-                navigation.goBack();
-            },
-            (err) => {
-                setSaving(false);
-                setErrors(err.globalErrors?.length ? err.globalErrors : [t("addRecipe.errors.saveFailed")]);
-            }
-        );
+        const recipeParams = {
+            title: title.trim(),
+            description: description.trim() || null,
+            instructions: instructions.trim(),
+            notes: notes.trim() || null,
+            servings: servings ? parseInt(servings, 10) : null,
+            preparationMinutes: prep || null,
+            cookingMinutes: cook || null,
+            totalMinutes: total,
+            difficulty: difficulty || null,
+            cuisineType: cuisineType || null,
+            dietType: dietType || null,
+            mealType: mealType || null,
+            seasonType: seasonType || null,
+            vegetarian,
+            vegan,
+            generationSource: initialRecipe?.generationSource ?? "USER",
+            ingredients: ingredientParams.length > 0 ? ingredientParams : null,
+        } as NewRecipeParams;
+
+        const onSuccess = () => {
+            setSaving(false);
+            setGeneratedTitles([]);
+            navigation.goBack();
+        };
+        const onError = (err: { globalErrors?: string[] }) => {
+            setSaving(false);
+            setErrors(err.globalErrors?.length ? err.globalErrors : [t("addRecipe.errors.saveFailed")]);
+        };
+
+        if (recipeId) {
+            await updateRecipe(recipeId, recipeParams, onSuccess, onError);
+        } else {
+            await createRecipe(recipeParams, onSuccess, onError);
+        }
     };
 
     return (

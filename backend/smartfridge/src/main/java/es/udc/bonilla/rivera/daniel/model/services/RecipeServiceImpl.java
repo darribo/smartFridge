@@ -93,6 +93,82 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
+    public Recipe updateRecipe(Long userId, Long recipeId, NewRecipeParamsDto params)
+            throws InstanceNotFoundException, DietaryConflictException {
+
+        Recipe recipe = recipeDao.findById(recipeId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.recipe", recipeId));
+
+        if (!recipe.getCreatedBy().getId().equals(userId)) {
+            throw new InstanceNotFoundException("project.entities.recipe", recipeId);
+        }
+
+        LocalDateTime now = LocalDateTime.now().withNano(0);
+
+        recipe.setTitle(params.getTitle());
+        recipe.setDescription(params.getDescription());
+        recipe.setServings(params.getServings());
+        recipe.setPreparationMinutes(params.getPreparationMinutes());
+        recipe.setCookingMinutes(params.getCookingMinutes());
+        recipe.setTotalMinutes(params.getTotalMinutes());
+        recipe.setDifficulty(params.getDifficulty());
+        recipe.setCuisineType(params.getCuisineType());
+        recipe.setDietType(params.getDietType());
+        recipe.setMealType(params.getMealType());
+        recipe.setSeasonType(params.getSeasonType());
+        recipe.setVegetarian(params.getVegetarian());
+        recipe.setVegan(params.getVegan());
+        recipe.setInstructions(params.getInstructions());
+        recipe.setNotes(params.getNotes());
+        recipe.setUpdatedAt(now);
+
+        recipeIngredientDao.deleteByRecipeId(recipeId);
+
+        if (params.getIngredients() != null) {
+            for (NewRecipeIngredientParamsDto ingredientParams : params.getIngredients()) {
+                Product product = null;
+                if (ingredientParams.getProductId() != null) {
+                    product = permissionChecker.checkProductBelongsToUserHousehold(ingredientParams.getProductId(), userId);
+                    if (Boolean.TRUE.equals(params.getVegetarian()) && !Boolean.TRUE.equals(product.isVegetarian()))
+                        throw new DietaryConflictException(DietaryConflictException.ConflictType.VEGETARIAN, product.getName());
+                    if (Boolean.TRUE.equals(params.getVegan()) && !Boolean.TRUE.equals(product.isVegan()))
+                        throw new DietaryConflictException(DietaryConflictException.ConflictType.VEGAN, product.getName());
+                }
+
+                BigDecimal quantityValue = ingredientParams.getQuantityValue() != null
+                        ? new BigDecimal(ingredientParams.getQuantityValue())
+                        : null;
+
+                recipeIngredientDao.save(new RecipeIngredient(
+                        recipe,
+                        ingredientParams.getName(),
+                        quantityValue,
+                        ingredientParams.getUnit(),
+                        ingredientParams.getNotes(),
+                        ingredientParams.getOptionalIngredient() != null ? ingredientParams.getOptionalIngredient() : false,
+                        ingredientParams.getDisplayOrder(),
+                        product));
+            }
+        }
+
+        return recipe;
+    }
+
+    @Override
+    public void deleteRecipe(Long userId, Long recipeId) throws InstanceNotFoundException {
+
+        Recipe recipe = recipeDao.findById(recipeId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.recipe", recipeId));
+
+        if (!recipe.getCreatedBy().getId().equals(userId)) {
+            throw new InstanceNotFoundException("project.entities.recipe", recipeId);
+        }
+
+        recipeIngredientDao.deleteByRecipeId(recipeId);
+        recipeDao.delete(recipe);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Recipe getRecipe(Long userId, Long recipeId) throws InstanceNotFoundException {
 

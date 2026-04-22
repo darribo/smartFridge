@@ -90,7 +90,7 @@ export default function MyRecipesScreen({ navigation }: Props) {
                             </View>
                         }
                         renderItem={({ item }) => (
-                            <RecipeCard item={item} />
+                            <RecipeCard item={item} onPress={() => navigation.navigate("RecipeDetail", { recipeId: item.id })} />
                         )}
                     />
                 )}

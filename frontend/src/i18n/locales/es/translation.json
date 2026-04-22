@@ -512,5 +512,22 @@
   "myRecipes": {
     "title": "Mis Recetas",
     "empty": "No tienes recetas todavía"
+  },
+  "recipeDetail": {
+    "title": "Receta",
+    "loadError": "No se pudo cargar la receta",
+    "prep": "Prep.",
+    "cook": "Cocción",
+    "servings": "raciones",
+    "vegetarian": "Vegetariana",
+    "vegan": "Vegana",
+    "ingredients": "Ingredientes",
+    "instructions": "Preparación",
+    "notes": "Notas",
+    "optional": "opcional",
+    "generatedByAi": "Generada con IA",
+    "deleteTitle": "Eliminar receta",
+    "deleteMessage": "¿Seguro que quieres eliminar esta receta? Esta acción no se puede deshacer.",
+    "deleteConfirm": "Eliminar"
   }
 }

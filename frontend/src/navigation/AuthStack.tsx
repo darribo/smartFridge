@@ -21,6 +21,7 @@ import ProductLocationSelectorScreen from "../screens/products/ProductLocationSe
 import ExpiringProductsScreen from "../screens/products/ExpiringProductsScreen";
 import AddRecipeScreen from "../screens/recipes/AddRecipeScreen";
 import MyRecipesScreen from "../screens/recipes/MyRecipes";
+import RecipeDetailScreen from "../screens/recipes/RecipeDetailScreen";
 
 export type AuthStackParamList = {
   Register: { backendError?: ApiError } | undefined;
@@ -37,9 +38,10 @@ export type AuthStackParamList = {
   MyProducts: { storageFilter: "ALL" | "PANTRY" | "FRIDGE" | "FREEZER" } | undefined;
   ExpiringProducts: undefined;
   ProductDetail: { productId: number };
-  AddRecipe: { householdId?: number; initialRecipe?: NewRecipeParams } | undefined;
+  AddRecipe: { householdId?: number; initialRecipe?: NewRecipeParams; recipeId?: number } | undefined;
   EditProduct: { productId: number };
   MyRecipes: undefined;
+  RecipeDetail: { recipeId: number };
 };
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
@@ -51,6 +53,7 @@ export function AuthStack() {
       <Stack.Screen name="Register" component={RegisterScreen} />
       <Stack.Screen name="AddRecipe" component={AddRecipeScreen} />
       <Stack.Screen name="MyRecipes" component={MyRecipesScreen} />
+      <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} />
       <Stack.Screen name="Allergies" component={AllergySelectionScreen} />
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="CreateHousehold" component={CreateHouseholdScreen} />

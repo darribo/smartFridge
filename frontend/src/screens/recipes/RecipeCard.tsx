@@ -1,12 +1,12 @@
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, Pressable } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { resolveImage } from "../../utils/image";
 import { THEME } from "../../theme/theme";
 import type { RecipeSummary } from "../../api/recipes/recipeService";
 
-export function RecipeCard({ item }: { item: RecipeSummary }) {
+export function RecipeCard({ item, onPress }: Readonly<{ item: RecipeSummary; onPress?: () => void }>) {
     return (
-        <View style={styles.card}>
+        <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]} onPress={onPress}>
             <Image
                 source={{ uri: resolveImage(false, item.image) }}
                 style={styles.cardImage}
@@ -32,7 +32,7 @@ export function RecipeCard({ item }: { item: RecipeSummary }) {
                     )}
                 </View>
             </View>
-        </View>
+        </Pressable>
     );
 }
 
@@ -82,5 +82,8 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: "700",
         color: THEME.primary,
+    },
+    cardPressed: {
+        opacity: 0.75,
     },
 });

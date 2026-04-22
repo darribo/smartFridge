@@ -12,6 +12,10 @@ public interface RecipeService {
 
     Recipe createRecipe(Long userId, NewRecipeParamsDto params) throws InstanceNotFoundException, DietaryConflictException;
 
+    Recipe updateRecipe(Long userId, Long recipeId, NewRecipeParamsDto params) throws InstanceNotFoundException, DietaryConflictException;
+
+    void deleteRecipe(Long userId, Long recipeId) throws InstanceNotFoundException;
+
     Recipe getRecipe(Long userId, Long recipeId) throws InstanceNotFoundException;
 
     List<RecipeIngredient> getRecipeIngredients(Long recipeId);

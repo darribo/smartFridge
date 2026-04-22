@@ -57,7 +57,12 @@ export type Recipe = {
     servings?: number | null;
     preparationMinutes?: number | null;
     cookingMinutes?: number | null;
+    totalMinutes?: number | null;
     difficulty?: RecipeDifficulty | null;
+    cuisineType?: RecipeCuisineType | null;
+    dietType?: RecipeDietType | null;
+    mealType?: RecipeMealType | null;
+    seasonType?: RecipeSeasonType | null;
     vegetarian?: boolean | null;
     vegan?: boolean | null;
     instructions: string;
@@ -92,6 +97,25 @@ export const getRecipe = async (
     onError?: (err: ApiError) => void
 ) => {
     const options = await fetchConfig("GET");
+    return appFetch(`/recipes/${recipeId}`, options, onSuccess, onError);
+};
+
+export const updateRecipe = async (
+    recipeId: number,
+    params: NewRecipeParams,
+    onSuccess?: (recipe: Recipe) => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("PUT", params);
+    return appFetch(`/recipes/${recipeId}`, options, onSuccess, onError);
+};
+
+export const deleteRecipe = async (
+    recipeId: number,
+    onSuccess?: () => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("DELETE");
     return appFetch(`/recipes/${recipeId}`, options, onSuccess, onError);
 };
 
