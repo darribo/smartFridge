@@ -53,6 +53,9 @@ public class ProductDto {
     @Schema(description = "Días recomendados para consumir tras abrir", example = "3", nullable = true)
     private Integer daysAfterOpening;
 
+    @Schema(description = "Indica si el producto tiene items activos con stock disponible", example = "true", nullable = true)
+    private Boolean hasActiveItems;
+
     public ProductDto() {
     }
 
@@ -185,5 +188,13 @@ public class ProductDto {
 
     public void setDaysAfterOpening(Integer daysAfterOpening) {
         this.daysAfterOpening = daysAfterOpening;
+    }
+
+    public Boolean getHasActiveItems() {
+        return hasActiveItems;
+    }
+
+    public void setHasActiveItems(Boolean hasActiveItems) {
+        this.hasActiveItems = hasActiveItems;
     }
 }

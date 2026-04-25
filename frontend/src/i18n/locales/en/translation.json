@@ -436,7 +436,8 @@
       "linked": "Product linked",
       "linkTitle": "Search product",
       "searchPlaceholder": "Search by name…",
-      "noResults": "No products found"
+      "noResults": "No products found",
+      "noStock": "No stock"
     }
   },
   "products": {
@@ -457,6 +458,7 @@
       "hideItems": "Hide items",
       "viewDetail": "View detail",
       "mixedLocations": "Multiple locations",
+      "outOfStock": "Out of stock",
       "itemNumber": "Item #{{id}}",
       "purchaseDate": "Purchase",
       "expirationDate": "Expiration",
@@ -530,9 +532,14 @@
     "cookWithAvailable": "Cook anyway",
     "cookSuccessTitle": "Recipe cooked!",
     "cookSuccessMessage": "Ingredients have been updated.",
+    "cookSuccessCapturePrompt": "Recipe cooked! Do you want to capture how it turned out?",
     "cookError": "Could not cook the recipe. Please try again.",
     "deleteTitle": "Delete recipe",
     "deleteMessage": "Are you sure you want to delete this recipe? This action cannot be undone.",
-    "deleteConfirm": "Delete"
+    "deleteConfirm": "Delete",
+    "noPhotoHint": "Cook this recipe to be able to add a photo",
+    "capturePhoto": "Take photo",
+    "skipPhoto": "Skip",
+    "changePhotoTitle": "Change photo"
   }
 }

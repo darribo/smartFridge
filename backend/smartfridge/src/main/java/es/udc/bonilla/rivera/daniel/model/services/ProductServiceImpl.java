@@ -373,6 +373,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public int countActiveProductItems(Long userId, Long productId) throws InstanceNotFoundException {
+
+        Product product = permissionChecker.checkProductExists(productId);
+        permissionChecker.checkUserHouseholdExists(userId, product.getHousehold().getId());
+
+        return productItemDao.countActiveByProductId(productId);
+    }
+
+    @Override
     public ProductAllergy addProductAllergy(Long userId, Long productId, Long allergyId)
             throws InstanceNotFoundException, DuplicateInstanceException {
 

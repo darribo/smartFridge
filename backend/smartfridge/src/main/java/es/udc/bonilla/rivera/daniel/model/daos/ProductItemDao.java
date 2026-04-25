@@ -112,10 +112,16 @@ public interface ProductItemDao extends JpaRepository<ProductItem, Long>{
         "SELECT COUNT(*) FROM ProductItem pi " +
         "JOIN Product p ON pi.productId = p.id " +
         "WHERE p.householdId = :householdId " +
-        "AND pi.discardDate IS NULL",
+        "AND pi.discardDate IS NULL " +
+        "AND (pi.initialQuantityValue IS NULL OR pi.quantityRemainingValue > 0)",
         nativeQuery = true
     )
     long countProductItemsByHousehold(@Param("householdId") Long householdId);
+
+    @Query("SELECT COUNT(pi) FROM ProductItem pi WHERE pi.product.id = :productId " +
+           "AND pi.discardDate IS NULL " +
+           "AND (pi.initialQuantityValue IS NULL OR pi.quantityRemainingValue > 0)")
+    int countActiveByProductId(@Param("productId") Long productId);
 
     @Query("SELECT i.product.id, SUM(i.quantityRemainingValue) " +
            "FROM ProductItem i " +

@@ -2,6 +2,8 @@ import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -161,24 +163,25 @@ export default function EditProductScreen({ navigation, route }: Props) {
 
   return (
     <SafeAreaView style={sharedStyles.safe}>
-      <View style={sharedStyles.header}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={10}>
-          <MaterialCommunityIcons name="arrow-left" size={26} color={THEME.text} />
-        </Pressable>
-        <Text style={sharedStyles.headerTitle}>{t("editProduct.title")}</Text>
-        <View style={sharedStyles.headerSpacer} />
-      </View>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <View style={sharedStyles.header}>
+          <Pressable onPress={() => navigation.goBack()} hitSlop={10}>
+            <MaterialCommunityIcons name="arrow-left" size={26} color={THEME.text} />
+          </Pressable>
+          <Text style={sharedStyles.headerTitle}>{t("editProduct.title")}</Text>
+          <View style={sharedStyles.headerSpacer} />
+        </View>
 
-      {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={THEME.primary} />
-        </View>
-      ) : loadErrors.length > 0 ? (
-        <View style={{ margin: 20 }}>
-          <GlobalErrorBox messages={loadErrors} />
-        </View>
-      ) : (
-        <ScrollView contentContainerStyle={sharedStyles.content} keyboardShouldPersistTaps="handled">
+        {loading ? (
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={THEME.primary} />
+          </View>
+        ) : loadErrors.length > 0 ? (
+          <View style={{ margin: 20 }}>
+            <GlobalErrorBox messages={loadErrors} />
+          </View>
+        ) : (
+          <ScrollView contentContainerStyle={sharedStyles.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           {saveErrors.length > 0 ? <GlobalErrorBox messages={saveErrors} /> : null}
 
           {/* Name */}
@@ -334,8 +337,9 @@ export default function EditProductScreen({ navigation, route }: Props) {
           <Pressable onPress={() => navigation.goBack()} style={sharedStyles.cancelBtn}>
             <Text style={sharedStyles.cancelText}>{t("addProduct.actions.cancel")}</Text>
           </Pressable>
-        </ScrollView>
-      )}
+          </ScrollView>
+        )}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

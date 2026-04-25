@@ -3,6 +3,9 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -30,7 +33,11 @@ type Props = NativeStackScreenProps<AuthStackParamList, "MyProducts">;
 
 function formatQuantity(quantity?: string | null, unit?: ProductUnit) {
   if (!quantity || !unit) return "";
-  return `${quantity}${unit === "UNIT" ? "" : unit.toLowerCase()}`;
+  const num = parseFloat(quantity);
+  if (isNaN(num)) return "";
+  const formatted = String(num);
+  if (unit === "UNIT") return formatted;
+  return `${formatted} ${unit.toLowerCase()}`;
 }
 
 function getLocationMeta(location: ProductItemStorageLocation, t: (key: string) => string) {
@@ -125,32 +132,45 @@ function ProductCard({
   t: (key: string, options?: any) => string;
   onPress: () => void;
 }) {
+  const empty = !product.hasActiveItems;
   const firstLocation = product.items[0]?.storageLocation;
   const allSameLocation = product.items.every((item) => item.storageLocation === firstLocation);
   const locationMeta = allSameLocation && firstLocation ? getLocationMeta(firstLocation, t) : null;
   const subtitle = formatQuantity(product.quantity, product.unit);
   const expiryBadge = getSoonestExpiryBadge(product.items, t);
 
+  let locationBadge: React.ReactElement;
+  if (empty) {
+    locationBadge = (
+      <View style={[styles.badge, styles.emptyStockBadge]}>
+        <MaterialCommunityIcons name="package-variant-remove" size={15} color={THEME.muted} />
+        <Text style={[styles.badgeText, { color: THEME.muted }]}>{t("products.list.outOfStock")}</Text>
+      </View>
+    );
+  } else if (locationMeta) {
+    locationBadge = (
+      <View style={[styles.badge, { backgroundColor: locationMeta.bg }]}>
+        <MaterialCommunityIcons name={locationMeta.icon} size={15} color={locationMeta.color} />
+        <Text style={[styles.badgeText, { color: locationMeta.color }]}>{locationMeta.label}</Text>
+      </View>
+    );
+  } else {
+    locationBadge = (
+      <View style={[styles.badge, styles.mixedBadge]}>
+        <MaterialCommunityIcons name="layers-triple-outline" size={15} color={THEME.muted} />
+        <Text style={[styles.badgeText, { color: THEME.muted }]}>{t("products.list.mixedLocations")}</Text>
+      </View>
+    );
+  }
+
   return (
-    <Pressable style={styles.card} onPress={onPress}>
+    <Pressable style={[styles.card, empty && styles.cardEmpty]} onPress={onPress}>
       <View style={[styles.cardContent, styles.cardPressable]}>
         <View style={styles.cardTopRow}>
-          {locationMeta ? (
-            <View style={[styles.badge, { backgroundColor: locationMeta.bg }]}>
-              <MaterialCommunityIcons name={locationMeta.icon} size={15} color={locationMeta.color} />
-              <Text style={[styles.badgeText, { color: locationMeta.color }]}>{locationMeta.label}</Text>
-            </View>
-          ) : (
-            <View style={[styles.badge, styles.mixedBadge]}>
-              <MaterialCommunityIcons name="layers-triple-outline" size={15} color={THEME.muted} />
-              <Text style={[styles.badgeText, { color: THEME.muted }]}>
-                {t("products.list.mixedLocations")}
-              </Text>
-            </View>
-          )}
+          {locationBadge}
 
-          <View style={styles.countPill}>
-            <Text style={styles.countPillText}>{product.countItems}</Text>
+          <View style={[styles.countPill, empty && styles.countPillEmpty]}>
+            <Text style={[styles.countPillText, empty && styles.countPillTextEmpty]}>{product.countItems}</Text>
           </View>
         </View>
 
@@ -163,7 +183,7 @@ function ProductCard({
 
         <View style={styles.mainRow}>
           <View style={styles.textBlock}>
-            <Text style={styles.productName}>{product.name}</Text>
+            <Text style={[styles.productName, empty && styles.productNameEmpty]}>{product.name}</Text>
             {subtitle ? <Text style={styles.productSubtitle}>{subtitle}</Text> : null}
 
             <View style={styles.expandHintRow}>
@@ -172,7 +192,7 @@ function ProductCard({
             </View>
           </View>
 
-          <Image source={{ uri: resolveImage(true, product.image) }} style={styles.productImage} />
+          <Image source={{ uri: resolveImage(true, product.image) }} style={[styles.productImage, empty && styles.productImageEmpty]} />
         </View>
       </View>
     </Pressable>
@@ -299,6 +319,7 @@ export default function ProductsScreen({ navigation, route }: Props) {
         onCreateHousehold={() => { setShowNoHousehold(false); navigation.navigate("CreateHousehold"); }}
         onGoToHouseholds={() => { setShowNoHousehold(false); navigation.navigate("MyHouseholds"); }}
       />
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <View style={styles.screen}>
         <View style={styles.header}>
           <View style={styles.headerRow}>
@@ -321,7 +342,7 @@ export default function ProductsScreen({ navigation, route }: Props) {
             placeholderTextColor={THEME.muted}
             style={styles.searchInput}
           />
-          <Pressable onPress={() => setShowFilters((prev) => !prev)} style={styles.filterBtn}>
+          <Pressable onPress={() => { Keyboard.dismiss(); setShowFilters((prev) => !prev); }} style={styles.filterBtn}>
             <MaterialCommunityIcons
               name={showFilters ? "tune-variant" : "tune"}
               size={20}
@@ -407,6 +428,7 @@ export default function ProductsScreen({ navigation, route }: Props) {
             )}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.listContent}
+            keyboardDismissMode="on-drag"
             onEndReached={onEndReached}
             onEndReachedThreshold={0.5}
             ListFooterComponent={
@@ -424,6 +446,7 @@ export default function ProductsScreen({ navigation, route }: Props) {
           />
         )}
       </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -591,6 +614,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: THEME.border,
     overflow: "hidden",
+  },
+  cardEmpty: {
+    opacity: 0.55,
+    borderStyle: "dashed",
+  },
+  emptyStockBadge: {
+    backgroundColor: THEME.mint,
+  },
+  countPillEmpty: {
+    backgroundColor: THEME.border,
+  },
+  countPillTextEmpty: {
+    color: THEME.muted,
+  },
+  productNameEmpty: {
+    color: THEME.muted,
+  },
+  productImageEmpty: {
+    opacity: 0.4,
   },
   cardPressable: {
     padding: 16,

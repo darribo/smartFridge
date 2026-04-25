@@ -176,6 +176,8 @@ public interface ProductService {
 
     int countProductItems(Long userId, Long productId) throws InstanceNotFoundException;
 
+    int countActiveProductItems(Long userId, Long productId) throws InstanceNotFoundException;
+
     ProductAllergy addProductAllergy(Long userId, Long productId, Long allergyId)
             throws InstanceNotFoundException, DuplicateInstanceException;
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { searchProductsByName } from "../../api/products/productService";
 import { Modal, Pressable, StyleSheet, View, Text, TextInput, ScrollView } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { THEME } from "../../theme/theme";
 
 export type LinkedProduct = {
@@ -10,6 +11,7 @@ export type LinkedProduct = {
     unit: string;
     isVegetarian: boolean;
     isVegan: boolean;
+    hasActiveItems?: boolean | null;
 }
 
 type Props = {
@@ -34,7 +36,7 @@ export default function LinkProductModal({ visible, householdId, onSelect, onClo
             householdId,
             query,
             0,
-            (block) => setProducts(block.items.map((p) => ({ id: p.id, name: p.name, unit: p.unit, isVegetarian: p.isVegetarian, isVegan: p.isVegan }))),
+            (block) => setProducts(block.items.map((p) => ({ id: p.id, name: p.name, unit: p.unit, isVegetarian: p.isVegetarian, isVegan: p.isVegan, hasActiveItems: p.hasActiveItems }))),
             () => setProducts([])
         );
     };
@@ -71,12 +73,23 @@ export default function LinkProductModal({ visible, householdId, onSelect, onClo
                     {products.length === 0 && search.trim().length > 0 && (
                         <Text style={styles.emptyText}>{t("addRecipe.ingredient.noResults")}</Text>
                     )}
-                    {products.map((p) => (
-                        <Pressable key={p.id} style={styles.resultItem} onPress={() => handleSelect(p)}>
-                            <Text style={styles.resultName}>{p.name}</Text>
-                            <Text style={styles.resultUnit}>{p.unit.toLowerCase()}</Text>
-                        </Pressable>
-                    ))}
+                    {products.map((p) => {
+                        const noStock = p.hasActiveItems === false;
+                        return (
+                            <Pressable key={p.id} style={styles.resultItem} onPress={() => handleSelect(p)}>
+                                <View style={styles.resultLeft}>
+                                    <Text style={[styles.resultName, noStock && styles.resultNameNoStock]}>{p.name}</Text>
+                                    {noStock && (
+                                        <View style={styles.noStockBadge}>
+                                            <MaterialCommunityIcons name="package-variant-remove" size={11} color="#9CA3AF" />
+                                            <Text style={styles.noStockText}>{t("addRecipe.ingredient.noStock")}</Text>
+                                        </View>
+                                    )}
+                                </View>
+                                <Text style={[styles.resultUnit, noStock && styles.resultUnitNoStock]}>{p.unit.toLowerCase()}</Text>
+                            </Pressable>
+                        );
+                    })}
                 </ScrollView>
             </View>
         </Modal>
@@ -130,16 +143,36 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: THEME.border,
     },
+    resultLeft: {
+        flex: 1,
+        flexShrink: 1,
+        gap: 4,
+    },
     resultName: {
         fontSize: 15,
         fontWeight: "600",
         color: THEME.text,
-        flexShrink: 1,
+    },
+    resultNameNoStock: {
+        color: THEME.muted,
     },
     resultUnit: {
         fontSize: 13,
         color: THEME.muted,
         marginLeft: 8,
+    },
+    resultUnitNoStock: {
+        color: THEME.border,
+    },
+    noStockBadge: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 4,
+    },
+    noStockText: {
+        fontSize: 11,
+        color: "#9CA3AF",
+        fontWeight: "600",
     },
     emptyText: {
         fontSize: 14,

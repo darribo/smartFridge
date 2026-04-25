@@ -72,7 +72,11 @@ public class CustomizedProductDaoImpl implements CustomizedProductDao {
                     .append(") ");
         }
 
-        queryString.append("ORDER BY p.name ASC, p.id ASC");
+        queryString.append("ORDER BY ")
+                .append("(SELECT COUNT(pi) FROM ProductItem pi WHERE pi.product = p ")
+                .append("AND pi.discardDate IS NULL ")
+                .append("AND (pi.initialQuantityValue IS NULL OR pi.quantityRemainingValue > 0)) DESC, ")
+                .append("p.name ASC, p.id ASC");
 
         TypedQuery<Product> query = entityManager.createQuery(queryString.toString(), Product.class)
                 .setParameter("householdId", householdId)

@@ -2,12 +2,14 @@ import React, { useCallback, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
+    Image,
     Pressable,
     ScrollView,
     StyleSheet,
     Text,
     View,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
@@ -16,7 +18,8 @@ import { useTranslation } from "react-i18next";
 
 import type { AuthStackParamList } from "../../navigation/AuthStack";
 import { THEME } from "../../theme/theme";
-import { cookRecipe, deleteRecipe, getRecipe, previewCookRecipe, type Recipe, type RecipeIngredientUnit } from "../../api/recipes/recipeService";
+import { cookRecipe, deleteRecipe, getRecipe, previewCookRecipe, uploadRecipeImage, type Recipe, type RecipeIngredientUnit } from "../../api/recipes/recipeService";
+import { resolveImage } from "../../utils/image";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "RecipeDetail">;
 
@@ -132,20 +135,62 @@ export default function RecipeDetailScreen({ navigation, route }: Props) {
         );
     };
 
+    const launchCamera = async () => {
+        const perm = await ImagePicker.requestCameraPermissionsAsync();
+        if (!perm.granted) {
+            Alert.alert("", t("addProduct.imagePicker.permissionMessage"));
+            return;
+        }
+        const result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ["images"],
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.8,
+        });
+        if (result.canceled || !result.assets?.[0]?.uri) return;
+        uploadRecipeImage(recipe!.id, result.assets[0].uri, (updated) => {
+            setRecipe(prev => prev ? { ...prev, image: updated.image } : prev);
+        });
+    };
+
+    const handlePhotoHint = () => {
+        Alert.alert("", t("recipeDetail.noPhotoHint"));
+    };
+
+    const handleChangePhoto = () => {
+        Alert.alert(t("recipeDetail.changePhotoTitle"), "", [
+            { text: t("common.cancel"), style: "cancel" },
+            { text: t("recipeDetail.capturePhoto"), onPress: launchCamera },
+        ]);
+    };
+
     const handleCook = () => {
         setCooking(true);
         previewCookRecipe(
             recipeId,
             (preview) => {
                 const insufficientRequired = preview.lines.filter(l => !l.sufficient && !l.optional);
+                const onCookSuccess = () => {
+                    setCooking(false);
+                    if (!recipe?.image) {
+                        Alert.alert(
+                            t("recipeDetail.cookSuccessTitle"),
+                            t("recipeDetail.cookSuccessCapturePrompt"),
+                            [
+                                { text: t("recipeDetail.skipPhoto"), style: "cancel" },
+                                { text: t("recipeDetail.capturePhoto"), onPress: launchCamera },
+                            ]
+                        );
+                    } else {
+                        Alert.alert(t("recipeDetail.cookSuccessTitle"), t("recipeDetail.cookSuccessMessage"));
+                    }
+                };
+
                 if (insufficientRequired.length === 0) {
                     cookRecipe(
                         recipeId,
                         false,
-                        () => {
-                            setCooking(false);
-                            Alert.alert(t("recipeDetail.cookSuccessTitle"), t("recipeDetail.cookSuccessMessage"));
-                        },
+                        onCookSuccess,
                         () => { setCooking(false); Alert.alert("", t("recipeDetail.cookError")); }
                     );
                 } else {
@@ -165,10 +210,7 @@ export default function RecipeDetailScreen({ navigation, route }: Props) {
                                 onPress: () => cookRecipe(
                                     recipeId,
                                     true,
-                                    () => {
-                                        setCooking(false);
-                                        Alert.alert(t("recipeDetail.cookSuccessTitle"), t("recipeDetail.cookSuccessMessage"));
-                                    },
+                                    onCookSuccess,
                                     () => { setCooking(false); Alert.alert("", t("recipeDetail.cookError")); }
                                 ),
                             },
@@ -225,13 +267,23 @@ export default function RecipeDetailScreen({ navigation, route }: Props) {
                 >
                     {/* Hero */}
                     <View style={styles.hero}>
-                        <View style={styles.heroIconWrap}>
-                            <MaterialCommunityIcons
-                                name={getMealTypeIcon(recipe.mealType) as any}
-                                size={56}
-                                color={THEME.primary}
+                        <Pressable
+                            onPress={recipe.image ? handleChangePhoto : handlePhotoHint}
+                            style={styles.heroImageWrap}
+                        >
+                            <Image
+                                source={{ uri: resolveImage(false, recipe.image) }}
+                                style={styles.heroImage}
+                                resizeMode="cover"
                             />
-                        </View>
+                            <View style={styles.heroImageOverlay}>
+                                <MaterialCommunityIcons
+                                    name={recipe.image ? "camera-outline" : "lock-outline"}
+                                    size={18}
+                                    color="white"
+                                />
+                            </View>
+                        </Pressable>
                         <Text style={styles.heroTitle}>{recipe.title}</Text>
                         {recipe.description ? (
                             <Text style={styles.heroDescription}>{recipe.description}</Text>
@@ -466,16 +518,26 @@ const styles = StyleSheet.create({
         paddingBottom: 20,
         gap: 10,
     },
-    heroIconWrap: {
-        width: 100,
-        height: 100,
-        borderRadius: 30,
-        backgroundColor: THEME.mint2,
-        alignItems: "center",
-        justifyContent: "center",
+    heroImageWrap: {
+        width: 160,
+        height: 120,
+        borderRadius: 20,
+        overflow: "hidden",
         borderWidth: 1,
         borderColor: THEME.border,
         marginBottom: 4,
+    },
+    heroImage: {
+        width: "100%",
+        height: "100%",
+    },
+    heroImageOverlay: {
+        position: "absolute",
+        bottom: 6,
+        right: 6,
+        backgroundColor: "rgba(0,0,0,0.45)",
+        borderRadius: 10,
+        padding: 4,
     },
     heroTitle: {
         fontSize: 26,

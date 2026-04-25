@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
+    KeyboardAvoidingView,
+    Platform,
     Pressable,
     ScrollView,
     StyleSheet,
@@ -287,6 +289,7 @@ export default function AddRecipeScreen({ navigation, route }: Props) {
 
     return (
         <SafeAreaView style={styles.safe}>
+            <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
             <View style={styles.header}>
                 <Pressable onPress={() => navigation.goBack()} hitSlop={10}>
                     <MaterialCommunityIcons name="arrow-left" size={26} color={THEME.text} />
@@ -308,6 +311,7 @@ export default function AddRecipeScreen({ navigation, route }: Props) {
             <ScrollView
                 contentContainerStyle={styles.content}
                 keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
                 showsVerticalScrollIndicator={false}
             >
                 <GlobalErrorBox messages={errors} />
@@ -624,6 +628,7 @@ export default function AddRecipeScreen({ navigation, route }: Props) {
                 }}
                 onClose={() => setLinkModal({ open: false, index: null })}
             />
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 }

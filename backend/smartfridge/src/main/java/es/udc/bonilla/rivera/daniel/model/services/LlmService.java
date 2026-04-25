@@ -98,6 +98,8 @@ public class LlmService {
                         quantityMap.get(p.getId()),
                         mustIncludeIds != null && mustIncludeIds.contains(p.getId())
                 ))
+                .filter(p -> (p.getAvailableQuantity() != null && p.getAvailableQuantity().compareTo(BigDecimal.ZERO) > 0)
+                        || p.isMustInclude())
                 .toList();
 
         List<String> excludeTitles = new ArrayList<>(recipeDao.findTitlesByUserId(userId));

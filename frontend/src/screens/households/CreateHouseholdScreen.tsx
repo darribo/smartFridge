@@ -1,5 +1,7 @@
 import { useState } from "react";
 import {
+  KeyboardAvoidingView,
+  Platform,
   View,
   Text,
   StyleSheet,
@@ -99,18 +101,20 @@ export default function CreateHouseholdScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.screen}>
-        <View style={styles.header}>
-          <Pressable onPress={() => navigation.goBack()} hitSlop={10} style={styles.backBtn}>
-            <MaterialCommunityIcons name="chevron-left" size={26} color={THEME.text} />
-          </Pressable>
-        </View>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <View style={styles.screen}>
+          <View style={styles.header}>
+            <Pressable onPress={() => navigation.goBack()} hitSlop={10} style={styles.backBtn}>
+              <MaterialCommunityIcons name="chevron-left" size={26} color={THEME.text} />
+            </Pressable>
+          </View>
 
-        <ScrollView
-          style={styles.content}
-          contentContainerStyle={styles.contentWrap}
-          keyboardShouldPersistTaps="handled"
-        >
+          <ScrollView
+            style={styles.content}
+            contentContainerStyle={styles.contentWrap}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+          >
           <Text style={styles.title}>{t("createHousehold.title")}</Text>
           <Text style={styles.subtitle}>
             {t("createHousehold.subtitle")}
@@ -178,8 +182,9 @@ export default function CreateHouseholdScreen({ navigation }: Props) {
               <Text style={styles.cancelText}>{t("createHousehold.cancel")}</Text>
             </Pressable>
           </View>
-        </ScrollView>
-      </View>
+          </ScrollView>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

@@ -3,9 +3,12 @@ package es.udc.bonilla.rivera.daniel.rest.controllers;
 import java.util.List;
 import java.util.Locale;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.entities.CookedRecipe;
@@ -232,6 +236,18 @@ public class RecipeController {
 
         CookedRecipe cookedRecipe = recipeService.cookRecipe(userId, recipeId, params.isForcePartial());
         return CookedRecipeConversor.toCookedRecipeDto(cookedRecipe);
+    }
+
+    @Operation(summary = "Subir o cambiar la foto de una receta")
+    @PostMapping(value = "/{recipeId}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public RecipeDto uploadRecipeImage(@RequestAttribute Long userId,
+            @PathVariable Long recipeId,
+            @RequestParam("file") MultipartFile file)
+            throws InstanceNotFoundException, IOException {
+
+        Recipe recipe = recipeService.uploadRecipeImage(userId, recipeId, file);
+        List<RecipeIngredient> ingredients = recipeService.getRecipeIngredients(recipeId);
+        return RecipeConversor.toRecipeDto(recipe, ingredients);
     }
 
 }

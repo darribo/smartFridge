@@ -1,5 +1,6 @@
 package es.udc.bonilla.rivera.daniel.model.services;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.daos.CookedRecipeDao;
@@ -48,6 +50,9 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Autowired
     private PermissionChecker permissionChecker;
+
+    @Autowired
+    private LocalStorageService localStorageService;
 
     @Override
     public Recipe createRecipe(Long userId, NewRecipeParamsDto params)
@@ -365,6 +370,20 @@ public class RecipeServiceImpl implements RecipeService {
         }
 
         return cookedRecipe;
+    }
+
+    @Override
+    public Recipe uploadRecipeImage(Long userId, Long recipeId, MultipartFile file)
+            throws InstanceNotFoundException, IOException {
+        permissionChecker.checkUserExists(userId);
+        Recipe recipe = recipeDao.findById(recipeId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.recipe", recipeId));
+        if (!recipe.getCreatedBy().getId().equals(userId)) {
+            throw new InstanceNotFoundException("project.entities.recipe", recipeId);
+        }
+        String imageUrl = localStorageService.saveImage(recipeId, "recipes", file);
+        recipe.setImage(imageUrl);
+        return recipeDao.save(recipe);
     }
 
 }

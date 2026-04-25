@@ -41,7 +41,7 @@ public class ProductConversor {
         return productDtos;
     }
 
-    public static ProductWithItemsDto toProductWithItemsDto(Product product, List<ProductItem> productItems, int countItems) {
+    public static ProductWithItemsDto toProductWithItemsDto(Product product, List<ProductItem> productItems, int countItems, boolean hasActiveItems) {
 
         return new ProductWithItemsDto(
                 product.getId(),
@@ -50,7 +50,14 @@ public class ProductConversor {
                 product.getQuantity() != null ? product.getQuantity().toString() : null,
                 product.getUnit(),
                 countItems,
-                ProductItemConversor.toProductItemDtos(productItems));
+                ProductItemConversor.toProductItemDtos(productItems),
+                hasActiveItems);
+    }
+
+    public static ProductDto toProductDtoWithStock(Product product, boolean hasActiveItems) {
+        ProductDto dto = toProductDto(product);
+        dto.setHasActiveItems(hasActiveItems);
+        return dto;
     }
 
     public static ProductDetailDto toProductDetailDto(Product product, List<ProductItem> productItems) {

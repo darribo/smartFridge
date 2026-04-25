@@ -53,6 +53,7 @@ export type Recipe = {
     id: number;
     createdByUserId: number;
     title: string;
+    image?: string | null;
     description?: string | null;
     servings?: number | null;
     preparationMinutes?: number | null;
@@ -200,6 +201,22 @@ export const cookRecipe = async (
 ) => {
     const options = await fetchConfig("POST", { forcePartial });
     return appFetch(`/recipes/${recipeId}/cook`, options, onSuccess, onError);
+};
+
+export const uploadRecipeImage = async (
+    recipeId: number,
+    localUri: string,
+    onSuccess?: (recipe: Recipe) => void,
+    onError?: (err: ApiError) => void
+) => {
+    const form = new FormData();
+    form.append("file", {
+        uri: localUri,
+        name: `recipe_${recipeId}.jpg`,
+        type: "image/jpeg",
+    } as any);
+    const options = await fetchConfig("POST", form);
+    return appFetch(`/recipes/${recipeId}/images`, options, onSuccess, onError);
 };
 
 export const findRecipes = async (

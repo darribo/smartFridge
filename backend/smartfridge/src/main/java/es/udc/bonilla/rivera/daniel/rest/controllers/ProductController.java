@@ -187,8 +187,13 @@ public class ProductController {
 
         Block<Product> block = productService.findProductsByName(userId, householdId, name, page, SEARCH_PRODUCTS_SIZE);
 
-        
-        return new BlockDto<>(ProductConversor.toProductDtos(block.getItems()), block.getExistMoreItems());
+        List<ProductDto> dtos = new ArrayList<>();
+        for (Product product : block.getItems()) {
+            int activeCount = productService.countActiveProductItems(userId, product.getId());
+            dtos.add(ProductConversor.toProductDtoWithStock(product, activeCount > 0));
+        }
+
+        return new BlockDto<>(dtos, block.getExistMoreItems());
     }
 
     @GetMapping("/{householdId}")
@@ -217,9 +222,9 @@ public class ProductController {
 
         for (Product product : block.getItems()) {
             List<ProductItem> productItems = productService.findProductItems(userId, product.getId());
-            int countItems = productService.countProductItems(userId, product.getId());
+            int countItems = productService.countActiveProductItems(userId, product.getId());
 
-            productWithItemsDtos.add(ProductConversor.toProductWithItemsDto(product, productItems, countItems));
+            productWithItemsDtos.add(ProductConversor.toProductWithItemsDto(product, productItems, countItems, countItems > 0));
         }
 
         return new BlockDto<>(productWithItemsDtos, block.getExistMoreItems());

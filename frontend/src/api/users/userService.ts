@@ -74,6 +74,7 @@ export const signUp = async (user: NewUserParams, onSuccess?: (auth: Authenticat
 
 export const login = async (params: LoginParams, onSuccess?: (auth: AuthenticatedUser) => void, onError?: (err: ApiError) => void, reauthenticationCallback?: () => void) => {
 
+    await removeServiceToken();
     const options = await fetchConfig("POST", params);
 
     return appFetch(

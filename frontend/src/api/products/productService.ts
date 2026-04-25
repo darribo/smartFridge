@@ -33,6 +33,7 @@ export type Product = {
     novaGroup?: ProductNovaGroup;
     createdAt: string; // ISO 8601 format
     daysAfterOpening?: number | null;
+    hasActiveItems?: boolean | null;
 }
 
 export type ProductItem = {
@@ -73,6 +74,7 @@ export type ProductWithItems = {
     unit: ProductUnit;
     countItems: number;
     items: ProductItem[];
+    hasActiveItems: boolean;
 }
 
 export type ProductUnit = 'g' | 'kg' | 'ml' | 'l' | 'unit' | 'G' | 'KG' | 'ML' | 'L' | 'UNIT';

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -49,15 +49,16 @@ export default function AddProductScreen({ navigation, route }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={10}>
-          <MaterialCommunityIcons name="arrow-left" size={26} color={THEME.text} />
-        </Pressable>
-        <Text style={styles.headerTitle}>{t("addProduct.title")}</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        <View style={styles.header}>
+          <Pressable onPress={() => navigation.goBack()} hitSlop={10}>
+            <MaterialCommunityIcons name="arrow-left" size={26} color={THEME.text} />
+          </Pressable>
+          <Text style={styles.headerTitle}>{t("addProduct.title")}</Text>
+          <View style={styles.headerSpacer} />
+        </View>
 
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         <Text style={styles.question}>{t("addProduct.firstTimeQuestion")}</Text>
 
         <View style={styles.segmentedWrap}>
@@ -105,7 +106,8 @@ export default function AddProductScreen({ navigation, route }: Props) {
         <Pressable onPress={() => navigation.goBack()} style={styles.cancelBtn}>
           <Text style={styles.cancelText}>{t("addProduct.actions.cancel")}</Text>
         </Pressable>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

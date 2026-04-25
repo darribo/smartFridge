@@ -1,6 +1,9 @@
 package es.udc.bonilla.rivera.daniel.model.services;
 
+import java.io.IOException;
 import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
 
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.entities.CookedRecipe;
@@ -33,5 +36,7 @@ public interface RecipeService {
     CookRecipePreview previewCookRecipe(Long userId, Long recipeId) throws InstanceNotFoundException;
 
     CookedRecipe cookRecipe(Long userId, Long recipeId, boolean forcePartial) throws InstanceNotFoundException, InsufficientStockException, InvalidProductItemTransactionException;
+
+    Recipe uploadRecipeImage(Long userId, Long recipeId, MultipartFile file) throws InstanceNotFoundException, IOException;
 
 }

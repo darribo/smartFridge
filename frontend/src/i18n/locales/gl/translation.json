@@ -436,7 +436,8 @@
       "linked": "Produto vinculado",
       "linkTitle": "Buscar produto",
       "searchPlaceholder": "Busca por nome…",
-      "noResults": "Non se atoparon produtos"
+      "noResults": "Non se atoparon produtos",
+      "noStock": "Sen stock"
     }
   },
   "products": {
@@ -457,6 +458,7 @@
       "hideItems": "Ocultar items",
       "viewDetail": "Ver detalle",
       "mixedLocations": "Varias localizacións",
+      "outOfStock": "Sen stock",
       "itemNumber": "Item #{{id}}",
       "purchaseDate": "Compra",
       "expirationDate": "Caducidade",
@@ -530,9 +532,14 @@
     "cookWithAvailable": "Cociñar igualmente",
     "cookSuccessTitle": "Receita cociñada!",
     "cookSuccessMessage": "Os ingredientes foron actualizados.",
+    "cookSuccessCapturePrompt": "Receita cociñada! Queres capturar como quedou?",
     "cookError": "Non se puido cociñar a receita. Téntao de novo.",
     "deleteTitle": "Eliminar receita",
     "deleteMessage": "Seguro que queres eliminar esta receita? Esta acción non se pode desfacer.",
-    "deleteConfirm": "Eliminar"
+    "deleteConfirm": "Eliminar",
+    "noPhotoHint": "Cociña esta receita para poder engadir unha foto",
+    "capturePhoto": "Tomar foto",
+    "skipPhoto": "Omitir",
+    "changePhotoTitle": "Cambiar foto"
   }
 }
