@@ -54,6 +54,8 @@ import es.udc.bonilla.rivera.daniel.rest.dtos.ProductItemDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductWithItemsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ProductWithLittleStockDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.SimplifiedUserDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.AdjustProductItemParamsDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.ConsumeProductItemParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.UpdateProductItemParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.UpdateProductParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.UserConversor;
@@ -435,6 +437,31 @@ public class ProductController {
     @PostMapping("/{productItemId}/discard")
     public ProductItemDto discardProductItem(@RequestAttribute Long userId, @PathVariable Long productItemId) throws InstanceNotFoundException, InvalidProductItemTransactionException {
         return ProductItemConversor.toProductItemDto(productService.discardProductItem(userId, productItemId));
+    }
+
+    @Operation(summary = "Abrir un item de producto")
+    @PostMapping("/items/{productItemId}/open")
+    public ProductItemDto openProductItem(@RequestAttribute Long userId, @PathVariable Long productItemId)
+            throws InstanceNotFoundException, InvalidProductItemTransactionException {
+        return ProductItemConversor.toProductItemDto(productService.openProductItem(userId, productItemId));
+    }
+
+    @Operation(summary = "Consumir cantidad de un item de producto")
+    @PostMapping("/items/{productItemId}/consume")
+    public ProductItemDto consumeProductItem(@RequestAttribute Long userId, @PathVariable Long productItemId,
+            @Validated @RequestBody ConsumeProductItemParamsDto params)
+            throws InstanceNotFoundException, InvalidProductItemTransactionException {
+        return ProductItemConversor.toProductItemDto(
+                productService.consumeProductItem(userId, productItemId, new java.math.BigDecimal(params.getQuantity()), null));
+    }
+
+    @Operation(summary = "Ajustar la cantidad de un item de producto")
+    @PostMapping("/items/{productItemId}/adjust")
+    public ProductItemDto adjustProductItem(@RequestAttribute Long userId, @PathVariable Long productItemId,
+            @Validated @RequestBody AdjustProductItemParamsDto params)
+            throws InstanceNotFoundException, InvalidProductItemTransactionException {
+        return ProductItemConversor.toProductItemDto(
+                productService.adjustProductItem(userId, productItemId, new java.math.BigDecimal(params.getNewQuantity())));
     }
 
 }

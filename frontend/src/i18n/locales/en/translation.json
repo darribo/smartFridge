@@ -525,6 +525,12 @@
     "notes": "Notes",
     "optional": "optional",
     "generatedByAi": "Generated with AI",
+    "cookButton": "Cook recipe",
+    "insufficientTitle": "Insufficient stock",
+    "cookWithAvailable": "Cook anyway",
+    "cookSuccessTitle": "Recipe cooked!",
+    "cookSuccessMessage": "Ingredients have been updated.",
+    "cookError": "Could not cook the recipe. Please try again.",
     "deleteTitle": "Delete recipe",
     "deleteMessage": "Are you sure you want to delete this recipe? This action cannot be undone.",
     "deleteConfirm": "Delete"

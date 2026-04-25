@@ -7,6 +7,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
+import java.math.BigDecimal;
+
+import es.udc.bonilla.rivera.daniel.model.entities.CookedRecipe;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductAllergy;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
@@ -193,5 +196,11 @@ public interface ProductService {
     int countProductItemsByHousehold(Long userId, Long householdId) throws InstanceNotFoundException;
 
     ProductItem discardProductItem(Long userId, Long productItemId) throws InstanceNotFoundException, InvalidProductItemTransactionException;
+
+    ProductItem openProductItem(Long userId, Long productItemId) throws InstanceNotFoundException, InvalidProductItemTransactionException;
+
+    ProductItem consumeProductItem(Long userId, Long productItemId, BigDecimal amount, CookedRecipe cookedRecipe) throws InstanceNotFoundException, InvalidProductItemTransactionException;
+
+    ProductItem adjustProductItem(Long userId, Long productItemId, BigDecimal newQuantity) throws InstanceNotFoundException, InvalidProductItemTransactionException;
 
 }

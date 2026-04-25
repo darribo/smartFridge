@@ -1,6 +1,5 @@
 package es.udc.bonilla.rivera.daniel.model.daos;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -15,6 +14,12 @@ import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
 public interface ProductItemDao extends JpaRepository<ProductItem, Long>{
 
     List<ProductItem> findByProductId(Long productId);
+
+    @Query("SELECT pi FROM ProductItem pi WHERE pi.product.id = :productId " +
+           "AND pi.discardDate IS NULL AND pi.quantityRemainingValue > 0 " +
+           "ORDER BY CASE WHEN pi.openedAt IS NOT NULL THEN 0 ELSE 1 END ASC, " +
+           "pi.expirationDate ASC NULLS LAST")
+    List<ProductItem> findActiveItemsForCooking(@Param("productId") Long productId);
 
     @Query("SELECT pi FROM ProductItem pi WHERE pi.product.id = :productId " +
            "AND pi.discardDate IS NULL " +

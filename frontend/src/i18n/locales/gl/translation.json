@@ -525,6 +525,12 @@
     "notes": "Notas",
     "optional": "opcional",
     "generatedByAi": "Xerada con IA",
+    "cookButton": "Cociñar receita",
+    "insufficientTitle": "Stock insuficiente",
+    "cookWithAvailable": "Cociñar igualmente",
+    "cookSuccessTitle": "Receita cociñada!",
+    "cookSuccessMessage": "Os ingredientes foron actualizados.",
+    "cookError": "Non se puido cociñar a receita. Téntao de novo.",
     "deleteTitle": "Eliminar receita",
     "deleteMessage": "Seguro que queres eliminar esta receita? Esta acción non se pode desfacer.",
     "deleteConfirm": "Eliminar"

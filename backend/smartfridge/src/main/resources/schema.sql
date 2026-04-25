@@ -1,7 +1,8 @@
 /* DROP TABLE IF EXISTS HouseholdInvitation; */
 DROP TABLE IF EXISTS RecipeIngredient;
-DROP TABLE IF EXISTS Recipe;
 DROP TABLE IF EXISTS ProductItemTransaction;
+DROP TABLE IF EXISTS CookedRecipe;
+DROP TABLE IF EXISTS Recipe;
 DROP TABLE IF EXISTS ProductItem;
 DROP TABLE IF EXISTS ProductAllergy;
 DROP TABLE IF EXISTS Product;
@@ -110,18 +111,6 @@ CREATE TABLE ProductItem (
     FOREIGN KEY (productId) REFERENCES Product(id) ON DELETE CASCADE
 );
 
-CREATE TABLE ProductItemTransaction (
-    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    productItemId BIGINT NOT NULL,
-    userId BIGINT,
-    type VARCHAR(10) NOT NULL,
-    quantityDeltaValue DECIMAL(7,2),
-    createdAt DATETIME NOT NULL,
-    FOREIGN KEY (productItemId) REFERENCES ProductItem(id) ON DELETE CASCADE,
-    FOREIGN KEY (userId) REFERENCES users(id) ON DELETE SET NULL
-);
---TODO: CATEGORY TAGS
-
 CREATE TABLE Recipe (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 
@@ -160,6 +149,27 @@ CREATE TABLE Recipe (
 
     FOREIGN KEY (createdByUserId) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE CookedRecipe (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    recipeId BIGINT,
+    cookedAt DATETIME NOT NULL,
+    FOREIGN KEY (recipeId) REFERENCES Recipe(id) ON DELETE SET NULL
+);
+
+CREATE TABLE ProductItemTransaction (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    productItemId BIGINT NOT NULL,
+    userId BIGINT,
+    type VARCHAR(10) NOT NULL,
+    quantityDeltaValue DECIMAL(7,2),
+    createdAt DATETIME NOT NULL,
+    cookedRecipeId BIGINT,
+    FOREIGN KEY (productItemId) REFERENCES ProductItem(id) ON DELETE CASCADE,
+    FOREIGN KEY (userId) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (cookedRecipeId) REFERENCES CookedRecipe(id) ON DELETE SET NULL
+);
+--TODO: CATEGORY TAGS
 
 CREATE TABLE RecipeIngredient (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,

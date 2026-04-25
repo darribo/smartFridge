@@ -161,6 +161,47 @@ export type RecipeSummaryBlock = {
     existMoreItems: boolean;
 };
 
+export type CookIngredientPreviewLine = {
+    ingredientId: number;
+    ingredientName: string;
+    requiredQuantity: string | null;
+    availableQuantity: string | null;
+    sufficient: boolean;
+    optional: boolean;
+    productId: number;
+    unit: string | null;
+};
+
+export type CookRecipePreview = {
+    canCookFully: boolean;
+    lines: CookIngredientPreviewLine[];
+};
+
+export type CookedRecipe = {
+    id: number;
+    recipeId: number | null;
+    cookedAt: string;
+};
+
+export const previewCookRecipe = async (
+    recipeId: number,
+    onSuccess?: (preview: CookRecipePreview) => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("GET");
+    return appFetch(`/recipes/${recipeId}/cook-preview`, options, onSuccess, onError);
+};
+
+export const cookRecipe = async (
+    recipeId: number,
+    forcePartial: boolean,
+    onSuccess?: (result: CookedRecipe) => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("POST", { forcePartial });
+    return appFetch(`/recipes/${recipeId}/cook`, options, onSuccess, onError);
+};
+
 export const findRecipes = async (
     filters: RecipeFilters,
     page: number,

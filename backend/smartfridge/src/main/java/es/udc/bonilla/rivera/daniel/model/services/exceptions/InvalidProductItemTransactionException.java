@@ -10,6 +10,8 @@ public class InvalidProductItemTransactionException extends Exception {
             "project.exceptions.InvalidProductItemTransactionException.alreadyOpened";
     public static final String ALREADY_DISCARDED =
             "project.exceptions.InvalidProductItemTransactionException.alreadyDiscarded";
+    public static final String CONSUME_EXCEEDS_REMAINING =
+            "project.exceptions.InvalidProductItemTransactionException.consumeExceedsRemaining";
 
     private final String errorCode;
 

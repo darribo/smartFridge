@@ -16,7 +16,7 @@ import { useTranslation } from "react-i18next";
 
 import type { AuthStackParamList } from "../../navigation/AuthStack";
 import { THEME } from "../../theme/theme";
-import { deleteRecipe, getRecipe, type Recipe, type RecipeIngredientUnit } from "../../api/recipes/recipeService";
+import { cookRecipe, deleteRecipe, getRecipe, previewCookRecipe, type Recipe, type RecipeIngredientUnit } from "../../api/recipes/recipeService";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "RecipeDetail">;
 
@@ -65,6 +65,7 @@ export default function RecipeDetailScreen({ navigation, route }: Props) {
     const [recipe, setRecipe] = useState<Recipe | null>(null);
     const [loading, setLoading] = useState(true);
     const [deleting, setDeleting] = useState(false);
+    const [cooking, setCooking] = useState(false);
 
     useFocusEffect(useCallback(() => {
         setLoading(true);
@@ -131,6 +132,54 @@ export default function RecipeDetailScreen({ navigation, route }: Props) {
         );
     };
 
+    const handleCook = () => {
+        setCooking(true);
+        previewCookRecipe(
+            recipeId,
+            (preview) => {
+                const insufficientRequired = preview.lines.filter(l => !l.sufficient && !l.optional);
+                if (insufficientRequired.length === 0) {
+                    cookRecipe(
+                        recipeId,
+                        false,
+                        () => {
+                            setCooking(false);
+                            Alert.alert(t("recipeDetail.cookSuccessTitle"), t("recipeDetail.cookSuccessMessage"));
+                        },
+                        () => { setCooking(false); Alert.alert("", t("recipeDetail.cookError")); }
+                    );
+                } else {
+                    const names = insufficientRequired
+                        .map(l => {
+                            const unit = formatUnit((l.unit ?? undefined) as RecipeIngredientUnit | undefined);
+                            return `${l.ingredientName}: ${l.availableQuantity ?? 0}${unit} / ${l.requiredQuantity ?? "?"}${unit}`;
+                        })
+                        .join("\n");
+                    Alert.alert(
+                        t("recipeDetail.insufficientTitle"),
+                        names,
+                        [
+                            { text: t("common.cancel"), style: "cancel", onPress: () => setCooking(false) },
+                            {
+                                text: t("recipeDetail.cookWithAvailable"),
+                                onPress: () => cookRecipe(
+                                    recipeId,
+                                    true,
+                                    () => {
+                                        setCooking(false);
+                                        Alert.alert(t("recipeDetail.cookSuccessTitle"), t("recipeDetail.cookSuccessMessage"));
+                                    },
+                                    () => { setCooking(false); Alert.alert("", t("recipeDetail.cookError")); }
+                                ),
+                            },
+                        ]
+                    );
+                }
+            },
+            () => { setCooking(false); Alert.alert("", t("recipeDetail.cookError")); }
+        );
+    };
+
     const totalMinutes = recipe
         ? (recipe.preparationMinutes ?? 0) + (recipe.cookingMinutes ?? 0)
         : null;
@@ -169,6 +218,7 @@ export default function RecipeDetailScreen({ navigation, route }: Props) {
                     <Text style={styles.errorText}>{t("recipeDetail.loadError")}</Text>
                 </View>
             ) : (
+                <View style={{ flex: 1 }}>
                 <ScrollView
                     contentContainerStyle={styles.content}
                     showsVerticalScrollIndicator={false}
@@ -352,6 +402,22 @@ export default function RecipeDetailScreen({ navigation, route }: Props) {
                         </View>
                     )}
                 </ScrollView>
+                <View style={styles.cookButtonContainer}>
+                    <Pressable
+                        onPress={handleCook}
+                        disabled={cooking || deleting}
+                        style={[styles.cookButton, (cooking || deleting) && styles.cookButtonDisabled]}
+                    >
+                        {cooking
+                            ? <ActivityIndicator color="white" />
+                            : <>
+                                <MaterialCommunityIcons name="pot-steam-outline" size={20} color="white" />
+                                <Text style={styles.cookButtonText}>{t("recipeDetail.cookButton")}</Text>
+                              </>
+                        }
+                    </Pressable>
+                </View>
+                </View>
             )}
         </SafeAreaView>
     );
@@ -619,6 +685,29 @@ const styles = StyleSheet.create({
         color: THEME.muted,
         lineHeight: 22,
         fontStyle: "italic",
+    },
+
+    /* Cook button */
+    cookButtonContainer: {
+        padding: 16,
+        backgroundColor: THEME.bg,
+        borderTopWidth: 1,
+        borderTopColor: THEME.border,
+    },
+    cookButton: {
+        backgroundColor: THEME.primary,
+        borderRadius: 16,
+        paddingVertical: 14,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+    },
+    cookButtonDisabled: { opacity: 0.6 },
+    cookButtonText: {
+        fontSize: 16,
+        fontWeight: "700",
+        color: "#FFFFFF",
     },
 
     /* Source */

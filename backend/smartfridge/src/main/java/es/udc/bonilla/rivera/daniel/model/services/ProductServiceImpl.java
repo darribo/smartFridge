@@ -24,6 +24,7 @@ import es.udc.bonilla.rivera.daniel.model.daos.ProductDao;
 import es.udc.bonilla.rivera.daniel.model.daos.ProductItemDao;
 import es.udc.bonilla.rivera.daniel.model.daos.ProductItemTransactionDao;
 import es.udc.bonilla.rivera.daniel.model.entities.Allergy;
+import es.udc.bonilla.rivera.daniel.model.entities.CookedRecipe;
 import es.udc.bonilla.rivera.daniel.model.entities.Household;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
 import es.udc.bonilla.rivera.daniel.model.entities.Product.NovaGroup;
@@ -217,7 +218,7 @@ public class ProductServiceImpl implements ProductService {
                 resolvedInitialQuantity,
                 BigDecimal.ZERO));
 
-        createProductItemTransaction(userId, productItem.getId(), ProductItemTransaction.TransactionType.CREATE, productItem.getInitialQuantityValue());
+        createProductItemTransaction(userId, productItem.getId(), ProductItemTransaction.TransactionType.CREATE, productItem.getInitialQuantityValue(), null);
 
         return productItem;
     }
@@ -519,34 +520,72 @@ public class ProductServiceImpl implements ProductService {
         ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
         permissionChecker.checkUserHouseholdExists(userId, productItem.getProduct().getHousehold().getId());
 
-        createProductItemTransaction(userId, productItemId, ProductItemTransaction.TransactionType.DISCARD, productItem.getQuantityRemainingValue().negate());
+        createProductItemTransaction(userId, productItemId, ProductItemTransaction.TransactionType.DISCARD, productItem.getQuantityRemainingValue().negate(), null);
 
         return productItem;
     }
 
-    private ProductItemTransaction createProductItemTransaction(Long userId, Long productItemId, ProductItemTransaction.TransactionType type, BigDecimal quantityDeltaValue) throws InstanceNotFoundException, InvalidProductItemTransactionException {
+    @Override
+    public ProductItem openProductItem(Long userId, Long productItemId)
+            throws InstanceNotFoundException, InvalidProductItemTransactionException {
+        createProductItemTransaction(userId, productItemId, ProductItemTransaction.TransactionType.OPEN, BigDecimal.ZERO, null);
+        return permissionChecker.checkProductItemExists(productItemId);
+    }
+
+    @Override
+    public ProductItem consumeProductItem(Long userId, Long productItemId, BigDecimal amount, CookedRecipe cookedRecipe)
+            throws InstanceNotFoundException, InvalidProductItemTransactionException {
+        ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
+        permissionChecker.checkUserHouseholdExists(userId, productItem.getProduct().getHousehold().getId());
+
+        if (amount.compareTo(productItem.getQuantityRemainingValue()) > 0) {
+            throw new InvalidProductItemTransactionException(InvalidProductItemTransactionException.CONSUME_EXCEEDS_REMAINING);
+        }
+        if (productItem.getOpenedAt() == null) {
+            createProductItemTransaction(userId, productItemId, ProductItemTransaction.TransactionType.OPEN, BigDecimal.ZERO, null);
+        }
+        createProductItemTransaction(userId, productItemId, ProductItemTransaction.TransactionType.CONSUME, amount.negate(), cookedRecipe);
+        return productItem;
+    }
+
+    @Override
+    public ProductItem adjustProductItem(Long userId, Long productItemId, BigDecimal newQuantity)
+            throws InstanceNotFoundException, InvalidProductItemTransactionException {
+        ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
+        permissionChecker.checkUserHouseholdExists(userId, productItem.getProduct().getHousehold().getId());
+
+        BigDecimal delta = newQuantity.subtract(productItem.getQuantityRemainingValue());
+        createProductItemTransaction(userId, productItemId, ProductItemTransaction.TransactionType.ADJUST, delta, null);
+        return productItem;
+    }
+
+    private ProductItemTransaction createProductItemTransaction(Long userId, Long productItemId,
+            ProductItemTransaction.TransactionType type, BigDecimal quantityDeltaValue, CookedRecipe cookedRecipe)
+            throws InstanceNotFoundException, InvalidProductItemTransactionException {
 
         ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
         permissionChecker.checkUserHouseholdExists(userId, productItem.getProduct().getHousehold().getId());
 
-        //Si el tipo es crear y ya existe alguna transaccion para ese item de producto lanzar excepcion
-        if(type == ProductItemTransaction.TransactionType.CREATE && productItemTransactionDao.existsByProductItemId(productItemId)) {
+        if (type == ProductItemTransaction.TransactionType.CREATE && productItemTransactionDao.existsByProductItemId(productItemId)) {
             throw new InvalidProductItemTransactionException(InvalidProductItemTransactionException.ALREADY_CREATED);
         }
 
-        //Si el tipo es tirar y ya se ha tirado lanzar excepcion
-        if(type == ProductItemTransaction.TransactionType.DISCARD && productItem.getDiscardDate() != null) {
+        if (type == ProductItemTransaction.TransactionType.DISCARD && productItem.getDiscardDate() != null) {
             throw new InvalidProductItemTransactionException(InvalidProductItemTransactionException.ALREADY_DISCARDED);
         }
 
-        //Si ya no queda o se ha tirado, no se pueden hacer transacciones (abrir, consumir, ajustar) sobre el producto
-        if(type != ProductItemTransaction.TransactionType.CREATE &&
+        // ADJUST solo se bloquea si el item está descartado (permite re-stockear items vacíos)
+        if (type == ProductItemTransaction.TransactionType.ADJUST && productItem.getDiscardDate() != null) {
+            throw new InvalidProductItemTransactionException(InvalidProductItemTransactionException.ITEM_NOT_OPERABLE);
+        }
+
+        // OPEN, CONSUME y DISCARD se bloquean si el item está vacío o descartado
+        if (type != ProductItemTransaction.TransactionType.CREATE && type != ProductItemTransaction.TransactionType.ADJUST &&
                 (productItem.getQuantityRemainingValue().compareTo(BigDecimal.ZERO) == 0 || productItem.getDiscardDate() != null)) {
             throw new InvalidProductItemTransactionException(InvalidProductItemTransactionException.ITEM_NOT_OPERABLE);
         }
 
-        //Si el tipo es abrir y ya se ha abierto lanzar excepcion
-        if(type == ProductItemTransaction.TransactionType.OPEN && productItem.getOpenedAt() != null) {
+        if (type == ProductItemTransaction.TransactionType.OPEN && productItem.getOpenedAt() != null) {
             throw new InvalidProductItemTransactionException(InvalidProductItemTransactionException.ALREADY_OPENED);
         }
 
@@ -557,6 +596,7 @@ public class ProductServiceImpl implements ProductService {
                 quantityDeltaValue,
                 LocalDateTime.now().withNano(0)
         );
+        transaction.setCookedRecipe(cookedRecipe);
 
         if (quantityDeltaValue != null) {
             productItem.setQuantityRemainingValue(productItem.getQuantityRemainingValue().add(quantityDeltaValue));
@@ -571,6 +611,5 @@ public class ProductServiceImpl implements ProductService {
         }
 
         return productItemTransactionDao.save(transaction);
-
     }
 }

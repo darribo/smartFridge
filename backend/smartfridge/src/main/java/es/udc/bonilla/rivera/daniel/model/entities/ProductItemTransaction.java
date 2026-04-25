@@ -31,6 +31,7 @@ public class ProductItemTransaction {
     private TransactionType type;
     private BigDecimal quantityDeltaValue;
     private LocalDateTime createdAt;
+    private CookedRecipe cookedRecipe;
 
     public ProductItemTransaction() {}
 
@@ -99,6 +100,16 @@ public class ProductItemTransaction {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    @ManyToOne(optional = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "cookedRecipeId")
+    public CookedRecipe getCookedRecipe() {
+        return cookedRecipe;
+    }
+
+    public void setCookedRecipe(CookedRecipe cookedRecipe) {
+        this.cookedRecipe = cookedRecipe;
     }
 
 }

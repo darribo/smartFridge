@@ -528,6 +528,12 @@
     "generatedByAi": "Generada con IA",
     "deleteTitle": "Eliminar receta",
     "deleteMessage": "¿Seguro que quieres eliminar esta receta? Esta acción no se puede deshacer.",
-    "deleteConfirm": "Eliminar"
+    "deleteConfirm": "Eliminar",
+    "cookButton": "Cocinar receta",
+    "insufficientTitle": "Stock insuficiente",
+    "cookWithAvailable": "Cocinar igualmente",
+    "cookSuccessTitle": "¡Receta cocinada!",
+    "cookSuccessMessage": "Los ingredientes han sido actualizados.",
+    "cookError": "No se pudo cocinar la receta. Inténtalo de nuevo."
   }
 }

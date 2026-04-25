@@ -22,15 +22,24 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
+import es.udc.bonilla.rivera.daniel.model.entities.CookedRecipe;
 import es.udc.bonilla.rivera.daniel.model.entities.Recipe;
 import es.udc.bonilla.rivera.daniel.model.entities.RecipeIngredient;
 import es.udc.bonilla.rivera.daniel.model.services.Block;
+import es.udc.bonilla.rivera.daniel.model.services.CookRecipePreview;
 import es.udc.bonilla.rivera.daniel.model.services.LlmService;
 import es.udc.bonilla.rivera.daniel.model.services.RecipeService;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.DietaryConflictException;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.IngredientUnitMismatchException;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.InsufficientStockException;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidProductItemTransactionException;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.LlmServiceException;
 import es.udc.bonilla.rivera.daniel.rest.common.ErrorsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.BlockDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.CookedRecipeConversor;
+import es.udc.bonilla.rivera.daniel.rest.dtos.CookedRecipeDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.CookRecipeParamsDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.CookRecipePreviewDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.GenerateAiRecipeParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewRecipeParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.RecipeConversor;
@@ -52,6 +61,9 @@ public class RecipeController {
     private static final String LLM_SERVICE_EXCEPTION_CODE = "project.exceptions.LlmServiceException";
     private static final String DIETARY_CONFLICT_VEGETARIAN_CODE = "project.exceptions.DietaryConflictException.VEGETARIAN";
     private static final String DIETARY_CONFLICT_VEGAN_CODE = "project.exceptions.DietaryConflictException.VEGAN";
+    private static final String INGREDIENT_UNIT_MISMATCH_CODE = "project.exceptions.IngredientUnitMismatchException";
+    private static final String INSUFFICIENT_STOCK_CODE = "project.exceptions.InsufficientStockException";
+    private static final String INVALID_TRANSACTION_CODE = "project.exceptions.InvalidProductItemTransactionException";
 
     private static final int size = 5;
 
@@ -93,18 +105,35 @@ public class RecipeController {
         return new ErrorsDto(errorMessage);
     }
 
-    @Operation(
-        summary = "Generar una sugerencia de receta con IA",
-        description = "Usa el LLM para generar una receta basada en los productos del hogar. No persiste nada, devuelve los campos para rellenar el formulario."
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Sugerencia generada",
-            content = @Content(schema = @Schema(implementation = NewRecipeParamsDto.class))),
-        @ApiResponse(responseCode = "404", description = "Hogar no encontrado",
-            content = @Content(schema = @Schema(implementation = ErrorsDto.class))),
-        @ApiResponse(responseCode = "503", description = "Servicio LLM no disponible",
-            content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
-    })
+    @ExceptionHandler(IngredientUnitMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ErrorsDto handleIngredientUnitMismatchException(IngredientUnitMismatchException exception, Locale locale) {
+        String errorMessage = messageSource.getMessage(INGREDIENT_UNIT_MISMATCH_CODE,
+                new Object[]{ exception.getIngredientName(), exception.getIngredientUnit(), exception.getProductUnit() },
+                INGREDIENT_UNIT_MISMATCH_CODE, locale);
+        return new ErrorsDto(errorMessage);
+    }
+
+    @ExceptionHandler(InsufficientStockException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ResponseBody
+    public ErrorsDto handleInsufficientStockException(InsufficientStockException exception, Locale locale) {
+        String names = String.join(", ", exception.getInsufficientIngredientNames());
+        String errorMessage = messageSource.getMessage(INSUFFICIENT_STOCK_CODE,
+                new Object[]{ names }, INSUFFICIENT_STOCK_CODE, locale);
+        return new ErrorsDto(errorMessage);
+    }
+
+    @ExceptionHandler(InvalidProductItemTransactionException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public ErrorsDto handleInvalidProductItemTransactionException(InvalidProductItemTransactionException exception, Locale locale) {
+        String errorMessage = messageSource.getMessage(exception.getErrorCode(), null, exception.getErrorCode(), locale);
+        return new ErrorsDto(errorMessage);
+    }
+
+    @Operation(summary = "Generar una sugerencia de receta con IA")
     @PostMapping("/generate-ai")
     public NewRecipeParamsDto generateAiRecipe(
             @RequestAttribute Long userId,
@@ -115,22 +144,12 @@ public class RecipeController {
         return llmService.generateRecipe(userId, householdId, params, locale);
     }
 
-    @Operation(
-        summary = "Crear una receta",
-        description = "Crea una nueva receta con sus ingredientes para el usuario autenticado."
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "Receta creada",
-            content = @Content(schema = @Schema(implementation = RecipeDto.class))),
-        @ApiResponse(responseCode = "404", description = "Usuario o producto vinculado no encontrado",
-            content = @Content(schema = @Schema(implementation = ErrorsDto.class))),
-        @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos",
-            content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
-    })
+    @Operation(summary = "Crear una receta")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public RecipeDto createRecipe(@RequestAttribute Long userId,
-            @Validated @RequestBody NewRecipeParamsDto params) throws InstanceNotFoundException, DietaryConflictException {
+            @Validated @RequestBody NewRecipeParamsDto params)
+            throws InstanceNotFoundException, DietaryConflictException, IngredientUnitMismatchException {
 
         Recipe recipe = recipeService.createRecipe(userId, params);
         List<RecipeIngredient> ingredients = recipeService.getRecipeIngredients(recipe.getId());
@@ -138,20 +157,12 @@ public class RecipeController {
         return RecipeConversor.toRecipeDto(recipe, ingredients);
     }
 
-    @Operation(
-        summary = "Obtener detalle de una receta",
-        description = "Devuelve la información completa de una receta junto con sus ingredientes."
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Detalle de la receta",
-            content = @Content(schema = @Schema(implementation = RecipeDto.class))),
-        @ApiResponse(responseCode = "404", description = "Receta no encontrada",
-            content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
-    })
+    @Operation(summary = "Actualizar una receta")
     @PutMapping("/{recipeId}")
     public RecipeDto updateRecipe(@RequestAttribute Long userId,
             @PathVariable Long recipeId,
-            @Validated @RequestBody NewRecipeParamsDto params) throws InstanceNotFoundException, DietaryConflictException {
+            @Validated @RequestBody NewRecipeParamsDto params)
+            throws InstanceNotFoundException, DietaryConflictException, IngredientUnitMismatchException {
 
         Recipe recipe = recipeService.updateRecipe(userId, recipeId, params);
         List<RecipeIngredient> ingredients = recipeService.getRecipeIngredients(recipe.getId());
@@ -201,6 +212,26 @@ public class RecipeController {
                 .toList();
 
         return new BlockDto<>(dtos, block.getExistMoreItems());
+    }
+
+    @Operation(summary = "Vista previa de cocinar una receta")
+    @GetMapping("/{recipeId}/cook-preview")
+    public CookRecipePreviewDto cookPreview(@RequestAttribute Long userId,
+            @PathVariable Long recipeId) throws InstanceNotFoundException {
+
+        CookRecipePreview preview = recipeService.previewCookRecipe(userId, recipeId);
+        return CookedRecipeConversor.toCookRecipePreviewDto(preview);
+    }
+
+    @Operation(summary = "Cocinar una receta")
+    @PostMapping("/{recipeId}/cook")
+    public CookedRecipeDto cook(@RequestAttribute Long userId,
+            @PathVariable Long recipeId,
+            @RequestBody CookRecipeParamsDto params)
+            throws InstanceNotFoundException, InsufficientStockException, InvalidProductItemTransactionException {
+
+        CookedRecipe cookedRecipe = recipeService.cookRecipe(userId, recipeId, params.isForcePartial());
+        return CookedRecipeConversor.toCookedRecipeDto(cookedRecipe);
     }
 
 }
