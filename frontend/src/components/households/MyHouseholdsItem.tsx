@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { UserHouseholdListItem } from "../../api/households/householdService";
-import { Pressable, StyleSheet, View, Text, Image } from "react-native";
+import { Pressable, StyleSheet, View, Text } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import UserAvatar from "../users/UserAvatar";
 
 
 type Props = {
@@ -12,9 +12,8 @@ type Props = {
 };
 
 export default function MyHouseholdsItemCard({item, onPress, isCurrent = false}: Props) {
-    
+
     const { t } = useTranslation();
-    const [failedAvatarUris, setFailedAvatarUris] = useState<Set<string>>(new Set());
 
     const avatars = item.membersAvatar ?? [];
     const showMore = item.hasMore;
@@ -56,28 +55,9 @@ export default function MyHouseholdsItemCard({item, onPress, isCurrent = false}:
                     {avatars.map((uri, idx) => (
                     <View
                         key={`${uri ?? "avatar"}-${idx}`}
-                        style={[
-                        styles.avatarWrap,
-                        { marginLeft: idx === 0 ? 0 : -10 },
-                        ]}
+                        style={[styles.avatarWrap, { marginLeft: idx === 0 ? 0 : -10 }]}
                     >
-                        {uri && !failedAvatarUris.has(uri) ? (
-                            <Image
-                                source={{ uri }}
-                                style={styles.avatar}
-                                onError={() => {
-                                    setFailedAvatarUris((prev) => {
-                                        const next = new Set(prev);
-                                        next.add(uri);
-                                        return next;
-                                    });
-                                }}
-                            />
-                        ) : (
-                            <View style={styles.fallbackAvatar}>
-                                <MaterialCommunityIcons name="account-circle" size={24} color="#8A94A6" />
-                            </View>
-                        )}
+                        <UserAvatar avatar={uri} size={AVATAR_SIZE} borderColor="#FFFFFF" borderWidth={2} />
                     </View>
                     ))}
 
@@ -184,26 +164,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   avatarWrap: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
     borderRadius: AVATAR_SIZE / 2,
-    backgroundColor: "#FFFFFF",
-    borderWidth: 2,
-    borderColor: "#FFFFFF",
     overflow: "hidden",
-  },
-  avatar: {
-    width: "100%",
-    height: "100%",
-    borderRadius: AVATAR_SIZE / 2,
-  },
-  fallbackAvatar: {
-    width: "100%",
-    height: "100%",
-    borderRadius: AVATAR_SIZE / 2,
-    backgroundColor: "#EEF1F6",
-    alignItems: "center",
-    justifyContent: "center",
   },
   moreWrap: {
     width: AVATAR_SIZE,

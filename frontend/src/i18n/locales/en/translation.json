@@ -508,6 +508,53 @@
       }
     }
   },
+  "profileMenu": {
+    "profile": "My profile",
+    "changePassword": "Change password",
+    "logout": "Log out"
+  },
+  "profilePhoto": {
+    "title": "Your profile photo",
+    "subtitle": "Choose a photo so your household members can recognise you.",
+    "choosePhoto": "Choose photo",
+    "takePhoto": "Take photo",
+    "skip": "Skip",
+    "continue": "Continue",
+    "uploading": "Uploading photo…",
+    "uploadError": "Could not upload photo. You can change it later from your profile.",
+    "permissionTitle": "Permission required",
+    "permissionMessage": "You need gallery access to choose an image."
+  },
+  "profile": {
+    "title": "My profile",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "firstNamePlaceholder": "Your first name",
+    "lastNamePlaceholder": "Your last name",
+    "changePhoto": "Change photo",
+    "save": "Save changes",
+    "saving": "Saving…",
+    "saveSuccess": "Profile updated successfully",
+    "saveError": "Could not update profile",
+    "uploadError": "Could not upload photo",
+    "changePasswordLink": "Change password",
+    "permissionTitle": "Permission required",
+    "permissionMessage": "You need gallery access to choose an image."
+  },
+  "changePassword": {
+    "title": "Change password",
+    "current": "Current password",
+    "currentPlaceholder": "Your current password",
+    "new": "New password",
+    "newPlaceholder": "At least 8 characters",
+    "confirm": "Confirm new password",
+    "confirmPlaceholder": "Repeat the new password",
+    "mismatch": "New passwords do not match",
+    "save": "Change password",
+    "saving": "Saving…",
+    "saveSuccess": "Password changed successfully",
+    "saveError": "Could not change password"
+  },
   "myRecipes": {
     "title": "My Recipes",
     "empty": "You don't have any recipes yet"

@@ -509,6 +509,53 @@
       }
     }
   },
+  "profileMenu": {
+    "profile": "Mi perfil",
+    "changePassword": "Cambiar contraseña",
+    "logout": "Cerrar sesión"
+  },
+  "profilePhoto": {
+    "title": "Tu foto de perfil",
+    "subtitle": "Elige una foto para que tus compañeros de hogar te reconozcan.",
+    "choosePhoto": "Elegir foto",
+    "takePhoto": "Hacer foto",
+    "skip": "Omitir",
+    "continue": "Continuar",
+    "uploading": "Subiendo foto…",
+    "uploadError": "No se pudo subir la foto. Puedes cambiarla más tarde desde tu perfil.",
+    "permissionTitle": "Permiso necesario",
+    "permissionMessage": "Necesitas acceso a la galería para elegir una imagen."
+  },
+  "profile": {
+    "title": "Mi perfil",
+    "firstName": "Nombre",
+    "lastName": "Apellidos",
+    "firstNamePlaceholder": "Tu nombre",
+    "lastNamePlaceholder": "Tus apellidos",
+    "changePhoto": "Cambiar foto",
+    "save": "Guardar cambios",
+    "saving": "Guardando…",
+    "saveSuccess": "Perfil actualizado correctamente",
+    "saveError": "No se pudo actualizar el perfil",
+    "uploadError": "No se pudo subir la foto",
+    "changePasswordLink": "Cambiar contraseña",
+    "permissionTitle": "Permiso necesario",
+    "permissionMessage": "Necesitas acceso a la galería para elegir una imagen."
+  },
+  "changePassword": {
+    "title": "Cambiar contraseña",
+    "current": "Contraseña actual",
+    "currentPlaceholder": "Tu contraseña actual",
+    "new": "Nueva contraseña",
+    "newPlaceholder": "Mínimo 8 caracteres",
+    "confirm": "Confirmar nueva contraseña",
+    "confirmPlaceholder": "Repite la nueva contraseña",
+    "mismatch": "Las contraseñas nuevas no coinciden",
+    "save": "Cambiar contraseña",
+    "saving": "Guardando…",
+    "saveSuccess": "Contraseña cambiada correctamente",
+    "saveError": "No se pudo cambiar la contraseña"
+  },
   "myRecipes": {
     "title": "Mis Recetas",
     "empty": "No tienes recetas todavía"
