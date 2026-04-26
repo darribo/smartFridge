@@ -1,5 +1,6 @@
 package es.udc.bonilla.rivera.daniel.rest.controllers;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,15 +9,19 @@ import java.util.Locale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
@@ -26,12 +31,15 @@ import es.udc.bonilla.rivera.daniel.model.entities.User;
 import es.udc.bonilla.rivera.daniel.model.services.AllergyService;
 import es.udc.bonilla.rivera.daniel.model.services.UserService;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.IncorrectLoginException;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.IncorrectPasswordException;
 import es.udc.bonilla.rivera.daniel.rest.common.ErrorsDto;
 import es.udc.bonilla.rivera.daniel.rest.common.JwtGenerator;
 import es.udc.bonilla.rivera.daniel.rest.common.JwtInfo;
 import es.udc.bonilla.rivera.daniel.rest.dtos.AuthenticatedUserDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.ChangePasswordParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.LoginParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewUserParamsDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.UpdateProfileParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.UserConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.UserDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -152,6 +160,46 @@ public class UserController {
 	}
 
 
+    @ExceptionHandler(IncorrectPasswordException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorsDto handleIncorrectPasswordException(IncorrectPasswordException exception, Locale locale) {
+        String errorMessage = messageSource.getMessage(
+            "project.exceptions.IncorrectPasswordException", null,
+            "project.exceptions.IncorrectPasswordException", locale);
+        return new ErrorsDto(errorMessage);
+    }
+
+    @Operation(summary = "Actualizar nombre y apellidos", description = "Actualiza el nombre y apellidos del usuario autenticado.")
+    @PutMapping("/me")
+    public UserDto updateProfile(
+            @RequestAttribute Long userId,
+            @Validated @RequestBody UpdateProfileParamsDto dto) throws InstanceNotFoundException {
+
+        User user = userService.updateProfile(userId, dto.getFirstName(), dto.getLastName());
+        return UserConversor.toUserDto(user);
+    }
+
+    @Operation(summary = "Subir foto de perfil", description = "Sube y reemplaza la foto de perfil del usuario autenticado.")
+    @PutMapping(value = "/me/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public UserDto updateAvatar(
+            @RequestAttribute Long userId,
+            @RequestParam("file") MultipartFile file) throws InstanceNotFoundException, IOException {
+
+        User user = userService.updateAvatar(userId, file);
+        return UserConversor.toUserDto(user);
+    }
+
+    @Operation(summary = "Cambiar contraseña", description = "Cambia la contraseña del usuario autenticado tras verificar la contraseña actual.")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PutMapping("/me/password")
+    public void changePassword(
+            @RequestAttribute Long userId,
+            @Validated @RequestBody ChangePasswordParamsDto dto)
+            throws InstanceNotFoundException, IncorrectPasswordException {
+
+        userService.changePassword(userId, dto.getOldPassword(), dto.getNewPassword());
+    }
+
     private String generateServiceToken(User user) {
 
         JwtInfo jwtInfo = new JwtInfo(user.getId(), user.getUserName(), user.getRole().toString());
@@ -159,7 +207,4 @@ public class UserController {
         return jwtGenerator.generateAccessToken(jwtInfo);
     }
 
-    
-    
-    
 }

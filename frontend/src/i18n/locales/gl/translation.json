@@ -510,6 +510,53 @@
       }
     }
   },
+  "profileMenu": {
+    "profile": "O meu perfil",
+    "changePassword": "Cambiar contrasinal",
+    "logout": "Pechar sesión"
+  },
+  "profilePhoto": {
+    "title": "A túa foto de perfil",
+    "subtitle": "Escolla unha foto para que os seus compañeiros de fogar te recoñezan.",
+    "choosePhoto": "Escoller foto",
+    "takePhoto": "Facer foto",
+    "skip": "Omitir",
+    "continue": "Continuar",
+    "uploading": "Subindo foto…",
+    "uploadError": "Non se puido subir a foto. Podes cambiala máis tarde dende o teu perfil.",
+    "permissionTitle": "Permiso necesario",
+    "permissionMessage": "Necesitas acceso á galería para escoller unha imaxe."
+  },
+  "profile": {
+    "title": "O meu perfil",
+    "firstName": "Nome",
+    "lastName": "Apelidos",
+    "firstNamePlaceholder": "O teu nome",
+    "lastNamePlaceholder": "Os teus apelidos",
+    "changePhoto": "Cambiar foto",
+    "save": "Gardar cambios",
+    "saving": "Gardando…",
+    "saveSuccess": "Perfil actualizado correctamente",
+    "saveError": "Non se puido actualizar o perfil",
+    "uploadError": "Non se puido subir a foto",
+    "changePasswordLink": "Cambiar contrasinal",
+    "permissionTitle": "Permiso necesario",
+    "permissionMessage": "Necesitas acceso á galería para escoller unha imaxe."
+  },
+  "changePassword": {
+    "title": "Cambiar contrasinal",
+    "current": "Contrasinal actual",
+    "currentPlaceholder": "O teu contrasinal actual",
+    "new": "Novo contrasinal",
+    "newPlaceholder": "Mínimo 8 caracteres",
+    "confirm": "Confirmar novo contrasinal",
+    "confirmPlaceholder": "Repite o novo contrasinal",
+    "mismatch": "Os contrasinais novos non coinciden",
+    "save": "Cambiar contrasinal",
+    "saving": "Gardando…",
+    "saveSuccess": "Contrasinal cambiado correctamente",
+    "saveError": "Non se puido cambiar o contrasinal"
+  },
   "myRecipes": {
     "title": "As miñas Receitas",
     "empty": "Aínda non tes receitas"

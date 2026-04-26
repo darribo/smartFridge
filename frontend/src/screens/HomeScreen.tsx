@@ -4,6 +4,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   ActivityIndicator,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -19,11 +20,14 @@ import { getUserHouseholds, UserHouseholdListItem } from "../api/households/hous
 import { countExpiringProducts, countLittleStockProducts, countPantryItems, getExpiringProducts } from "../api/products/productService";
 import { generateAiRecipe } from "../api/recipes/recipeService";
 import type { GenerateAiRecipeParams, NewRecipeParams } from "../api/recipes/recipeService";
+import { logout } from "../api/users/userService";
 import { GlobalErrorBox } from "../components/common/GlobalErrorBox";
 import NoHouseholdModal from "../components/common/NoHouseholdModal";
 import GenerateAiFiltersModal from "../components/recipes/GenerateAiFiltersModal";
+import UserAvatar from "../components/users/UserAvatar";
 import type { AuthStackParamList } from "../navigation/AuthStack";
 import { useHouseholdStore } from "../store/householdStore";
+import { useUserStore } from "../store/userStore";
 import { THEME } from "../theme/theme";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "Home">;
@@ -82,6 +86,8 @@ export default function HomeScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const currentHouseholdId = useHouseholdStore((s) => s.currentHouseholdId);
   const setCurrentHouseholdId = useHouseholdStore((s) => s.setCurrentHouseholdId);
+  const user = useUserStore((s) => s.user);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [households, setHouseholds] = useState<UserHouseholdListItem[]>([]);
   const [loadingFirst, setLoadingFirst] = useState(true);
   const [globalErrors, setGlobalErrors] = useState<string[]>([]);
@@ -272,8 +278,11 @@ export default function HomeScreen({ navigation }: Props) {
                 {t("home.subtitle", { count: expiringSoonCount })}
               </Text>
             </View>
-            <Pressable style={styles.headerAvatar}>
-              <MaterialCommunityIcons name="fridge-outline" size={24} color="#0B2817" />
+            <Pressable
+              style={styles.headerAvatar}
+              onPress={() => setShowProfileMenu(true)}
+            >
+              <UserAvatar avatar={user?.avatar} size={48} borderColor={THEME.border} borderWidth={2} />
             </Pressable>
           </View>
 
@@ -511,6 +520,61 @@ export default function HomeScreen({ navigation }: Props) {
           </View>
         </View>
       )}
+
+      <Modal
+        visible={showProfileMenu}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowProfileMenu(false)}
+      >
+        <Pressable style={styles.menuBackdrop} onPress={() => setShowProfileMenu(false)}>
+          <View style={styles.menuCard}>
+            <View style={styles.menuAvatarRow}>
+              <UserAvatar avatar={user?.avatar} size={52} borderColor={THEME.primary} borderWidth={2} />
+              <View style={styles.menuUserInfo}>
+                <Text style={styles.menuUserName} numberOfLines={1}>
+                  {user?.firstName} {user?.lastName}
+                </Text>
+                <Text style={styles.menuUserEmail} numberOfLines={1}>{user?.email}</Text>
+              </View>
+            </View>
+
+            <View style={styles.menuDivider} />
+
+            <Pressable
+              style={({ pressed }) => [styles.menuItem, pressed && styles.menuItemPressed]}
+              onPress={() => { setShowProfileMenu(false); navigation.navigate("Profile"); }}
+            >
+              <MaterialCommunityIcons name="account-outline" size={22} color={THEME.text} />
+              <Text style={styles.menuItemText}>{t("profileMenu.profile")}</Text>
+              <MaterialCommunityIcons name="chevron-right" size={20} color={THEME.muted} />
+            </Pressable>
+
+            <Pressable
+              style={({ pressed }) => [styles.menuItem, pressed && styles.menuItemPressed]}
+              onPress={() => { setShowProfileMenu(false); navigation.navigate("ChangePassword"); }}
+            >
+              <MaterialCommunityIcons name="lock-outline" size={22} color={THEME.text} />
+              <Text style={styles.menuItemText}>{t("profileMenu.changePassword")}</Text>
+              <MaterialCommunityIcons name="chevron-right" size={20} color={THEME.muted} />
+            </Pressable>
+
+            <View style={styles.menuDivider} />
+
+            <Pressable
+              style={({ pressed }) => [styles.menuItem, pressed && styles.menuItemPressed]}
+              onPress={async () => {
+                setShowProfileMenu(false);
+                await logout();
+                navigation.replace("Login");
+              }}
+            >
+              <MaterialCommunityIcons name="logout" size={22} color="#B91C1C" />
+              <Text style={[styles.menuItemText, styles.menuItemTextDanger]}>{t("profileMenu.logout")}</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -564,16 +628,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 21,
     color: THEME.muted,
-  },
-  headerAvatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 18,
-    backgroundColor: "#DDF4E7",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#C9E9D7",
   },
   heroCard: {
     backgroundColor: "#0F2E1C",
@@ -940,4 +994,75 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   aiOverlayText: { fontSize: 15, fontWeight: "600", color: THEME.text },
+  headerAvatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    overflow: "hidden",
+  },
+  menuBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(14,26,19,0.45)",
+    justifyContent: "flex-start",
+    alignItems: "flex-end",
+    paddingTop: 70,
+    paddingRight: 18,
+  },
+  menuCard: {
+    width: 280,
+    backgroundColor: THEME.surface,
+    borderRadius: 20,
+    paddingVertical: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.14,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 12,
+  },
+  menuAvatarRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  menuUserInfo: {
+    flex: 1,
+  },
+  menuUserName: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: THEME.text,
+  },
+  menuUserEmail: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: THEME.muted,
+    marginTop: 2,
+  },
+  menuDivider: {
+    height: 1,
+    backgroundColor: THEME.border,
+    marginHorizontal: 12,
+    marginVertical: 4,
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  menuItemPressed: {
+    backgroundColor: THEME.mint,
+  },
+  menuItemText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "700",
+    color: THEME.text,
+  },
+  menuItemTextDanger: {
+    color: "#B91C1C",
+  },
 });

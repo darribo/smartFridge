@@ -1,5 +1,6 @@
 package es.udc.bonilla.rivera.daniel.model.services;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
@@ -19,6 +21,7 @@ import es.udc.bonilla.rivera.daniel.model.entities.User;
 import es.udc.bonilla.rivera.daniel.model.entities.UserAllergy;
 import es.udc.bonilla.rivera.daniel.model.entities.UserAllergyId;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.IncorrectLoginException;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.IncorrectPasswordException;
 
 @Service
 @Transactional
@@ -38,6 +41,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private ProductAllergyDao productAllergyDao;
+
+    @Autowired
+    private LocalStorageService localStorageService;
 
     @Override
     public User signUp(String userName, String password, String email, String firstName, String lastName, String avatar) throws DuplicateInstanceException {
@@ -144,6 +150,33 @@ public class UserServiceImpl implements UserService {
         }
 
         return userAllergyDao.findUsersByAllergies(allergyIds, householdId);
+    }
+
+    @Override
+    public User updateProfile(Long userId, String firstName, String lastName) throws InstanceNotFoundException {
+        User user = permissionChecker.checkUserExists(userId);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        return userDao.save(user);
+    }
+
+    @Override
+    public User updateAvatar(Long userId, MultipartFile file) throws InstanceNotFoundException, IOException {
+        User user = permissionChecker.checkUserExists(userId);
+        String avatarUrl = localStorageService.saveImage(userId, "users", file);
+        user.setAvatar(avatarUrl);
+        return userDao.save(user);
+    }
+
+    @Override
+    public void changePassword(Long userId, String oldPassword, String newPassword)
+            throws InstanceNotFoundException, IncorrectPasswordException {
+        User user = permissionChecker.checkUserExists(userId);
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new IncorrectPasswordException();
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userDao.save(user);
     }
 
 }

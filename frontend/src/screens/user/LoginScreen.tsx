@@ -1,7 +1,6 @@
-import { ScrollView, View, Text, StyleSheet, Pressable } from "react-native";
+import { ScrollView, View, Text, StyleSheet, Pressable, Image } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import { Ionicons } from "@expo/vector-icons";
 import { InputLabel } from "../../components/users/InputLabel";
 import { FormLabel } from "../../components/FormLabel";
 import { PrimaryButton } from "../../components/PrimaryButton";
@@ -78,7 +77,11 @@ export function LoginScreen({ navigation }: Props) {
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.logoWrap}>
-          <Ionicons name="restaurant" size={30} color="#2bee7c" />
+          <Image
+            source={require("../../../assets/icon.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
         </View>
 
         <Text style={styles.title}>{t("login.title")}</Text>
@@ -141,14 +144,13 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#f6f8f7" },
   content: { paddingHorizontal: 18, paddingTop: 34, paddingBottom: 34, maxWidth: 420, alignSelf: "center" },
   logoWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: "rgba(43,238,124,0.18)",
     alignItems: "center",
-    justifyContent: "center",
     alignSelf: "center",
-    marginBottom: 20,
+    marginBottom: 8,
+  },
+  logo: {
+    width: 110,
+    height: 110,
   },
   title: {
     fontSize: 28,
