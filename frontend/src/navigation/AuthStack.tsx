@@ -1,6 +1,9 @@
 import { RegisterScreen } from "../screens/user/RegisterScreen";
 import { LoginScreen } from "../screens/user/LoginScreen";
 import AllergySelectionScreen from "../screens/user/AllergySelectionScreen";
+import ProfilePhotoScreen from "../screens/user/ProfilePhotoScreen";
+import ProfileScreen from "../screens/user/ProfileScreen";
+import ChangePasswordScreen from "../screens/user/ChangePasswordScreen";
 import HomeScreen from "../screens/HomeScreen";
 import CreateHouseholdScreen from "../screens/households/CreateHouseholdScreen";
 import MyHouseholdsScreen from "../screens/households/MyHouseholdsScreen";
@@ -27,6 +30,9 @@ export type AuthStackParamList = {
   Register: { backendError?: ApiError } | undefined;
   Login: undefined;
   Allergies: { user: NewUserParams };
+  ProfilePhoto: undefined;
+  Profile: undefined;
+  ChangePassword: undefined;
   Home: undefined;
   CreateHousehold: undefined;
   UpdateHousehold: { household: Household };
@@ -51,6 +57,9 @@ export function AuthStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen name="ProfilePhoto" component={ProfilePhotoScreen} />
+      <Stack.Screen name="Profile" component={ProfileScreen} />
+      <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
       <Stack.Screen name="AddRecipe" component={AddRecipeScreen} />
       <Stack.Screen name="MyRecipes" component={MyRecipesScreen} />
       <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} />

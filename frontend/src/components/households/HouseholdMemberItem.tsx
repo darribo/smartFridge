@@ -1,7 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { HouseholdUser } from "../../api/households/householdService";
 import { THEME } from "../../theme/theme";
-import { View, Text, Image, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable } from "react-native";
+import UserAvatar from "../users/UserAvatar";
 
 
 type Props = {
@@ -22,12 +23,13 @@ export default function HouseholdMemberItem({ member, onPress }: Props) {
       style={({ pressed }) => [styles.card, onPress && pressed && styles.cardPressed]}
     >
       <View style={styles.left}>
-        <View style={[styles.avatarWrap, isAdmin && styles.avatarWrapAdmin]}>
-          {member.userAvatar ? (
-            <Image source={{ uri: member.userAvatar }} style={styles.avatar} />
-          ) : (
-            <View style={styles.avatarFallback} />
-          )}
+        <View style={isAdmin ? styles.avatarWrapAdmin : styles.avatarWrap}>
+          <UserAvatar
+            avatar={member.userAvatar}
+            size={AVATAR}
+            borderColor={isAdmin ? "#6EE7B7" : THEME.border}
+            borderWidth={2}
+          />
         </View>
 
         <View style={styles.textWrap}>
@@ -80,24 +82,12 @@ const styles = StyleSheet.create({
     paddingRight: 12,
   },
   avatarWrap: {
-    width: AVATAR,
-    height: AVATAR,
     borderRadius: AVATAR / 2,
     overflow: "hidden",
-    borderWidth: 2,
-    borderColor: THEME.border,
-    backgroundColor: THEME.mint,
   },
   avatarWrapAdmin: {
-    borderColor: "#6EE7B7", //un verde suave para resaltar admin
-  },
-  avatar: {
-    width: "100%",
-    height: "100%",
-  },
-  avatarFallback: {
-    flex: 1,
-    backgroundColor: THEME.mint2,
+    borderRadius: AVATAR / 2,
+    overflow: "hidden",
   },
   textWrap: {
     marginLeft: 12,
