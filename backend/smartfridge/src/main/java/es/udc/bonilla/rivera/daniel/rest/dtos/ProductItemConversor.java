@@ -21,7 +21,8 @@ public class ProductItemConversor {
                 productItem.getStorageLocation(),
                 productItem.getOpenedAt() != null ? productItem.getOpenedAt().toString() : null,
                 productItem.getInitialQuantityValue() != null ? productItem.getInitialQuantityValue().toString() : null,
-                productItem.getQuantityRemainingValue() != null ? productItem.getQuantityRemainingValue().toString() : null);
+                productItem.getQuantityRemainingValue() != null ? productItem.getQuantityRemainingValue().toString() : null,
+                productItem.getVersion());
     }
 
     public static List<ProductItemDto> toProductItemDtos(List<ProductItem> productItems) {

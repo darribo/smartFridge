@@ -7,14 +7,18 @@ import { findRecipes, type RecipeFilters, type RecipeSummary } from "../../api/r
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
+import { useHouseholdStore } from "../../store/householdStore";
 import { THEME } from "../../theme/theme";
 import { RecipeCard } from "./RecipeCard";
+import NoHouseholdModal from "../../components/common/NoHouseholdModal";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "MyRecipes">;
 
 export default function MyRecipesScreen({ navigation }: Props) {
     const { t } = useTranslation();
+    const currentHouseholdId = useHouseholdStore((s) => s.currentHouseholdId);
 
+    const [showNoHousehold, setShowNoHousehold] = useState(!currentHouseholdId);
     const [recipes, setRecipes] = useState<RecipeSummary[]>([]);
     const [loadingFirst, setLoadingFirst] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -23,10 +27,11 @@ export default function MyRecipesScreen({ navigation }: Props) {
     const [filters] = useState<RecipeFilters>({});
 
     const loadRecipes = useCallback((currentFilters: RecipeFilters, currentPage: number, replace: boolean) => {
+        if (!currentHouseholdId) return;
         if (currentPage === 0) setLoadingFirst(true);
         else setLoadingMore(true);
 
-        findRecipes(currentFilters, currentPage,
+        findRecipes(currentHouseholdId, currentFilters, currentPage,
             (block) => {
                 setRecipes(prev => replace ? block.items : [...prev, ...block.items]);
                 setHasMore(block.existMoreItems);
@@ -48,6 +53,12 @@ export default function MyRecipesScreen({ navigation }: Props) {
 
     return (
         <SafeAreaView style={styles.safe}>
+            <NoHouseholdModal
+                visible={showNoHousehold}
+                onClose={() => setShowNoHousehold(false)}
+                onCreateHousehold={() => { setShowNoHousehold(false); navigation.navigate("CreateHousehold"); }}
+                onGoToHouseholds={() => { setShowNoHousehold(false); navigation.navigate("MyHouseholds"); }}
+            />
             <View style={styles.screen}>
 
                 <View style={styles.header}>
@@ -58,7 +69,10 @@ export default function MyRecipesScreen({ navigation }: Props) {
                         <Text style={styles.title}>{t("myRecipes.title")}</Text>
                     </View>
                     <Pressable
-                        onPress={() => navigation.navigate("AddRecipe")}
+                        onPress={() => {
+                            if (!currentHouseholdId) { setShowNoHousehold(true); return; }
+                            navigation.navigate("AddRecipe", { householdId: currentHouseholdId });
+                        }}
                         style={styles.addBtn}
                     >
                         <MaterialCommunityIcons name="plus" size={22} color={THEME.surface} />

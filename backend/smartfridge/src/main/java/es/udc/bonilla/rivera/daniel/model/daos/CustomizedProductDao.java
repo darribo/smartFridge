@@ -8,6 +8,7 @@ import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
 public interface CustomizedProductDao {
 
     Slice<Product> findProducts(
+            Long userId,
             Long householdId,
             String name,
             String brand,

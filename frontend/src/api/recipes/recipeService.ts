@@ -84,12 +84,13 @@ export type RecipeSummary = {
 };
 
 export const createRecipe = async (
+    householdId: number,
     params: NewRecipeParams,
     onSuccess?: (recipe: Recipe) => void,
     onError?: (err: ApiError) => void
 ) => {
     const options = await fetchConfig("POST", params);
-    return appFetch("/recipes", options, onSuccess, onError);
+    return appFetch(`/recipes?householdId=${householdId}`, options, onSuccess, onError);
 };
 
 export const getRecipe = async (
@@ -220,12 +221,14 @@ export const uploadRecipeImage = async (
 };
 
 export const findRecipes = async (
+    householdId: number,
     filters: RecipeFilters,
     page: number,
     onSuccess?: (block: RecipeSummaryBlock) => void,
     onError?: (err: ApiError) => void
 ) => {
     const params = new URLSearchParams();
+    params.append("householdId", String(householdId));
     params.append("page", String(page));
 
     if (filters.title) params.append("title", filters.title);

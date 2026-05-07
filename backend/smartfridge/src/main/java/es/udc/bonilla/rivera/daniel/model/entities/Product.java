@@ -11,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Version;
 
 @Entity
 public class Product {
@@ -54,7 +55,7 @@ public class Product {
     private Integer daysAfterOpening;
     /* private Boolean isFavorite; */
     private Household household;
-    
+    private Long version;
 
     public Product() {}
 
@@ -199,6 +200,13 @@ public class Product {
     public void setHousehold(Household household) {
         this.household = household;
     }
-    
+
+    @Version
+    public Long getVersion() {
+        return version;
+    }
+    public void setVersion(Long version) {
+        this.version = version;
+    }
 
 }

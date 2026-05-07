@@ -73,6 +73,7 @@ export default function UpdateHouseholdScreen({ navigation, route }: Props) {
         countryCode: household.countryCode,
         regionCode: household.regionCode,
         regionName: household.regionName,
+        version: household.version,
       },
       () => {
         navigation.goBack();

@@ -10,6 +10,7 @@ public interface CustomizedRecipeDao {
 
     Slice<Recipe> findRecipes(
             Long userId,
+            Long householdId,
             String title,
             Integer minMinutes,
             Integer maxMinutes,

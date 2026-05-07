@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Image, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
@@ -26,7 +26,7 @@ import {
   styles,
   toIsoDateTimeOrNull,
 } from "./AddProductShared";
-import { GENERIC_PRODUCT_IMAGE, resolveImage } from "../../utils/image";
+import { FallbackImage } from "../../components/common/FallbackImage";
 
 type Props = {
   householdId: number;
@@ -53,8 +53,7 @@ export default function ExistingProductItemForm({
   const [initialQuantityValue, setInitialQuantityValue] = useState("");
   const [itemCount, setItemCount] = useState(1);
   const [submitting, setSubmitting] = useState(false);
-  const [selectedCardImageLoading, setSelectedCardImageLoading] = useState(false);
-  const [selectedCardImageError, setSelectedCardImageError] = useState(false);
+
   const [errors, setErrors] = useState<ProductFormErrors>({});
   const [globalErrors, setGlobalErrors] = useState<string[]>([]);
   const storageLocationOptions: Array<{ label: string; value: ProductItemStorageLocation }> = [
@@ -75,8 +74,6 @@ export default function ExistingProductItemForm({
     setInitialQuantityValue(selectedProductSeed.quantity ?? "");
     setItemCount(1);
     setStorageLocation("PANTRY");
-    setSelectedCardImageLoading(Boolean(selectedProductSeed.image));
-    setSelectedCardImageError(false);
     setGlobalErrors([]);
   }, [selectedProductSeed]);
 
@@ -230,12 +227,10 @@ export default function ExistingProductItemForm({
                   setInitialQuantityValue(item.quantity ?? "");
                   setItemCount(1);
                   setStorageLocation("PANTRY");
-                  setSelectedCardImageLoading(Boolean(item.image));
-                  setSelectedCardImageError(false);
                 }}
               >
                 <View style={styles.searchResultRow}>
-                  <Image source={{ uri: resolveImage(true, item.image) }} style={styles.searchResultImage} />
+                  <FallbackImage image={item.image} style={styles.searchResultImage} iconName="food-apple" iconSize={18} />
                   <Text style={styles.searchResultText}>{item.name}</Text>
                 </View>
               </Pressable>
@@ -250,34 +245,7 @@ export default function ExistingProductItemForm({
         <>
           <View style={styles.productCard}>
             <View style={styles.selectedProductRow}>
-              <View style={styles.selectedProductImageWrap}>
-                <Image
-                  source={{ uri: GENERIC_PRODUCT_IMAGE }}
-                  style={[styles.selectedProductImage, styles.selectedProductImageLayer]}
-                />
-                <Image
-                  source={{ uri: resolveImage(true, selectedProduct.image) }}
-                  style={[
-                    styles.selectedProductImage,
-                    styles.selectedProductImageLayer,
-                    (selectedCardImageLoading || selectedCardImageError) && styles.imagePreviewHidden,
-                  ]}
-                  onLoadStart={() => {
-                    setSelectedCardImageLoading(true);
-                    setSelectedCardImageError(false);
-                  }}
-                  onLoadEnd={() => setSelectedCardImageLoading(false)}
-                  onError={() => {
-                    setSelectedCardImageLoading(false);
-                    setSelectedCardImageError(true);
-                  }}
-                />
-                {selectedCardImageLoading ? (
-                  <View style={styles.cardImageLoader}>
-                    <ActivityIndicator size="small" color={THEME.primary} />
-                  </View>
-                ) : null}
-              </View>
+              <FallbackImage image={selectedProduct.image} style={styles.selectedProductImageWrap} iconName="food-apple" iconSize={32} />
               <View style={styles.cardSingleInfo}>
                 <Text style={styles.cardName} numberOfLines={2}>
                   {selectedProduct.name}

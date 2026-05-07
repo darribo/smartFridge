@@ -15,6 +15,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { HouseholdUser } from "../../api/households/householdService";
 import { GlobalErrorBox } from "../common/GlobalErrorBox";
 import { THEME } from "../../theme/theme";
+import { resolveImage } from "../../utils/image";
 
 type Props = {
   visible: boolean;
@@ -81,8 +82,8 @@ export default function HouseholdMemberActionsSheet({
             <>
               <View style={styles.memberInfoRow}>
                 <View style={styles.memberAvatarWrap}>
-                  {member.userAvatar ? (
-                    <Image source={{ uri: member.userAvatar }} style={styles.memberAvatar} />
+                  {member.userAvatar && member.userAvatar !== "placeholder" ? (
+                    <Image source={{ uri: resolveImage(false, member.userAvatar) }} style={styles.memberAvatar} />
                   ) : (
                     <View style={styles.memberAvatarFallback}>
                       <MaterialCommunityIcons name="account" size={30} color="#64748B" />

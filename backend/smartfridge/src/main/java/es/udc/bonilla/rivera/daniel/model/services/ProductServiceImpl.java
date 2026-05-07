@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -19,13 +20,17 @@ import org.springframework.web.multipart.MultipartFile;
 
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
+import es.udc.bonilla.rivera.daniel.model.common.OptimisticLockingException;
+import es.udc.bonilla.rivera.daniel.model.daos.FavoriteProductDao;
 import es.udc.bonilla.rivera.daniel.model.daos.ProductAllergyDao;
 import es.udc.bonilla.rivera.daniel.model.daos.ProductDao;
 import es.udc.bonilla.rivera.daniel.model.daos.ProductItemDao;
 import es.udc.bonilla.rivera.daniel.model.daos.ProductItemTransactionDao;
 import es.udc.bonilla.rivera.daniel.model.entities.Allergy;
 import es.udc.bonilla.rivera.daniel.model.entities.CookedRecipe;
+import es.udc.bonilla.rivera.daniel.model.entities.FavoriteProduct;
 import es.udc.bonilla.rivera.daniel.model.entities.Household;
+import es.udc.bonilla.rivera.daniel.model.entities.User;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
 import es.udc.bonilla.rivera.daniel.model.entities.Product.NovaGroup;
 import es.udc.bonilla.rivera.daniel.model.entities.Product.NutriScoreGrade;
@@ -66,6 +71,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private ProductItemTransactionDao productItemTransactionDao;
+
+    @Autowired
+    private FavoriteProductDao favoriteProductDao;
 
     @Override
     /** {@inheritDoc} */
@@ -132,16 +140,20 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     /** {@inheritDoc} */
-    public Product updateProduct(Long userId, Long productId, String name, String brand,
+    public Product updateProduct(Long userId, Long productId, Long version, String name, String brand,
             String defaultPrice, String quantity, Product.Unit unit,
             Boolean isVegetarian, Boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
             Product.NovaGroup novaGroup, Integer daysAfterOpening)
-            throws InstanceNotFoundException, DuplicateInstanceException {
+            throws InstanceNotFoundException, DuplicateInstanceException, OptimisticLockingException {
 
         Product product = permissionChecker.checkProductExists(productId);
 
         Long householdId = product.getHousehold().getId();
         permissionChecker.checkUserHouseholdExists(userId, householdId);
+
+        if (!Objects.equals(product.getVersion(), version)) {
+            throw new OptimisticLockingException();
+        }
 
         if (!Objects.equals(product.getName(), name)
                 && name != null
@@ -225,12 +237,16 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     /** {@inheritDoc} */
-    public ProductItem updateProductItem(Long userId, Long productItemId, String expirationDate, String pricePaid,
+    public ProductItem updateProductItem(Long userId, Long productItemId, Long version, String expirationDate, String pricePaid,
             ProductItem.StorageLocation storageLocation)
-            throws InstanceNotFoundException, InvalidExpirationDateException {
+            throws InstanceNotFoundException, InvalidExpirationDateException, OptimisticLockingException {
 
         ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
         permissionChecker.checkUserHouseholdExists(userId, productItem.getProduct().getHousehold().getId());
+
+        if (!Objects.equals(productItem.getVersion(), version)) {
+            throw new OptimisticLockingException();
+        }
 
         LocalDateTime parsedExpirationDate = expirationDate != null ? LocalDateTime.parse(expirationDate) : null;
 
@@ -332,13 +348,14 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Block<Product> findProducts(Long userId, Long householdId, String name, String brand, Boolean isVegetarian,
+    public ProductsPage findProducts(Long userId, Long householdId, String name, String brand, Boolean isVegetarian,
             Boolean isVegan, NutriScoreGrade nutriScoreGrade, NovaGroup novaGroup, StorageLocation storageLocation,
             int page, int size) throws InstanceNotFoundException {
 
         permissionChecker.checkUserHouseholdExists(userId, householdId);
 
         Slice<Product> productSlice = productDao.findProducts(
+                userId,
                 householdId,
                 name,
                 brand,
@@ -351,7 +368,32 @@ public class ProductServiceImpl implements ProductService {
                 size
         );
 
-        return new Block<>(productSlice.getContent(), productSlice.hasNext());
+        Set<Long> favoriteIds = favoriteProductDao.findFavoriteProductIdsByUserIdAndHouseholdId(userId, householdId);
+
+        return new ProductsPage(new Block<>(productSlice.getContent(), productSlice.hasNext()), favoriteIds);
+    }
+
+    @Override
+    public void addFavoriteProduct(Long userId, Long productId) throws InstanceNotFoundException, DuplicateInstanceException {
+
+        Product product = permissionChecker.checkProductExists(productId);
+        permissionChecker.checkUserHouseholdExists(userId, product.getHousehold().getId());
+
+        if (favoriteProductDao.existsByUserIdAndProductId(userId, productId)) {
+            throw new DuplicateInstanceException("project.entities.favoriteProduct", "(" + userId + ", " + productId + ")");
+        }
+
+        User user = permissionChecker.checkUserExists(userId);
+        favoriteProductDao.save(new FavoriteProduct(user, product, LocalDateTime.now()));
+    }
+
+    @Override
+    public void removeFavoriteProduct(Long userId, Long productId) throws InstanceNotFoundException {
+
+        FavoriteProduct favorite = favoriteProductDao.findByUserIdAndProductId(userId, productId)
+                .orElseThrow(() -> new InstanceNotFoundException("FavoriteProduct", productId));
+
+        favoriteProductDao.delete(favorite);
     }
 
     @Override

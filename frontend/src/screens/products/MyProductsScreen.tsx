@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -24,8 +23,8 @@ import { useHouseholdStore } from "../../store/householdStore";
 import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
 import NoHouseholdModal from "../../components/common/NoHouseholdModal";
 import { DropdownField } from "./AddProductShared";
-import { findProducts, type ProductFilters, type ProductItem, type ProductItemStorageLocation, type ProductNutriScoreGrade, type ProductWithItems, type ProductUnit } from "../../api/products/productService";
-import { resolveImage } from "../../utils/image";
+import { findProducts, addFavoriteProduct, removeFavoriteProduct, type ProductFilters, type ProductItem, type ProductItemStorageLocation, type ProductNutriScoreGrade, type ProductWithItems, type ProductUnit } from "../../api/products/productService";
+import { FallbackImage } from "../../components/common/FallbackImage";
 
 type StorageFilter = "ALL" | "PANTRY" | "FRIDGE" | "FREEZER";
 type NovaFilter = "ANY" | "GROUP_1" | "GROUP_2" | "GROUP_3" | "GROUP_4";
@@ -127,10 +126,12 @@ function ProductCard({
   product,
   t,
   onPress,
+  onToggleFavorite,
 }: {
   product: ProductWithItems;
   t: (key: string, options?: any) => string;
   onPress: () => void;
+  onToggleFavorite: () => void;
 }) {
   const empty = !product.hasActiveItems;
   const firstLocation = product.items[0]?.storageLocation;
@@ -169,8 +170,17 @@ function ProductCard({
         <View style={styles.cardTopRow}>
           {locationBadge}
 
-          <View style={[styles.countPill, empty && styles.countPillEmpty]}>
-            <Text style={[styles.countPillText, empty && styles.countPillTextEmpty]}>{product.countItems}</Text>
+          <View style={styles.cardTopRight}>
+            <Pressable onPress={onToggleFavorite} hitSlop={10}>
+              <MaterialCommunityIcons
+                name={product.isFavorite ? "star" : "star-outline"}
+                size={20}
+                color={product.isFavorite ? "#F5C518" : THEME.muted}
+              />
+            </Pressable>
+            <View style={[styles.countPill, empty && styles.countPillEmpty]}>
+              <Text style={[styles.countPillText, empty && styles.countPillTextEmpty]}>{product.countItems}</Text>
+            </View>
           </View>
         </View>
 
@@ -192,7 +202,7 @@ function ProductCard({
             </View>
           </View>
 
-          <Image source={{ uri: resolveImage(true, product.image) }} style={[styles.productImage, empty && styles.productImageEmpty]} />
+          <FallbackImage image={product.image} style={[styles.productImage, empty && styles.productImageEmpty]} iconName="food-apple" iconSize={44} />
         </View>
       </View>
     </Pressable>
@@ -330,6 +340,16 @@ export default function ProductsScreen({ navigation, route }: Props) {
               <Text style={styles.title}>{t("products.list.title")}</Text>
               <Text style={styles.subtitle}>{getFilterLabel(storageFilter, t)}</Text>
             </View>
+            <Pressable
+              style={styles.addProductBtn}
+              hitSlop={10}
+              onPress={() => {
+                if (!currentHouseholdId) { setShowNoHousehold(true); return; }
+                navigation.navigate("AddProduct", { householdId: currentHouseholdId });
+              }}
+            >
+              <MaterialCommunityIcons name="plus" size={22} color={THEME.bg} />
+            </Pressable>
           </View>
         </View>
 
@@ -424,6 +444,16 @@ export default function ProductsScreen({ navigation, route }: Props) {
                 product={item}
                 t={t}
                 onPress={() => navigation.navigate("ProductDetail", { productId: item.id })}
+                onToggleFavorite={() => {
+                  setProducts((prev) =>
+                    prev.map((p) => (p.id === item.id ? { ...p, isFavorite: !p.isFavorite } : p))
+                  );
+                  if (item.isFavorite) {
+                    removeFavoriteProduct(item.id);
+                  } else {
+                    addFavoriteProduct(item.id);
+                  }
+                }}
               />
             )}
             showsVerticalScrollIndicator={false}
@@ -468,6 +498,15 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+  },
+  addProductBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: THEME.primary,
+    alignItems: "center",
+    justifyContent: "center",
   },
   backBtn: {
     width: 36,
@@ -645,6 +684,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     gap: 12,
+  },
+  cardTopRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   badge: {
     alignSelf: "flex-start",

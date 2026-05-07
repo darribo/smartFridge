@@ -250,7 +250,11 @@
     },
     "imagePicker": {
       "permissionTitle": "Permiso necesario",
-      "permissionMessage": "Necesitas acceso a la galería para elegir una imagen."
+      "permissionMessage": "Necesitas acceso a la galería para elegir una imagen.",
+      "cameraPermissionMessage": "Necesitas acceso a la cámara para hacer una foto.",
+      "chooseSource": "Elige una opción",
+      "takePhoto": "Tomar foto",
+      "chooseGallery": "Elegir de galería"
     },
     "actions": {
       "saveProduct": "Guardar producto",
@@ -324,7 +328,8 @@
     },
     "actions": {
       "switchCamera": "Cambiar cámara",
-      "retry": "Reintentar"
+      "retry": "Reintentar",
+      "addManually": "Añadir manualmente"
     },
     "errors": {
       "invalidBarcode": "Código de barras inválido.",
@@ -585,6 +590,8 @@
     "cookSuccessMessage": "Los ingredientes han sido actualizados.",
     "cookSuccessCapturePrompt": "¡Receta cocinada! ¿Quieres capturar cómo ha quedado?",
     "cookError": "No se pudo cocinar la receta. Inténtalo de nuevo.",
+    "noLinkedProductsTitle": "Sin ingredientes enlazados",
+    "noLinkedProductsMessage": "Esta receta no tiene ingredientes vinculados a productos de tu despensa. Edítala para enlazar los ingredientes y que cocinar descuente el stock automáticamente.",
     "noPhotoHint": "Cocina esta receta para poder añadir una foto",
     "capturePhoto": "Tomar foto",
     "skipPhoto": "Omitir",

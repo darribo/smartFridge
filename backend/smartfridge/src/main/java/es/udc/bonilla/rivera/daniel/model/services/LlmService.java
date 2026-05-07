@@ -102,7 +102,7 @@ public class LlmService {
                         || p.isMustInclude())
                 .toList();
 
-        List<String> excludeTitles = new ArrayList<>(recipeDao.findTitlesByUserId(userId));
+        List<String> excludeTitles = new ArrayList<>(recipeDao.findTitlesByUserAndHousehold(userId, householdId));
         if (params.getExcludeTitles() != null) {
             excludeTitles.addAll(params.getExcludeTitles());
         }

@@ -249,7 +249,11 @@
     },
     "imagePicker": {
       "permissionTitle": "Permiso necesario",
-      "permissionMessage": "Necesitas acceso á galería para escoller unha imaxe."
+      "permissionMessage": "Necesitas acceso á galería para escoller unha imaxe.",
+      "cameraPermissionMessage": "Necesitas acceso á cámara para facer unha foto.",
+      "chooseSource": "Escolle unha opción",
+      "takePhoto": "Facer foto",
+      "chooseGallery": "Escoller da galería"
     },
     "actions": {
       "saveProduct": "Gardar produto",
@@ -323,7 +327,8 @@
     },
     "actions": {
       "switchCamera": "Cambiar cámara",
-      "retry": "Tentar de novo"
+      "retry": "Tentar de novo",
+      "addManually": "Engadir manualmente"
     },
     "errors": {
       "invalidBarcode": "Código de barras inválido.",
@@ -581,6 +586,8 @@
     "cookSuccessMessage": "Os ingredientes foron actualizados.",
     "cookSuccessCapturePrompt": "Receita cociñada! Queres capturar como quedou?",
     "cookError": "Non se puido cociñar a receita. Téntao de novo.",
+    "noLinkedProductsTitle": "Sen ingredientes enlazados",
+    "noLinkedProductsMessage": "Esta receita non ten ingredientes vinculados a produtos da túa despensa. Edítaa para vincular os ingredientes e que cociñar desconte o stock automaticamente.",
     "deleteTitle": "Eliminar receita",
     "deleteMessage": "Seguro que queres eliminar esta receita? Esta acción non se pode desfacer.",
     "deleteConfirm": "Eliminar",

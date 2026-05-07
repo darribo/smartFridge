@@ -17,6 +17,7 @@ import es.udc.bonilla.rivera.daniel.model.daos.ProductItemDao;
 import es.udc.bonilla.rivera.daniel.model.daos.RecipeDao;
 import es.udc.bonilla.rivera.daniel.model.daos.RecipeIngredientDao;
 import es.udc.bonilla.rivera.daniel.model.entities.CookedRecipe;
+import es.udc.bonilla.rivera.daniel.model.entities.Household;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
 import es.udc.bonilla.rivera.daniel.model.entities.Recipe;
@@ -55,15 +56,18 @@ public class RecipeServiceImpl implements RecipeService {
     private LocalStorageService localStorageService;
 
     @Override
-    public Recipe createRecipe(Long userId, NewRecipeParamsDto params)
+    public Recipe createRecipe(Long userId, Long householdId, NewRecipeParamsDto params)
             throws InstanceNotFoundException, DietaryConflictException, IngredientUnitMismatchException {
 
         User user = permissionChecker.checkUserExists(userId);
+        Household household = permissionChecker.checkHouseholdExists(householdId);
+        permissionChecker.checkUserHouseholdExists(userId, householdId);
 
         LocalDateTime now = LocalDateTime.now().withNano(0);
 
         Recipe recipe = new Recipe(
                 user,
+                household,
                 params.getTitle(),
                 params.getDescription(),
                 params.getServings(),
@@ -131,6 +135,7 @@ public class RecipeServiceImpl implements RecipeService {
         if (!recipe.getCreatedBy().getId().equals(userId)) {
             throw new InstanceNotFoundException("project.entities.recipe", recipeId);
         }
+        permissionChecker.checkUserHouseholdExists(userId, recipe.getHousehold().getId());
 
         LocalDateTime now = LocalDateTime.now().withNano(0);
 
@@ -198,6 +203,7 @@ public class RecipeServiceImpl implements RecipeService {
         if (!recipe.getCreatedBy().getId().equals(userId)) {
             throw new InstanceNotFoundException("project.entities.recipe", recipeId);
         }
+        permissionChecker.checkUserHouseholdExists(userId, recipe.getHousehold().getId());
 
         recipeIngredientDao.deleteByRecipeId(recipeId);
         recipeDao.delete(recipe);
@@ -215,6 +221,7 @@ public class RecipeServiceImpl implements RecipeService {
         if (!recipe.getCreatedBy().getId().equals(userId)) {
             throw new InstanceNotFoundException("project.entities.recipe", recipeId);
         }
+        permissionChecker.checkUserHouseholdExists(userId, recipe.getHousehold().getId());
 
         return recipe;
     }
@@ -227,16 +234,16 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     @Transactional(readOnly = true)
-    public Block<Recipe> findRecipesByUser(Long userId, String title, Integer minMinutes, Integer maxMinutes,
+    public Block<Recipe> findRecipesByUser(Long userId, Long householdId, String title, Integer minMinutes, Integer maxMinutes,
             Recipe.Difficulty difficulty, Recipe.MealType mealType, Recipe.CuisineType cuisineType,
             Recipe.DietType dietType, Recipe.SeasonType seasonType,
             Boolean isVegetarian, Boolean isVegan, List<Long> productIds,
             int page, int size) throws InstanceNotFoundException {
 
-        permissionChecker.checkUserExists(userId);
+        permissionChecker.checkUserHouseholdExists(userId, householdId);
 
         org.springframework.data.domain.Slice<Recipe> slice = recipeDao.findRecipes(
-                userId, title, minMinutes, maxMinutes,
+                userId, householdId, title, minMinutes, maxMinutes,
                 difficulty, mealType, cuisineType, dietType, seasonType,
                 isVegetarian, isVegan, productIds, page, size);
 
@@ -255,6 +262,7 @@ public class RecipeServiceImpl implements RecipeService {
         if (!recipe.getCreatedBy().getId().equals(userId)) {
             throw new InstanceNotFoundException("project.entities.recipe", recipeId);
         }
+        permissionChecker.checkUserHouseholdExists(userId, recipe.getHousehold().getId());
 
         List<RecipeIngredient> ingredients = recipeIngredientDao.findByRecipeIdOrderByDisplayOrderAsc(recipeId);
         List<CookIngredientPreviewLine> lines = new ArrayList<>();
@@ -302,6 +310,7 @@ public class RecipeServiceImpl implements RecipeService {
         if (!recipe.getCreatedBy().getId().equals(userId)) {
             throw new InstanceNotFoundException("project.entities.recipe", recipeId);
         }
+        permissionChecker.checkUserHouseholdExists(userId, recipe.getHousehold().getId());
 
         List<RecipeIngredient> ingredients = recipeIngredientDao.findByRecipeIdOrderByDisplayOrderAsc(recipeId);
 
@@ -381,6 +390,7 @@ public class RecipeServiceImpl implements RecipeService {
         if (!recipe.getCreatedBy().getId().equals(userId)) {
             throw new InstanceNotFoundException("project.entities.recipe", recipeId);
         }
+        permissionChecker.checkUserHouseholdExists(userId, recipe.getHousehold().getId());
         String imageUrl = localStorageService.saveImage(recipeId, "recipes", file);
         recipe.setImage(imageUrl);
         return recipeDao.save(recipe);

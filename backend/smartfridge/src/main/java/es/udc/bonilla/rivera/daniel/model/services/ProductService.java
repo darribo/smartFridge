@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
+import es.udc.bonilla.rivera.daniel.model.common.OptimisticLockingException;
 import java.math.BigDecimal;
 
 import es.udc.bonilla.rivera.daniel.model.entities.CookedRecipe;
@@ -54,11 +55,11 @@ public interface ProductService {
      * @throws InstanceNotFoundException Si el producto no existe o el usuario no pertenece al hogar del producto.
      * @throws DuplicateInstanceException Si el nuevo nombre ya existe en otro producto del mismo hogar.
      */
-    Product updateProduct(Long userId, Long productId, String name, String brand,
+    Product updateProduct(Long userId, Long productId, Long version, String name, String brand,
             String defaultPrice, String quantity, Product.Unit unit,
             Boolean isVegetarian, Boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
             Product.NovaGroup novaGroup, Integer daysAfterOpening)
-            throws InstanceNotFoundException, DuplicateInstanceException;
+            throws InstanceNotFoundException, DuplicateInstanceException, OptimisticLockingException;
 
     /**
      * Recupera un producto si el usuario pertenece al hogar del producto.
@@ -108,9 +109,9 @@ public interface ProductService {
      * @throws InstanceNotFoundException Si el item no existe o el usuario no pertenece al hogar del producto asociado.
      * @throws InvalidExpirationDateException Si la fecha de caducidad es anterior a la fecha de compra.
      */
-    ProductItem updateProductItem(Long userId, Long productItemId, String expirationDate, String pricePaid,
+    ProductItem updateProductItem(Long userId, Long productItemId, Long version, String expirationDate, String pricePaid,
             ProductItem.StorageLocation storageLocation)
-            throws InstanceNotFoundException, InvalidExpirationDateException;
+            throws InstanceNotFoundException, InvalidExpirationDateException, OptimisticLockingException;
 
     /**
      * Recupera un item de producto si el usuario pertenece al hogar del producto asociado.
@@ -169,8 +170,12 @@ public interface ProductService {
      */
     Product uploadProductImage(Long userId, Long productId, MultipartFile file) throws InstanceNotFoundException, IOException;
 
-    Block<Product> findProducts(Long userId, Long householdId, String name, String brand, Boolean isVegetarian, Boolean isVegan,
+    ProductsPage findProducts(Long userId, Long householdId, String name, String brand, Boolean isVegetarian, Boolean isVegan,
         Product.NutriScoreGrade nutriScoreGrade, Product.NovaGroup novaGroup, ProductItem.StorageLocation storageLocation, int page, int size) throws InstanceNotFoundException;
+
+    void addFavoriteProduct(Long userId, Long productId) throws InstanceNotFoundException, DuplicateInstanceException;
+
+    void removeFavoriteProduct(Long userId, Long productId) throws InstanceNotFoundException;
 
     List<ProductItem> findProductItems(Long userId, Long productId) throws InstanceNotFoundException;
 

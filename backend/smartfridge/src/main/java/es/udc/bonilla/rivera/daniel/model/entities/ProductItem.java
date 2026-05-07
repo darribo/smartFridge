@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Version;
 
 @Entity
 public class ProductItem {
@@ -33,6 +34,7 @@ public class ProductItem {
     private BigDecimal initialQuantityValue;
     private BigDecimal quantityRemainingValue;
     private LocalDateTime discardDate;
+    private Long version;
 
     public ProductItem() {}
 
@@ -136,6 +138,14 @@ public class ProductItem {
 
     public void setDiscardDate(LocalDateTime discardDate) {
         this.discardDate = discardDate;
+    }
+
+    @Version
+    public Long getVersion() {
+        return version;
+    }
+    public void setVersion(Long version) {
+        this.version = version;
     }
 
 }

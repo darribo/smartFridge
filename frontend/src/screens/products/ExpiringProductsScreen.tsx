@@ -2,7 +2,6 @@ import React, { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -18,8 +17,9 @@ import type { AuthStackParamList } from "../../navigation/AuthStack";
 import { THEME } from "../../theme/theme";
 import { useHouseholdStore } from "../../store/householdStore";
 import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
+import NoHouseholdModal from "../../components/common/NoHouseholdModal";
 import { getExpiringProducts, type ExpiringProduct } from "../../api/products/productService";
-import { resolveImage } from "../../utils/image";
+import { FallbackImage } from "../../components/common/FallbackImage";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "ExpiringProducts">;
 
@@ -64,10 +64,7 @@ function ExpiringCard({
           <View style={styles.textBlock}>
             <Text style={styles.productName} numberOfLines={2}>{item.productName}</Text>
           </View>
-          <Image
-            source={{ uri: resolveImage(true, item.productImage) }}
-            style={styles.productImage}
-          />
+          <FallbackImage image={item.productImage} style={styles.productImage} iconName="food-apple" iconSize={44} />
         </View>
       </View>
     </Pressable>
@@ -78,6 +75,7 @@ export default function ExpiringProductsScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const currentHouseholdId = useHouseholdStore((s) => s.currentHouseholdId);
 
+  const [showNoHousehold, setShowNoHousehold] = useState(!currentHouseholdId);
   const [items, setItems] = useState<ExpiringProduct[]>([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
@@ -137,6 +135,12 @@ export default function ExpiringProductsScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <NoHouseholdModal
+        visible={showNoHousehold}
+        onClose={() => { setShowNoHousehold(false); navigation.goBack(); }}
+        onCreateHousehold={() => { setShowNoHousehold(false); navigation.navigate("CreateHousehold"); }}
+        onGoToHouseholds={() => { setShowNoHousehold(false); navigation.navigate("MyHouseholds"); }}
+      />
       <View style={styles.screen}>
         <View style={styles.header}>
           <View style={styles.headerRow}>

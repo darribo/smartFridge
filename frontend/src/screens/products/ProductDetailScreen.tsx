@@ -1,8 +1,7 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Image,
   Modal,
   Pressable,
   ScrollView,
@@ -11,6 +10,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
@@ -25,16 +25,18 @@ import {
   getProductDetail,
   updateProductItem,
   discardProductItem,
+  uploadProductImage,
   type ProductDetail,
   type ProductItem,
   type ProductItemStorageLocation,
   type ProductUnit,
 } from "../../api/products/productService";
 import { GlobalErrorBox } from "../../components/common/GlobalErrorBox";
-import { resolveImage } from "../../utils/image";
+import { FallbackImage } from "../../components/common/FallbackImage";
 import { useHouseholdStore } from "../../store/householdStore";
 import {
   DropdownField,
+  getTomorrowDate,
   parseNonNegativeDecimal,
   PRICE_LIMIT,
   QUANTITY_LIMIT,
@@ -202,6 +204,7 @@ type EditItemModalProps = {
 };
 
 function EditItemModal({ item, product, visible, onClose, onSaved, t }: EditItemModalProps) {
+  const tomorrowDate = useMemo(() => getTomorrowDate(), []);
   const [expirationDate, setExpirationDate] = useState<Date | null>(null);
   const [pricePaid, setPricePaid] = useState("");
   const [storageLocation, setStorageLocation] = useState<ProductItemStorageLocation>("FRIDGE");
@@ -258,6 +261,7 @@ function EditItemModal({ item, product, visible, onClose, onSaved, t }: EditItem
         pricePaid: pricePaid.trim() || null,
         storageLocation,
         initialQuantityValue: initialQuantityValue.trim() || null,
+        version: item.version,
       },
       () => {
         setSaving(false);
@@ -287,6 +291,8 @@ function EditItemModal({ item, product, visible, onClose, onSaved, t }: EditItem
             value={expirationDate}
             onChange={setExpirationDate}
             placeholder={t("addProduct.placeholders.date")}
+            initialPickerDate={tomorrowDate}
+            minimumDate={new Date()}
             clearable
           />
 
@@ -345,6 +351,7 @@ export default function ProductDetailScreen({ navigation, route }: Props) {
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState<string[]>([]);
   const [deleting, setDeleting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const [editingItem, setEditingItem] = useState<ProductItem | null>(null);
   const [editItemVisible, setEditItemVisible] = useState(false);
@@ -366,6 +373,58 @@ export default function ProductDetailScreen({ navigation, route }: Props) {
       );
     }, [productId])
   );
+
+  const uploadImage = (uri: string) => {
+    if (!product) return;
+    setUploadingImage(true);
+    uploadProductImage(
+      product.id,
+      uri,
+      (updated) => {
+        setProduct((prev) => prev ? { ...prev, image: updated.image ?? null } : prev);
+        setUploadingImage(false);
+      },
+      () => setUploadingImage(false)
+    );
+  };
+
+  const launchCamera = async () => {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert("", t("addProduct.imagePicker.cameraPermissionMessage"));
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets?.[0]?.uri) uploadImage(result.assets[0].uri);
+  };
+
+  const launchGallery = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert("", t("addProduct.imagePicker.permissionMessage"));
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets?.[0]?.uri) uploadImage(result.assets[0].uri);
+  };
+
+  const handleChangePhoto = () => {
+    Alert.alert(t("addProduct.imagePicker.chooseSource"), "", [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: t("addProduct.imagePicker.takePhoto"), onPress: launchCamera },
+      { text: t("addProduct.imagePicker.chooseGallery"), onPress: launchGallery },
+    ]);
+  };
 
   const handleDeleteProduct = () => {
     Alert.alert(
@@ -503,7 +562,15 @@ export default function ProductDetailScreen({ navigation, route }: Props) {
         <>
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
             {/* Hero image */}
-            <Image source={{ uri: resolveImage(true, product.image) }} style={styles.heroImage} />
+            <Pressable onPress={handleChangePhoto} disabled={uploadingImage} style={styles.heroWrap}>
+              <FallbackImage image={product.image} style={styles.heroImage} iconName="food-apple" iconSize={64} resizeMode="contain" />
+              <View style={styles.heroOverlay}>
+                {uploadingImage
+                  ? <ActivityIndicator size="small" color="white" />
+                  : <MaterialCommunityIcons name="camera-outline" size={20} color="white" />
+                }
+              </View>
+            </Pressable>
 
             {/* Product header */}
             <View style={styles.section}>
@@ -673,10 +740,22 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 40,
   },
-  heroImage: {
+  heroWrap: {
     width: "100%",
     height: 240,
     backgroundColor: THEME.mint2,
+  },
+  heroImage: {
+    width: "100%",
+    height: "100%",
+  },
+  heroOverlay: {
+    position: "absolute",
+    bottom: 10,
+    right: 14,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    borderRadius: 20,
+    padding: 7,
   },
   section: {
     paddingHorizontal: 20,

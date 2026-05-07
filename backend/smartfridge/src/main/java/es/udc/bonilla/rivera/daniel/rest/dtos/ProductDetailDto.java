@@ -27,6 +27,7 @@ public class ProductDetailDto {
     private LocalDateTime createdAt;
     private Integer daysAfterOpening;
     private List<ProductItemDto> items;
+    private Long version;
 
     public ProductDetailDto() {
     }
@@ -34,7 +35,7 @@ public class ProductDetailDto {
     public ProductDetailDto(Long id, String barcode, String name, String brand, String defaultPrice,
             String image, String quantity, Product.Unit unit, boolean isVegetarian, boolean isVegan,
             Product.NutriScoreGrade nutriScoreGrade, Product.NovaGroup novaGroup,
-            LocalDateTime createdAt, Integer daysAfterOpening, List<ProductItemDto> items) {
+            LocalDateTime createdAt, Integer daysAfterOpening, List<ProductItemDto> items, Long version) {
         this.id = id;
         this.barcode = barcode;
         this.name = name;
@@ -50,6 +51,7 @@ public class ProductDetailDto {
         this.createdAt = createdAt;
         this.daysAfterOpening = daysAfterOpening;
         this.items = items;
+        this.version = version;
     }
 
     public Long getId() { return id; }
@@ -96,4 +98,7 @@ public class ProductDetailDto {
 
     public List<ProductItemDto> getItems() { return items; }
     public void setItems(List<ProductItemDto> items) { this.items = items; }
+
+    public Long getVersion() { return version; }
+    public void setVersion(Long version) { this.version = version; }
 }

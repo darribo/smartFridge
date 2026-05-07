@@ -2,7 +2,6 @@ import React, { useCallback, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
-    Image,
     Pressable,
     ScrollView,
     StyleSheet,
@@ -19,7 +18,7 @@ import { useTranslation } from "react-i18next";
 import type { AuthStackParamList } from "../../navigation/AuthStack";
 import { THEME } from "../../theme/theme";
 import { cookRecipe, deleteRecipe, getRecipe, previewCookRecipe, uploadRecipeImage, type Recipe, type RecipeIngredientUnit } from "../../api/recipes/recipeService";
-import { resolveImage } from "../../utils/image";
+import { FallbackImage } from "../../components/common/FallbackImage";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "RecipeDetail">;
 
@@ -169,6 +168,12 @@ export default function RecipeDetailScreen({ navigation, route }: Props) {
         previewCookRecipe(
             recipeId,
             (preview) => {
+                if (preview.lines.length === 0) {
+                    setCooking(false);
+                    Alert.alert(t("recipeDetail.noLinkedProductsTitle"), t("recipeDetail.noLinkedProductsMessage"));
+                    return;
+                }
+
                 const insufficientRequired = preview.lines.filter(l => !l.sufficient && !l.optional);
                 const onCookSuccess = () => {
                     setCooking(false);
@@ -271,9 +276,11 @@ export default function RecipeDetailScreen({ navigation, route }: Props) {
                             onPress={recipe.image ? handleChangePhoto : handlePhotoHint}
                             style={styles.heroImageWrap}
                         >
-                            <Image
-                                source={{ uri: resolveImage(false, recipe.image) }}
+                            <FallbackImage
+                                image={recipe.image}
                                 style={styles.heroImage}
+                                iconName="silverware-fork-knife"
+                                iconSize={44}
                                 resizeMode="cover"
                             />
                             <View style={styles.heroImageOverlay}>

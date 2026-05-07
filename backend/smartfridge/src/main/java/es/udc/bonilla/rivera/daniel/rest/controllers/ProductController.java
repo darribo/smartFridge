@@ -27,12 +27,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
+import es.udc.bonilla.rivera.daniel.model.common.OptimisticLockingException;
 import es.udc.bonilla.rivera.daniel.model.entities.Product;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItem;
 import es.udc.bonilla.rivera.daniel.model.entities.ProductItemTransaction;
 import es.udc.bonilla.rivera.daniel.model.entities.User;
 import es.udc.bonilla.rivera.daniel.model.services.Block;
 import es.udc.bonilla.rivera.daniel.model.services.ProductService;
+import es.udc.bonilla.rivera.daniel.model.services.ProductsPage;
 import es.udc.bonilla.rivera.daniel.model.services.ResolvedBarcodeProduct;
 import es.udc.bonilla.rivera.daniel.model.services.UserService;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidExpirationDateException;
@@ -215,19 +217,20 @@ public class ProductController {
             @RequestParam(required = false) ProductItem.StorageLocation storageLocation,
             @RequestParam int page) throws InstanceNotFoundException {
 
-        Block<Product> block = productService.findProducts(userId, householdId, name, brand, isVegetarian, isVegan,
+        ProductsPage result = productService.findProducts(userId, householdId, name, brand, isVegetarian, isVegan,
                 nutriScoreGrade, novaGroup, storageLocation, page, SEARCH_PRODUCTS_SIZE);
 
         List<ProductWithItemsDto> productWithItemsDtos = new ArrayList<>();
 
-        for (Product product : block.getItems()) {
+        for (Product product : result.getProducts().getItems()) {
             List<ProductItem> productItems = productService.findProductItems(userId, product.getId());
             int countItems = productService.countActiveProductItems(userId, product.getId());
+            boolean isFavorite = result.getFavoriteProductIds().contains(product.getId());
 
-            productWithItemsDtos.add(ProductConversor.toProductWithItemsDto(product, productItems, countItems, countItems > 0));
+            productWithItemsDtos.add(ProductConversor.toProductWithItemsDto(product, productItems, countItems, countItems > 0, isFavorite));
         }
 
-        return new BlockDto<>(productWithItemsDtos, block.getExistMoreItems());
+        return new BlockDto<>(productWithItemsDtos, result.getProducts().getExistMoreItems());
     }
 
     @GetMapping("/{householdId}/barcode")
@@ -289,9 +292,9 @@ public class ProductController {
     @PutMapping("/{productId}")
     public ProductDto updateProduct(@RequestAttribute Long userId, @PathVariable Long productId,
             @Validated @RequestBody UpdateProductParamsDto params)
-            throws InstanceNotFoundException, DuplicateInstanceException {
+            throws InstanceNotFoundException, DuplicateInstanceException, OptimisticLockingException {
 
-        Product product = productService.updateProduct(userId, productId,
+        Product product = productService.updateProduct(userId, productId, params.getVersion(),
                 params.getName(), params.getBrand(), params.getDefaultPrice(),
                 params.getQuantity(), params.getUnit(), params.getIsVegetarian(), params.getIsVegan(),
                 params.getNutriScoreGrade(), params.getNovaGroup(), params.getDaysAfterOpening());
@@ -310,10 +313,10 @@ public class ProductController {
     @PutMapping("/{productId}/items/{itemId}")
     public ProductItemDto updateProductItem(@RequestAttribute Long userId, @PathVariable Long productId,
             @PathVariable Long itemId, @Validated @RequestBody UpdateProductItemParamsDto params)
-            throws InstanceNotFoundException, InvalidExpirationDateException {
+            throws InstanceNotFoundException, InvalidExpirationDateException, OptimisticLockingException {
 
         return ProductItemConversor.toProductItemDto(productService.updateProductItem(userId, itemId,
-                params.getExpirationDate(), params.getPricePaid(), params.getStorageLocation()));
+                params.getVersion(), params.getExpirationDate(), params.getPricePaid(), params.getStorageLocation()));
     }
 
     @DeleteMapping("/{productId}/items/{itemId}")
@@ -467,6 +470,22 @@ public class ProductController {
             throws InstanceNotFoundException, InvalidProductItemTransactionException {
         return ProductItemConversor.toProductItemDto(
                 productService.adjustProductItem(userId, productItemId, new java.math.BigDecimal(params.getNewQuantity())));
+    }
+
+    @Operation(summary = "Marcar un producto como favorito")
+    @PostMapping("/{productId}/favorite")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void addFavoriteProduct(@RequestAttribute Long userId, @PathVariable Long productId)
+            throws InstanceNotFoundException, DuplicateInstanceException {
+        productService.addFavoriteProduct(userId, productId);
+    }
+
+    @Operation(summary = "Desmarcar un producto como favorito")
+    @DeleteMapping("/{productId}/favorite")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeFavoriteProduct(@RequestAttribute Long userId, @PathVariable Long productId)
+            throws InstanceNotFoundException {
+        productService.removeFavoriteProduct(userId, productId);
     }
 
 }

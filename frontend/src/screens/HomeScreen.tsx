@@ -86,6 +86,7 @@ export default function HomeScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const currentHouseholdId = useHouseholdStore((s) => s.currentHouseholdId);
   const setCurrentHouseholdId = useHouseholdStore((s) => s.setCurrentHouseholdId);
+  const clearCurrentHouseholdId = useHouseholdStore((s) => s.clearCurrentHouseholdId);
   const user = useUserStore((s) => s.user);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [households, setHouseholds] = useState<UserHouseholdListItem[]>([]);
@@ -168,7 +169,10 @@ export default function HomeScreen({ navigation }: Props) {
   );
 
   useEffect(() => {
-    if (households.length === 0) return;
+    if (households.length === 0) {
+      clearCurrentHouseholdId();
+      return;
+    }
 
     const householdStillExists = households.some(
       (household) => household.id === currentHouseholdId
@@ -177,7 +181,7 @@ export default function HomeScreen({ navigation }: Props) {
     if (!currentHouseholdId || !householdStillExists) {
       setCurrentHouseholdId(households[0].id);
     }
-  }, [households, currentHouseholdId, setCurrentHouseholdId]);
+  }, [households, currentHouseholdId, setCurrentHouseholdId, clearCurrentHouseholdId]);
 
   const currentHousehold =
     households.find((household) => household.id === currentHouseholdId) ?? households[0] ?? null;
@@ -489,7 +493,10 @@ export default function HomeScreen({ navigation }: Props) {
           <FooterItem
             icon="fridge-outline"
             label={t("home.footer.pantry")}
-            onPress={() => navigation.navigate("ProductLocationSelector")}
+            onPress={() => {
+              if (!resolvedHouseholdId) { setShowNoHousehold(true); return; }
+              navigation.navigate("ProductLocationSelector");
+            }}
           />
           <Pressable
             onPress={() =>

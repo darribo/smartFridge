@@ -156,37 +156,51 @@ export default function FirstTimeProductForm({ householdId, barcodeProduct, onCr
     return value;
   };
 
-  const handlePickImage = async () => {
-    //Se hace la petición de permisos para acceder a la galería del dispositivo.
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  const handlePickImage = () => {
+    Alert.alert(
+      t("addProduct.imagePicker.chooseSource"),
+      undefined,
+      [
+        { text: t("addProduct.imagePicker.takePhoto"), onPress: handleLaunchCamera },
+        { text: t("addProduct.imagePicker.chooseGallery"), onPress: handleLaunchGallery },
+        { text: t("common.cancel"), style: "cancel" },
+      ]
+    );
+  };
 
+  const handleLaunchGallery = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert(
-        t("addProduct.imagePicker.permissionTitle"),
-        t("addProduct.imagePicker.permissionMessage")
-      );
+      Alert.alert(t("addProduct.imagePicker.permissionTitle"), t("addProduct.imagePicker.permissionMessage"));
       return;
     }
-
-    //Se hace la apertura de la galería para que el usuario pueda elegir una imagen.
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
     });
-
-    //Se hace la salida sin tocar el estado para conservar la imagen anterior si el usuario cancela.
-    if (result.canceled) {
-      return;
-    }
-
+    if (result.canceled) return;
     const selectedAsset = result.assets?.[0];
-    if (!selectedAsset?.uri) {
+    if (!selectedAsset?.uri) return;
+    setImage(selectedAsset.uri);
+    setImagePreviewLoading(true);
+  };
+
+  const handleLaunchCamera = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert(t("addProduct.imagePicker.permissionTitle"), t("addProduct.imagePicker.cameraPermissionMessage"));
       return;
     }
-
-    //Se hace la sustitución de la imagen actual por la nueva imagen local elegida.
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (result.canceled) return;
+    const selectedAsset = result.assets?.[0];
+    if (!selectedAsset?.uri) return;
     setImage(selectedAsset.uri);
     setImagePreviewLoading(true);
   };

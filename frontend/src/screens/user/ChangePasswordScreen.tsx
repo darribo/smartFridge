@@ -21,6 +21,41 @@ import type { AuthStackParamList } from "../../navigation/AuthStack";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "ChangePassword">;
 
+type PasswordFieldProps = {
+  label: string;
+  value: string;
+  onChangeText: (v: string) => void;
+  placeholder: string;
+  show: boolean;
+  onToggleShow: () => void;
+};
+
+function PasswordField({ label, value, onChangeText, placeholder, show, onToggleShow }: PasswordFieldProps) {
+  return (
+    <View style={styles.fieldWrap}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={styles.inputRow}>
+        <TextInput
+          style={styles.input}
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          placeholderTextColor={THEME.muted}
+          secureTextEntry={!show}
+          autoCapitalize="none"
+        />
+        <Pressable onPress={onToggleShow} style={styles.eyeBtn}>
+          <MaterialCommunityIcons
+            name={show ? "eye-off-outline" : "eye-outline"}
+            size={22}
+            color={THEME.muted}
+          />
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
 export default function ChangePasswordScreen({ navigation }: Props) {
   const { t } = useTranslation();
 
@@ -65,44 +100,6 @@ export default function ChangePasswordScreen({ navigation }: Props) {
       }
     );
   };
-
-  const PasswordField = ({
-    label,
-    value,
-    onChangeText,
-    placeholder,
-    show,
-    onToggleShow,
-  }: {
-    label: string;
-    value: string;
-    onChangeText: (v: string) => void;
-    placeholder: string;
-    show: boolean;
-    onToggleShow: () => void;
-  }) => (
-    <View style={styles.fieldWrap}>
-      <Text style={styles.label}>{label}</Text>
-      <View style={styles.inputRow}>
-        <TextInput
-          style={styles.input}
-          value={value}
-          onChangeText={onChangeText}
-          placeholder={placeholder}
-          placeholderTextColor={THEME.muted}
-          secureTextEntry={!show}
-          autoCapitalize="none"
-        />
-        <Pressable onPress={onToggleShow} style={styles.eyeBtn}>
-          <MaterialCommunityIcons
-            name={show ? "eye-off-outline" : "eye-outline"}
-            size={22}
-            color={THEME.muted}
-          />
-        </Pressable>
-      </View>
-    </View>
-  );
 
   return (
     <SafeAreaView style={styles.safe}>

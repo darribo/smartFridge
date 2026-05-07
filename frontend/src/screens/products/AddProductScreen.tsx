@@ -7,7 +7,9 @@ import { useTranslation } from "react-i18next";
 
 import type { AuthStackParamList } from "../../navigation/AuthStack";
 import type { BarcodeProduct } from "../../api/products/productService";
+import { useHouseholdStore } from "../../store/householdStore";
 import { THEME } from "../../theme/theme";
+import NoHouseholdModal from "../../components/common/NoHouseholdModal";
 import ExistingProductItemForm from "./ExistingProductItemForm";
 import FirstTimeProductForm from "./FirstTimeProductForm";
 import { ExistingProduct, styles } from "./AddProductShared";
@@ -33,7 +35,8 @@ const toExistingProductSeed = (barcodeProduct?: BarcodeProduct): ExistingProduct
 export default function AddProductScreen({ navigation, route }: Props) {
   //Se hace la orquestación del flujo y se delega cada formulario a un componente distinto.
   const { t } = useTranslation();
-  const householdId = route.params?.householdId ?? 10;
+  const currentHouseholdId = useHouseholdStore((s) => s.currentHouseholdId);
+  const householdId = route.params?.householdId ?? currentHouseholdId;
   const barcodeProduct = route.params?.barcodeProduct;
   const existingSeedFromRoute = useMemo(() => toExistingProductSeed(barcodeProduct), [barcodeProduct]);
   const [createdProductSeed, setCreatedProductSeed] = useState<ExistingProduct | null>(null);
@@ -46,6 +49,19 @@ export default function AddProductScreen({ navigation, route }: Props) {
   }, [existingSeedFromRoute]);
 
   const selectedProductSeed = createdProductSeed ?? existingSeedFromRoute;
+
+  if (!householdId) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <NoHouseholdModal
+          visible
+          onClose={() => navigation.goBack()}
+          onCreateHousehold={() => navigation.replace("CreateHousehold")}
+          onGoToHouseholds={() => navigation.replace("MyHouseholds")}
+        />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>

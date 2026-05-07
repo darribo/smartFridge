@@ -69,6 +69,7 @@ export default function EditProductScreen({ navigation, route }: Props) {
   const [nutriScore, setNutriScore] = useState<NutriScore | null>(null);
   const [novaGroup, setNovaGroup] = useState<NovaGroup | null>(null);
   const [daysAfterOpening, setDaysAfterOpening] = useState("");
+  const [productVersion, setProductVersion] = useState<number>(0);
 
   const [fieldErrors, setFieldErrors] = useState<{ name?: string; quantity?: string; defaultPrice?: string }>({});
 
@@ -89,6 +90,7 @@ export default function EditProductScreen({ navigation, route }: Props) {
           setNutriScore((data.nutriScoreGrade as NutriScore) ?? null);
           setNovaGroup((data.novaGroup as NovaGroup) ?? null);
           setDaysAfterOpening(data.daysAfterOpening != null ? String(data.daysAfterOpening) : "");
+          setProductVersion(data.version ?? 0);
           setLoading(false);
         },
         (err) => {
@@ -141,6 +143,7 @@ export default function EditProductScreen({ navigation, route }: Props) {
         nutriScoreGrade: nutriScore as ProductNutriScoreGrade ?? null,
         novaGroup: novaGroup ? (`GROUP_${NOVA_GROUPS.indexOf(novaGroup) + 1}` as ProductNovaGroup) : null,
         daysAfterOpening: daysVal,
+        version: productVersion,
       },
       () => {
         setSaving(false);

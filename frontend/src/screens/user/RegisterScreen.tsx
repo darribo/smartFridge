@@ -1,4 +1,4 @@
-import { ScrollView, View, Text, StyleSheet, Pressable } from "react-native";
+import { ScrollView, View, Text, StyleSheet, Pressable, KeyboardAvoidingView, Platform } from "react-native";
 import { useTranslation } from "react-i18next";
 import { FormLabel } from "../../components/FormLabel";
 import { useEffect, useState, } from "react";
@@ -106,7 +106,7 @@ export const RegisterScreen = ({ navigation, route }: Props) => {
 
 
     return (
-
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
         <SafeAreaView style={{ flex: 1 }}>
             <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
 
@@ -208,6 +208,7 @@ export const RegisterScreen = ({ navigation, route }: Props) => {
                 </View>
             </ScrollView>
         </SafeAreaView>
+        </KeyboardAvoidingView>
     );
 }
 

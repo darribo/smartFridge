@@ -1,6 +1,7 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../navigation/AuthStack";
 import { useTranslation } from "react-i18next";
+import { useHouseholdStore } from "../../store/householdStore";
 import { useCallback, useRef, useState } from "react";
 import { getProductByBarcode } from "../../api/products/productService";
 import { THEME } from "../../theme/theme";
@@ -16,7 +17,8 @@ const isLikelyBarcode = (value: string) => /^\d{8,14}$/.test(value);
 export default function ScanProductScreen({ navigation, route }: Props) {
   //Se hace la inicialización de permisos, estados de cámara y control de errores.
   const { t } = useTranslation();
-  const householdId = route.params?.householdId ?? 10;
+  const currentHouseholdId = useHouseholdStore((s) => s.currentHouseholdId);
+  const householdId = route.params?.householdId ?? currentHouseholdId;
 
   const [permission, requestPermission] = useCameraPermissions();
   const [facing, setFacing] = useState<CameraType>("back");
@@ -119,7 +121,9 @@ export default function ScanProductScreen({ navigation, route }: Props) {
           <MaterialCommunityIcons name="arrow-left" size={26} color={THEME.text} />
         </Pressable>
         <Text style={styles.headerTitle}>{t("scanProduct.title")}</Text>
-        <View style={{ width: 26 }} />
+        <Pressable onPress={onToggleCamera} hitSlop={10}>
+          <MaterialCommunityIcons name="camera-flip-outline" size={26} color={THEME.text} />
+        </Pressable>
       </View>
 
       <View style={styles.cameraWrap}>
@@ -143,13 +147,19 @@ export default function ScanProductScreen({ navigation, route }: Props) {
         {isProcessing ? <ActivityIndicator color={THEME.primary} /> : null}
         {globalErrors.length > 0 ? <GlobalErrorBox messages={globalErrors} /> : null}
 
-        <Pressable style={styles.secondaryBtn} onPress={onToggleCamera}>
-          <Text style={styles.secondaryBtnText}>{t("scanProduct.actions.switchCamera")}</Text>
+        <Pressable
+          style={[styles.secondaryBtn, isProcessing && styles.secondaryBtnDisabled]}
+          onPress={() => navigation.replace("AddProduct", { householdId })}
+          disabled={isProcessing}
+        >
+          <Text style={styles.secondaryBtnText}>{t("scanProduct.actions.addManually")}</Text>
         </Pressable>
 
-        <Pressable style={styles.primaryBtn} onPress={onRetry}>
-          <Text style={styles.primaryBtnText}>{t("scanProduct.actions.retry")}</Text>
-        </Pressable>
+        {paused && (
+          <Pressable style={styles.primaryBtn} onPress={onRetry}>
+            <Text style={styles.primaryBtnText}>{t("scanProduct.actions.retry")}</Text>
+          </Pressable>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -255,5 +265,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  secondaryBtnDisabled: { opacity: 0.4 },
   secondaryBtnText: { fontWeight: "700", color: THEME.text, fontSize: 15 },
 });

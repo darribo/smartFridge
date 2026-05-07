@@ -180,21 +180,17 @@ def generate_recipe(
                 {
                     "role": "system",
                     "content": (
-                        "Eres un asistente culinario que genera recetas basadas en productos disponibles.\n\n"
+                        "Eres un generador inteligente de recetas. Debes crear recetas lógicas y coherentes a partir de los productos disponibles. Esto no significa que tengas que usar todos, sino que debes seleccionar los más adecuados para crear una receta realista y atractiva.\n\n"
                         "REGLAS:\n"
                         "1. SOLO puedes usar productos de la lista. Cada ingrediente DEBE tener el productId exacto de la lista. "
                         "Prohibido inventar ingredientes aunque sean básicos. Cuando expliques en la descripción cómo se prepara el plato, "
                         "asegúrate de que los ingredientes utilizados estén en la lista. No puedes usar ninguno que no esté porque el usuario no los podrá usar.\n"
-                        "2. Elige ingredientes que combinen bien y tengan sentido culinario juntos. No mezcles ingredientes que no tengan sentido juntos."
+                        "2. Elige ingredientes que combinen bien y tengan sentido culinario juntos. No mezcles ingredientes que no tengan sentido juntos. Es crítico que la receta resultante sea realista y apetecible, no una mezcla aleatoria de ingredientes disponibles. Que tenga sentido\n"
                         "3. La unidad de cada ingrediente DEBE ser exactamente el valor 'unit' del producto en la lista. "
                         "Si el producto tiene unit=KG, usa KG y expresa la cantidad en KG (ej: 0.8). "
                         "Si tiene unit=G, usa G (ej: 200). Si tiene unit=ML, usa ML. Si tiene unit=L, usa L. "
                         "NUNCA uses una unidad distinta a la del producto.\n"
-                        "4. mealType según el plato real: BREAKFAST=desayuno ligero (tostadas, batidos). "
-                        "LUNCH=comida principal contundente (pasta, arroz, carnes, tortilla, paella, potajes). "
-                        "DINNER=cena ligera (sopas, ensaladas, pescado a la plancha). "
-                        "Un plato caliente y contundente NUNCA es BREAKFAST.\n"
-                        "5. El título es solo el nombre del plato. Las instrucciones son pasos numerados con salto de línea, "
+                        "4 El título es solo el nombre del plato. Las instrucciones son pasos numerados con salto de línea, "
                         "sin IDs ni listas de ingredientes dentro.\n\n"
                         f"{LOCALE_INSTRUCTIONS.get(locale, LOCALE_INSTRUCTIONS['es'])}"
                     )
@@ -202,7 +198,7 @@ def generate_recipe(
                 {
                     "role": "user",
                     "content": (
-                        f"Genera una receta con estos productos.\n"
+                        f"Genera una receta lógica y coherente con estos productos.\n"
                         f"ESPECIFICACIONES:\n{specs_text}"
                         f"{servings_msg}"
                         f"{dietary_msg}"
@@ -227,34 +223,3 @@ def generate_recipe(
     except Exception as e:
         print(f"Error generando receta: {e}")
         raise
-
-
-if __name__ == "__main__":
-    dummy_products = [
-        ProductDto(id=1, name="Pollo fresco", isVegetarian=False, isVegan=False, unit="G", availableQuantity=800),
-        ProductDto(id=2, name="Carne de res molida", isVegetarian=False, isVegan=False, unit="G", availableQuantity=500),
-        ProductDto(id=3, name="Jamón serrano", isVegetarian=False, isVegan=False, unit="G", availableQuantity=200),
-        ProductDto(id=4, name="Salmón fresco", isVegetarian=False, isVegan=False, unit="G", availableQuantity=600),
-        ProductDto(id=5, name="Tomate maduro", isVegetarian=True, isVegan=True, unit="G", availableQuantity=500),
-        ProductDto(id=6, name="Cebolla", isVegetarian=True, isVegan=True, unit="KG", availableQuantity=0.8),
-        ProductDto(id=7, name="Ajo fresco", isVegetarian=True, isVegan=True, unit="G", availableQuantity=100),
-        ProductDto(id=8, name="Brócoli", isVegetarian=True, isVegan=True, unit="G", availableQuantity=400),
-        ProductDto(id=9, name="Zanahoria", isVegetarian=True, isVegan=True, unit="G", availableQuantity=300),
-        ProductDto(id=10, name="Espinaca fresca", isVegetarian=True, isVegan=True, unit="G", availableQuantity=200),
-        ProductDto(id=11, name="Pimiento rojo", isVegetarian=True, isVegan=True, unit="G", availableQuantity=300),
-        ProductDto(id=17, name="Leche entera", isVegetarian=True, isVegan=False, unit="L", availableQuantity=1.0),
-        ProductDto(id=18, name="Queso cheddar", isVegetarian=True, isVegan=False, unit="G", availableQuantity=200),
-        ProductDto(id=21, name="Arroz blanco", isVegetarian=True, isVegan=True, unit="G", availableQuantity=500),
-        ProductDto(id=22, name="Pasta tipo penne", isVegetarian=True, isVegan=True, unit="G", availableQuantity=500),
-        ProductDto(id=25, name="Sal marina", isVegetarian=True, isVegan=True, unit="G", availableQuantity=200),
-        ProductDto(id=26, name="Pimienta negra", isVegetarian=True, isVegan=True, unit="G", availableQuantity=50),
-        ProductDto(id=27, name="Aceite de oliva", isVegetarian=True, isVegan=True, unit="ML", availableQuantity=500),
-        ProductDto(id=33, name="Huevo fresco", isVegetarian=True, isVegan=False, unit="UNIT", availableQuantity=6),
-        ProductDto(id=34, name="Caldo de pollo", isVegetarian=False, isVegan=False, unit="L", availableQuantity=1.0),
-    ]
-
-    try:
-        recipe = generate_recipe(dummy_products, servings=4, meal_type=MealType.LUNCH)
-        print(recipe.model_dump_json(indent=2))
-    except Exception as e:
-        print(f"Error: {e}")

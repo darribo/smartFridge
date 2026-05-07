@@ -1,4 +1,5 @@
 /* DROP TABLE IF EXISTS HouseholdInvitation; */
+DROP TABLE IF EXISTS FavoriteProduct;
 DROP TABLE IF EXISTS RecipeIngredient;
 DROP TABLE IF EXISTS ProductItemTransaction;
 DROP TABLE IF EXISTS CookedRecipe;
@@ -27,6 +28,7 @@ CREATE TABLE users (
 
 CREATE TABLE Household (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    version BIGINT NOT NULL DEFAULT 0,
     name VARCHAR(80) NOT NULL,
     description VARCHAR(500),
     countryCode VARCHAR(10) NOT NULL,
@@ -71,6 +73,7 @@ CREATE TABLE UserAllergy (
 
 CREATE TABLE Product (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    version BIGINT NOT NULL DEFAULT 0,
     householdId BIGINT NOT NULL,
     barcode VARCHAR(13),
     name VARCHAR(80) NOT NULL,
@@ -85,7 +88,6 @@ CREATE TABLE Product (
     createdAt DATETIME NOT NULL,
     defaultPrice DECIMAL(5,2),
     daysAfterOpening INTEGER,
-    --isFavorite BOOLEAN NOT NULL,
     FOREIGN KEY (householdId) REFERENCES Household(id) ON DELETE CASCADE
 );
 
@@ -97,8 +99,19 @@ CREATE TABLE ProductAllergy (
     FOREIGN KEY (allergyId) REFERENCES Allergy(id) ON DELETE CASCADE
 );
 
+CREATE TABLE FavoriteProduct (
+    id        BIGINT   NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    userId    BIGINT   NOT NULL,
+    productId BIGINT   NOT NULL,
+    markedAt  DATETIME NOT NULL,
+    UNIQUE (userId, productId),
+    FOREIGN KEY (userId)    REFERENCES users(id)   ON DELETE CASCADE,
+    FOREIGN KEY (productId) REFERENCES Product(id) ON DELETE CASCADE
+);
+
 CREATE TABLE ProductItem (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    version BIGINT NOT NULL DEFAULT 0,
     productId BIGINT NOT NULL,
     purchaseDate DATETIME NOT NULL,
     expirationDate DATETIME,
@@ -115,6 +128,7 @@ CREATE TABLE Recipe (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 
     createdByUserId BIGINT NOT NULL,
+    householdId BIGINT NOT NULL,
 
     title VARCHAR(150) NOT NULL,
     description VARCHAR(2000),
@@ -147,7 +161,8 @@ CREATE TABLE Recipe (
     createdAt DATETIME NOT NULL,
     updatedAt DATETIME NOT NULL,
 
-    FOREIGN KEY (createdByUserId) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (createdByUserId) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (householdId) REFERENCES Household(id) ON DELETE CASCADE
 );
 
 CREATE TABLE CookedRecipe (

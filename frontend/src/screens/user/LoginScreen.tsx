@@ -1,4 +1,4 @@
-import { ScrollView, View, Text, StyleSheet, Pressable, Image } from "react-native";
+import { ScrollView, View, Text, StyleSheet, Pressable, Image, KeyboardAvoidingView, Platform } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { InputLabel } from "../../components/users/InputLabel";
@@ -74,6 +74,7 @@ export function LoginScreen({ navigation }: Props) {
   };
 
   return (
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.logoWrap}>
@@ -137,6 +138,7 @@ export function LoginScreen({ navigation }: Props) {
         </View>
       </ScrollView>
     </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 

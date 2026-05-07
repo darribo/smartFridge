@@ -15,6 +15,7 @@ public class UpdateProductParamsDto {
     private Product.NutriScoreGrade nutriScoreGrade;
     private Product.NovaGroup novaGroup;
     private Integer daysAfterOpening;
+    private Long version;
 
     public UpdateProductParamsDto() {
     }
@@ -98,5 +99,14 @@ public class UpdateProductParamsDto {
 
     public void setDaysAfterOpening(Integer daysAfterOpening) {
         this.daysAfterOpening = daysAfterOpening;
+    }
+
+    @NotNull
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }

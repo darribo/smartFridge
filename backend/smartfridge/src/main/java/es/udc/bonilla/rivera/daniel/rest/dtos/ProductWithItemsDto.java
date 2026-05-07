@@ -35,11 +35,14 @@ public class ProductWithItemsDto {
     @Schema(description = "Indica si el producto tiene items activos (no descartados y con cantidad > 0)", example = "true")
     private boolean hasActiveItems;
 
+    @Schema(description = "Indica si el usuario actual tiene este producto marcado como favorito", example = "false")
+    private boolean isFavorite;
+
     public ProductWithItemsDto() {
     }
 
     public ProductWithItemsDto(Long id, String name, String image, String quantity, Product.Unit unit, int countItems,
-            List<ProductItemDto> items, boolean hasActiveItems) {
+            List<ProductItemDto> items, boolean hasActiveItems, boolean isFavorite) {
         this.id = id;
         this.name = name;
         this.image = image;
@@ -48,6 +51,7 @@ public class ProductWithItemsDto {
         this.countItems = countItems;
         this.items = items;
         this.hasActiveItems = hasActiveItems;
+        this.isFavorite = isFavorite;
     }
 
     public Long getId() {
@@ -112,5 +116,13 @@ public class ProductWithItemsDto {
 
     public void setHasActiveItems(boolean hasActiveItems) {
         this.hasActiveItems = hasActiveItems;
+    }
+
+    public boolean isIsFavorite() {
+        return isFavorite;
+    }
+
+    public void setIsFavorite(boolean isFavorite) {
+        this.isFavorite = isFavorite;
     }
 }

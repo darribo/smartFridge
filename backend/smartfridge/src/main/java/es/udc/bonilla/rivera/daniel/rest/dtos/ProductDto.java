@@ -56,12 +56,15 @@ public class ProductDto {
     @Schema(description = "Indica si el producto tiene items activos con stock disponible", example = "true", nullable = true)
     private Boolean hasActiveItems;
 
+    @Schema(description = "Versión para control de concurrencia optimista", example = "0")
+    private Long version;
+
     public ProductDto() {
     }
 
     public ProductDto(Long id, String barcode, String name, String brand, String defaultPrice, String image, String quantity,
             Product.Unit unit, boolean isVegetarian, boolean isVegan, Product.NutriScoreGrade nutriScoreGrade,
-            Product.NovaGroup novaGroup, LocalDateTime createdAt, Integer daysAfterOpening) {
+            Product.NovaGroup novaGroup, LocalDateTime createdAt, Integer daysAfterOpening, Long version) {
         this.id = id;
         this.barcode = barcode;
         this.name = name;
@@ -76,6 +79,7 @@ public class ProductDto {
         this.novaGroup = novaGroup;
         this.createdAt = createdAt;
         this.daysAfterOpening = daysAfterOpening;
+        this.version = version;
     }
 
     public Long getId() {
@@ -196,5 +200,13 @@ public class ProductDto {
 
     public void setHasActiveItems(Boolean hasActiveItems) {
         this.hasActiveItems = hasActiveItems;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }

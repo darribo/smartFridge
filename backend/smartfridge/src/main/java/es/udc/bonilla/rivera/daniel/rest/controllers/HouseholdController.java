@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
+import es.udc.bonilla.rivera.daniel.model.common.OptimisticLockingException;
 import es.udc.bonilla.rivera.daniel.model.common.PermissionException;
 import es.udc.bonilla.rivera.daniel.model.entities.Household;
 import es.udc.bonilla.rivera.daniel.model.entities.User;
@@ -33,6 +34,7 @@ import es.udc.bonilla.rivera.daniel.rest.dtos.HouseholdConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.HouseholdDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.HouseholdUserDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.NewHouseholdParamsDto;
+import es.udc.bonilla.rivera.daniel.rest.dtos.UpdateHouseholdParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.UserHouseholdConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.UserHouseholdDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.UserHouseholdListDto;
@@ -112,9 +114,9 @@ public class HouseholdController {
             content = @Content(schema = @Schema(implementation = ErrorsDto.class)))
     })
     @PutMapping("/{householdId}")
-    public HouseholdDto updateHousehold(@RequestAttribute Long userId, @PathVariable Long householdId, @Validated @RequestBody NewHouseholdParamsDto params) throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
-        
-        Household household = householdService.updateHousehold(householdId, userId, params.getName(), params.getDescription(), params.getCountryCode(), params.getRegionCode(), params.getRegionName());
+    public HouseholdDto updateHousehold(@RequestAttribute Long userId, @PathVariable Long householdId, @Validated @RequestBody UpdateHouseholdParamsDto params) throws InstanceNotFoundException, DuplicateInstanceException, PermissionException, OptimisticLockingException {
+
+        Household household = householdService.updateHousehold(householdId, userId, params.getVersion(), params.getName(), params.getDescription(), params.getCountryCode(), params.getRegionCode(), params.getRegionName());
 
         return HouseholdConversor.toHouseholdDto(household);
     }

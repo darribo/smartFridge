@@ -10,7 +10,7 @@ import es.udc.bonilla.rivera.daniel.model.entities.Recipe;
 
 public interface RecipeDao extends JpaRepository<Recipe, Long>, CustomizedRecipeDao {
 
-    @Query("SELECT r.title FROM Recipe r WHERE r.createdBy.id = :userId")
-    List<String> findTitlesByUserId(@Param("userId") Long userId);
+    @Query("SELECT r.title FROM Recipe r WHERE r.createdBy.id = :userId AND r.household.id = :householdId")
+    List<String> findTitlesByUserAndHousehold(@Param("userId") Long userId, @Param("householdId") Long householdId);
 
 }

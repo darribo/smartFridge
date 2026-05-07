@@ -8,6 +8,7 @@ public class UpdateProductItemParamsDto {
     private String expirationDate;
     private String pricePaid;
     private ProductItem.StorageLocation storageLocation;
+    private Long version;
 
     public UpdateProductItemParamsDto() {
     }
@@ -35,5 +36,14 @@ public class UpdateProductItemParamsDto {
 
     public void setStorageLocation(ProductItem.StorageLocation storageLocation) {
         this.storageLocation = storageLocation;
+    }
+
+    @NotNull
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }

@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
+import es.udc.bonilla.rivera.daniel.model.common.OptimisticLockingException;
 import es.udc.bonilla.rivera.daniel.model.common.PermissionException;
 import es.udc.bonilla.rivera.daniel.model.daos.HouseholdDao;
 import es.udc.bonilla.rivera.daniel.model.daos.UserHouseholdDao;
@@ -55,11 +56,15 @@ public class HouseholdServiceImpl implements HouseholdService {
     }
 
     @Override
-    public Household updateHousehold(Long householdId, Long userId, String name, String description, String countryCode, String regionCode, String regionName) throws InstanceNotFoundException, DuplicateInstanceException, PermissionException {
-        
+    public Household updateHousehold(Long householdId, Long userId, Long version, String name, String description, String countryCode, String regionCode, String regionName) throws InstanceNotFoundException, DuplicateInstanceException, PermissionException, OptimisticLockingException {
+
         User user = permissionChecker.checkUserExists(userId);
 
         Household household = permissionChecker.checkHouseholdExists(householdId);
+
+        if (!Objects.equals(household.getVersion(), version)) {
+            throw new OptimisticLockingException();
+        }
 
         //Si el usuario que intenta actualizar el household no es su admin
         if (!Objects.equals(user.getId(), household.getAdmin().getId())){

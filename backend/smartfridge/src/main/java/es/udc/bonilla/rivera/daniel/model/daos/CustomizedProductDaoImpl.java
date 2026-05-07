@@ -27,7 +27,7 @@ public class CustomizedProductDaoImpl implements CustomizedProductDao {
     }
 
     @Override
-    public Slice<Product> findProducts(Long householdId, String name, String brand, Boolean isVegetarian,
+    public Slice<Product> findProducts(Long userId, Long householdId, String name, String brand, Boolean isVegetarian,
             Boolean isVegan, Product.NutriScoreGrade nutriScoreGrade, Product.NovaGroup novaGroup,
             ProductItem.StorageLocation storageLocation, int page, int size) {
 
@@ -73,6 +73,7 @@ public class CustomizedProductDaoImpl implements CustomizedProductDao {
         }
 
         queryString.append("ORDER BY ")
+                .append("(CASE WHEN EXISTS(SELECT fp FROM FavoriteProduct fp WHERE fp.user.id = :userId AND fp.product.id = p.id) THEN 0 ELSE 1 END) ASC, ")
                 .append("(SELECT COUNT(pi) FROM ProductItem pi WHERE pi.product = p ")
                 .append("AND pi.discardDate IS NULL ")
                 .append("AND (pi.initialQuantityValue IS NULL OR pi.quantityRemainingValue > 0)) DESC, ")
@@ -80,6 +81,7 @@ public class CustomizedProductDaoImpl implements CustomizedProductDao {
 
         TypedQuery<Product> query = entityManager.createQuery(queryString.toString(), Product.class)
                 .setParameter("householdId", householdId)
+                .setParameter("userId", userId)
                 .setFirstResult(page * size)
                 .setMaxResults(size + 1);
 

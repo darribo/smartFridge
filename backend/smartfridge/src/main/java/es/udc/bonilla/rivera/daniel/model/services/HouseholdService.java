@@ -2,6 +2,7 @@ package es.udc.bonilla.rivera.daniel.model.services;
 
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
+import es.udc.bonilla.rivera.daniel.model.common.OptimisticLockingException;
 import es.udc.bonilla.rivera.daniel.model.common.PermissionException;
 import es.udc.bonilla.rivera.daniel.model.entities.Household;
 import es.udc.bonilla.rivera.daniel.model.entities.User;
@@ -42,7 +43,7 @@ public interface HouseholdService {
      * @throws DuplicateInstanceException Si el nuevo nombre ya existe en otro hogar del mismo administrador.
      * @throws PermissionException Si el usuario no es el administrador del hogar.
      */
-    Household updateHousehold(Long householdId, Long userId, String name, String description, String countryCode, String regionCode, String regionName) throws InstanceNotFoundException, DuplicateInstanceException, PermissionException;
+    Household updateHousehold(Long householdId, Long userId, Long version, String name, String description, String countryCode, String regionCode, String regionName) throws InstanceNotFoundException, DuplicateInstanceException, PermissionException, OptimisticLockingException;
 
     void removeHouseholdMember(Long adminId, Long memberId, Long householdId) throws InstanceNotFoundException, PermissionException;
 

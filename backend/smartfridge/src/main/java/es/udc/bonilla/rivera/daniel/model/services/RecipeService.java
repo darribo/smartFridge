@@ -17,7 +17,7 @@ import es.udc.bonilla.rivera.daniel.rest.dtos.NewRecipeParamsDto;
 
 public interface RecipeService {
 
-    Recipe createRecipe(Long userId, NewRecipeParamsDto params) throws InstanceNotFoundException, DietaryConflictException, IngredientUnitMismatchException;
+    Recipe createRecipe(Long userId, Long householdId, NewRecipeParamsDto params) throws InstanceNotFoundException, DietaryConflictException, IngredientUnitMismatchException;
 
     Recipe updateRecipe(Long userId, Long recipeId, NewRecipeParamsDto params) throws InstanceNotFoundException, DietaryConflictException, IngredientUnitMismatchException;
 
@@ -27,7 +27,7 @@ public interface RecipeService {
 
     List<RecipeIngredient> getRecipeIngredients(Long recipeId);
 
-    Block<Recipe> findRecipesByUser(Long userId, String title, Integer minMinutes, Integer maxMinutes,
+    Block<Recipe> findRecipesByUser(Long userId, Long householdId, String title, Integer minMinutes, Integer maxMinutes,
             Recipe.Difficulty difficulty, Recipe.MealType mealType, Recipe.CuisineType cuisineType,
             Recipe.DietType dietType, Recipe.SeasonType seasonType,
             Boolean isVegetarian, Boolean isVegan, List<Long> productIds,

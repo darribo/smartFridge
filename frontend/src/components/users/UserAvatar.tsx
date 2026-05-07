@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Image, View, StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { resolveImage } from "../../utils/image";
@@ -11,9 +11,11 @@ type Props = {
   borderWidth?: number;
 };
 
-export default function UserAvatar({ avatar, size, borderColor = THEME.border, borderWidth = 2 }: Props) {
+export default function UserAvatar({ avatar, size, borderColor = THEME.border, borderWidth = 2 }: Readonly<Props>) {
+  const [imageError, setImageError] = useState(false);
   const hasPhoto = avatar && avatar !== "placeholder";
   const uri = hasPhoto ? resolveImage(false, avatar) : null;
+  const showImage = uri && !imageError;
 
   return (
     <View
@@ -28,10 +30,11 @@ export default function UserAvatar({ avatar, size, borderColor = THEME.border, b
         },
       ]}
     >
-      {uri ? (
+      {showImage ? (
         <Image
           source={{ uri }}
           style={{ width: "100%", height: "100%", borderRadius: size / 2 }}
+          onError={() => setImageError(true)}
         />
       ) : (
         <View style={styles.fallback}>

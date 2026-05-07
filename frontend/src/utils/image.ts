@@ -7,8 +7,7 @@ export const RECIPE_IMAGE_PLACEHOLDER = "https://content.elmueble.com/medio/2025
 
 
 export const resolveImage = (isProduct: boolean, image?: string | null): string => {
-    if (!image || !image.trim()) {
-
+    if (!image?.trim()) {
         if (isProduct){
             return GENERIC_PRODUCT_IMAGE;
         }
@@ -25,5 +24,12 @@ export const resolveImage = (isProduct: boolean, image?: string | null): string 
         return `${config.BASE_URL}${image}`;
     }
 
+    return image;
+}
+
+export const resolveImageUri = (image?: string | null): string | null => {
+    if (!image?.trim()) return null;
+    if (image.startsWith("http://") || image.startsWith("https://")) return image;
+    if (image.startsWith("/")) return `${config.BASE_URL}${image}`;
     return image;
 }

@@ -24,7 +24,7 @@ public class CustomizedRecipeDaoImpl implements CustomizedRecipeDao {
     }
 
     @Override
-    public Slice<Recipe> findRecipes(Long userId, String title,
+    public Slice<Recipe> findRecipes(Long userId, Long householdId, String title,
             Integer minMinutes, Integer maxMinutes,
             Recipe.Difficulty difficulty, Recipe.MealType mealType,
             Recipe.CuisineType cuisineType, Recipe.DietType dietType,
@@ -34,7 +34,7 @@ public class CustomizedRecipeDaoImpl implements CustomizedRecipeDao {
         String[] titleTokens = getTokens(title);
 
         StringBuilder queryString = new StringBuilder();
-        queryString.append("SELECT r FROM Recipe r WHERE r.createdBy.id = :userId ");
+        queryString.append("SELECT r FROM Recipe r WHERE r.createdBy.id = :userId AND r.household.id = :householdId ");
 
         for (int i = 0; i < titleTokens.length; i++) {
             queryString.append("AND LOWER(r.title) LIKE :titleTok").append(i).append(" ");
@@ -85,6 +85,7 @@ public class CustomizedRecipeDaoImpl implements CustomizedRecipeDao {
 
         TypedQuery<Recipe> query = entityManager.createQuery(queryString.toString(), Recipe.class)
                 .setParameter("userId", userId)
+                .setParameter("householdId", householdId)
                 .setFirstResult(page * size)
                 .setMaxResults(size + 1);
 

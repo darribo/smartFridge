@@ -15,6 +15,7 @@ export type UpdateHouseholdParams = {
     countryCode: string;
     regionCode: string;
     regionName: string;
+    version: number;
 }
 
 export type Household = {
@@ -25,6 +26,7 @@ export type Household = {
     regionCode: string;
     regionName: string;
     adminId: number;
+    version: number;
 }
 
 export type UserHouseholdListItem = {

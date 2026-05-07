@@ -27,7 +27,8 @@ public class ProductConversor {
                 product.getNutriScoreGrade(),
                 product.getNovaGroup(),
                 product.getCreatedAt(),
-                product.getDaysAfterOpening());
+                product.getDaysAfterOpening(),
+                product.getVersion());
     }
 
     public static List<ProductDto> toProductDtos(List<Product> products) {
@@ -41,7 +42,7 @@ public class ProductConversor {
         return productDtos;
     }
 
-    public static ProductWithItemsDto toProductWithItemsDto(Product product, List<ProductItem> productItems, int countItems, boolean hasActiveItems) {
+    public static ProductWithItemsDto toProductWithItemsDto(Product product, List<ProductItem> productItems, int countItems, boolean hasActiveItems, boolean isFavorite) {
 
         return new ProductWithItemsDto(
                 product.getId(),
@@ -51,7 +52,8 @@ public class ProductConversor {
                 product.getUnit(),
                 countItems,
                 ProductItemConversor.toProductItemDtos(productItems),
-                hasActiveItems);
+                hasActiveItems,
+                isFavorite);
     }
 
     public static ProductDto toProductDtoWithStock(Product product, boolean hasActiveItems) {
@@ -77,6 +79,7 @@ public class ProductConversor {
                 product.getNovaGroup(),
                 product.getCreatedAt(),
                 product.getDaysAfterOpening(),
-                ProductItemConversor.toProductItemDtos(productItems));
+                ProductItemConversor.toProductItemDtos(productItems),
+                product.getVersion());
     }
 }

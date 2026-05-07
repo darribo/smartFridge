@@ -70,6 +70,7 @@ public class Recipe {
 
     private Long id;
     private User createdBy;
+    private Household household;
 
     private String title;
     private String description;
@@ -104,13 +105,14 @@ public class Recipe {
 
     public Recipe() {}
 
-    public Recipe(User createdBy, String title, String description, Integer servings,
+    public Recipe(User createdBy, Household household, String title, String description, Integer servings,
             Integer preparationMinutes, Integer cookingMinutes, Integer totalMinutes,
             Difficulty difficulty, CuisineType cuisineType, DietType dietType, MealType mealType,
             SeasonType seasonType, Boolean vegetarian, Boolean vegan,
             String instructions, String notes, GenerationSource generationSource,
             LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.createdBy = createdBy;
+        this.household = household;
         this.title = title;
         this.description = description;
         this.servings = servings;
@@ -149,6 +151,16 @@ public class Recipe {
 
     public void setCreatedBy(User createdBy) {
         this.createdBy = createdBy;
+    }
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "householdId")
+    public Household getHousehold() {
+        return household;
+    }
+
+    public void setHousehold(Household household) {
+        this.household = household;
     }
 
     @Column(nullable = false, length = 150)

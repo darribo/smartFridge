@@ -22,10 +22,12 @@ public class HouseholdDto {
     private String regionName;
     @Schema(description = "Identificador del usuario administrador", example = "1")
     private Long adminId;
+    @Schema(description = "Versión para control de concurrencia optimista", example = "0")
+    private Long version;
 
     public HouseholdDto() {}
 
-    public HouseholdDto(Long id, String name, String description, String countryCode, String regionCode, String regionName, Long adminId) {
+    public HouseholdDto(Long id, String name, String description, String countryCode, String regionCode, String regionName, Long adminId, Long version) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -33,6 +35,7 @@ public class HouseholdDto {
         this.regionCode = regionCode;
         this.regionName = regionName;
         this.adminId = adminId;
+        this.version = version;
     }
 
 
@@ -83,6 +86,13 @@ public class HouseholdDto {
     }
     public void setAdminId(Long adminId) {
         this.adminId = adminId;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+    public void setVersion(Long version) {
+        this.version = version;
     }
 
 }

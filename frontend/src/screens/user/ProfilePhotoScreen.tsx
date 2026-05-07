@@ -21,6 +21,8 @@ import type { AuthStackParamList } from "../../navigation/AuthStack";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "ProfilePhoto">;
 
+const AVATAR_SIZE = 164;
+
 export default function ProfilePhotoScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const [localUri, setLocalUri] = useState<string | null>(null);
@@ -64,7 +66,6 @@ export default function ProfilePhotoScreen({ navigation }: Props) {
       navigation.replace("Home");
       return;
     }
-
     setUploading(true);
     await uploadUserAvatar(
       localUri,
@@ -80,73 +81,90 @@ export default function ProfilePhotoScreen({ navigation }: Props) {
     );
   };
 
-  const handleSkip = () => {
-    navigation.replace("Home");
-  };
-
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        <View style={styles.header}>
+
+        {/* Avatar */}
+        <View style={styles.avatarSection}>
+          <View style={styles.avatarRingOuter}>
+            <View style={styles.avatarRingInner}>
+              {localUri ? (
+                <Image source={{ uri: localUri }} style={styles.avatar} />
+              ) : (
+                <View style={styles.avatarPlaceholder}>
+                  <MaterialCommunityIcons name="account" size={80} color={THEME.primary} />
+                </View>
+              )}
+            </View>
+          </View>
+          <Pressable
+            style={({ pressed }) => [styles.cameraBadge, pressed && { opacity: 0.75 }]}
+            onPress={pickImage}
+          >
+            <MaterialCommunityIcons name="camera" size={20} color="#fff" />
+          </Pressable>
+        </View>
+
+        {/* Título */}
+        <View style={styles.textBlock}>
           <Text style={styles.title}>{t("profilePhoto.title")}</Text>
           <Text style={styles.subtitle}>{t("profilePhoto.subtitle")}</Text>
         </View>
 
-        <Pressable style={styles.avatarContainer} onPress={pickImage}>
-          {localUri ? (
-            <Image source={{ uri: localUri }} style={styles.avatar} />
-          ) : (
-            <View style={styles.avatarPlaceholder}>
-              <MaterialCommunityIcons name="account-circle" size={80} color={THEME.muted} />
-            </View>
-          )}
-          <View style={styles.cameraOverlay}>
-            <MaterialCommunityIcons name="camera" size={20} color="#fff" />
-          </View>
-        </Pressable>
-
-        <View style={styles.pickerButtons}>
+        {/* Opciones */}
+        <View style={styles.optionCard}>
           <Pressable
-            style={({ pressed }) => [styles.pickerBtn, pressed && styles.pickerBtnPressed]}
-            onPress={pickImage}
-          >
-            <MaterialCommunityIcons name="image-outline" size={20} color={THEME.primary} />
-            <Text style={styles.pickerBtnText}>{t("profilePhoto.choosePhoto")}</Text>
-          </Pressable>
-          <Pressable
-            style={({ pressed }) => [styles.pickerBtn, pressed && styles.pickerBtnPressed]}
+            style={({ pressed }) => [styles.optionRow, pressed && styles.optionRowPressed]}
             onPress={takePhoto}
           >
-            <MaterialCommunityIcons name="camera-outline" size={20} color={THEME.primary} />
-            <Text style={styles.pickerBtnText}>{t("profilePhoto.takePhoto")}</Text>
+            <View style={styles.optionIconWrap}>
+              <MaterialCommunityIcons name="camera-outline" size={22} color={THEME.primary} />
+            </View>
+            <Text style={styles.optionText}>{t("profilePhoto.takePhoto")}</Text>
+            <MaterialCommunityIcons name="chevron-right" size={20} color={THEME.muted} />
+          </Pressable>
+
+          <View style={styles.separator} />
+
+          <Pressable
+            style={({ pressed }) => [styles.optionRow, pressed && styles.optionRowPressed]}
+            onPress={pickImage}
+          >
+            <View style={styles.optionIconWrap}>
+              <MaterialCommunityIcons name="image-multiple-outline" size={22} color={THEME.primary} />
+            </View>
+            <Text style={styles.optionText}>{t("profilePhoto.choosePhoto")}</Text>
+            <MaterialCommunityIcons name="chevron-right" size={20} color={THEME.muted} />
           </Pressable>
         </View>
 
-        <View style={styles.actions}>
+        {/* Botones de acción */}
+        <View style={styles.actionsArea}>
           {uploading ? (
             <View style={styles.uploadingRow}>
               <ActivityIndicator color={THEME.primary} />
               <Text style={styles.uploadingText}>{t("profilePhoto.uploading")}</Text>
             </View>
           ) : (
-            <PrimaryButton
-              text={localUri ? t("profilePhoto.continue") : t("profilePhoto.skip")}
-              onPress={handleContinue}
-            />
-          )}
-
-          {!uploading && localUri && (
-            <Pressable style={styles.skipBtn} onPress={handleSkip}>
-              <Text style={styles.skipText}>{t("profilePhoto.skip")}</Text>
-            </Pressable>
+            <>
+              {localUri && (
+                <PrimaryButton
+                  text={t("profilePhoto.continue")}
+                  onPress={handleContinue}
+                />
+              )}
+              <Pressable onPress={() => navigation.replace("Home")} hitSlop={12} style={styles.skipLink}>
+                <Text style={styles.skipText}>{t("profilePhoto.skip")}</Text>
+              </Pressable>
+            </>
           )}
         </View>
+
       </View>
     </SafeAreaView>
   );
 }
-
-const AVATAR_SIZE = 140;
 
 const styles = StyleSheet.create({
   safe: {
@@ -156,91 +174,121 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 32,
+    paddingTop: 40,
     alignItems: "center",
   },
-  header: {
+
+  /* Avatar */
+  avatarSection: {
+    marginBottom: 32,
+    position: "relative",
     alignItems: "center",
-    marginBottom: 40,
+    justifyContent: "center",
   },
-  title: {
-    fontSize: 26,
-    fontWeight: "800",
-    color: THEME.text,
-    marginBottom: 10,
-    textAlign: "center",
+  avatarRingOuter: {
+    width: AVATAR_SIZE + 16,
+    height: AVATAR_SIZE + 16,
+    borderRadius: (AVATAR_SIZE + 16) / 2,
+    backgroundColor: THEME.mint2,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  subtitle: {
-    fontSize: 15,
-    color: THEME.muted,
-    textAlign: "center",
-    lineHeight: 22,
-  },
-  avatarContainer: {
+  avatarRingInner: {
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
     borderRadius: AVATAR_SIZE / 2,
-    marginBottom: 28,
-    position: "relative",
+    overflow: "hidden",
+    borderWidth: 3,
+    borderColor: THEME.surface,
   },
   avatar: {
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
-    borderWidth: 3,
-    borderColor: THEME.primary,
   },
   avatarPlaceholder: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
-    backgroundColor: THEME.mint2,
-    borderWidth: 2,
-    borderColor: THEME.border,
+    flex: 1,
+    backgroundColor: THEME.mint,
     alignItems: "center",
     justifyContent: "center",
   },
-  cameraOverlay: {
+  cameraBadge: {
     position: "absolute",
-    bottom: 4,
-    right: 4,
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    bottom: 6,
+    right: 6,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: THEME.primary,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: THEME.bg,
   },
-  pickerButtons: {
-    flexDirection: "row",
-    gap: 12,
-    marginBottom: 40,
-  },
-  pickerBtn: {
-    flexDirection: "row",
+
+  /* Texto */
+  textBlock: {
     alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 12,
+    marginBottom: 32,
+    paddingHorizontal: 8,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "900",
+    color: THEME.text,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  subtitle: {
+    fontSize: 14,
+    color: THEME.muted,
+    textAlign: "center",
+    lineHeight: 21,
+  },
+
+  /* Opciones */
+  optionCard: {
+    width: "100%",
     backgroundColor: THEME.surface,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: THEME.border,
+    marginBottom: 32,
+    overflow: "hidden",
   },
-  pickerBtnPressed: {
-    opacity: 0.75,
-  },
-  pickerBtnText: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: THEME.primary,
-  },
-  actions: {
-    width: "100%",
+  optionRow: {
+    flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+    gap: 14,
+  },
+  optionRowPressed: {
+    backgroundColor: THEME.mint,
+  },
+  optionIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: THEME.mint2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  optionText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "700",
+    color: THEME.text,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: THEME.border,
+    marginLeft: 72,
+  },
+
+  /* Acciones */
+  actionsArea: {
+    width: "100%",
+    gap: 14,
   },
   uploadingRow: {
     flexDirection: "row",
@@ -252,8 +300,9 @@ const styles = StyleSheet.create({
     color: THEME.muted,
     fontWeight: "600",
   },
-  skipBtn: {
-    paddingVertical: 10,
+  skipLink: {
+    paddingVertical: 4,
+    alignSelf: "center",
   },
   skipText: {
     fontSize: 14,

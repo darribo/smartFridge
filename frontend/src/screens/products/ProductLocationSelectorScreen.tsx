@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -7,6 +7,8 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import type { AuthStackParamList } from "../../navigation/AuthStack";
 import { THEME } from "../../theme/theme";
+import { useHouseholdStore } from "../../store/householdStore";
+import NoHouseholdModal from "../../components/common/NoHouseholdModal";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "ProductLocationSelector">;
 type StorageFilter = "ALL" | "PANTRY" | "FRIDGE" | "FREEZER";
@@ -21,6 +23,8 @@ type Option = {
 
 export default function ProductLocationSelectorScreen({ navigation }: Props) {
   const { t } = useTranslation();
+  const currentHouseholdId = useHouseholdStore((s) => s.currentHouseholdId);
+  const [showNoHousehold, setShowNoHousehold] = useState(!currentHouseholdId);
 
   const options: Option[] = [
     {
@@ -54,11 +58,18 @@ export default function ProductLocationSelectorScreen({ navigation }: Props) {
   ];
 
   const onSelect = (storageFilter: StorageFilter) => {
+    if (!currentHouseholdId) { setShowNoHousehold(true); return; }
     navigation.navigate("MyProducts", { storageFilter });
   };
 
   return (
     <SafeAreaView edges={["top"]} style={styles.safe}>
+      <NoHouseholdModal
+        visible={showNoHousehold}
+        onClose={() => { setShowNoHousehold(false); navigation.goBack(); }}
+        onCreateHousehold={() => { setShowNoHousehold(false); navigation.navigate("CreateHousehold"); }}
+        onGoToHouseholds={() => { setShowNoHousehold(false); navigation.navigate("MyHouseholds"); }}
+      />
       <View style={styles.container}>
         <View style={styles.header}>
           <View style={styles.headerRow}>

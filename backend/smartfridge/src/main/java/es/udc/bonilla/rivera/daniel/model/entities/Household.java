@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Version;
 
 @Entity
 public class Household {
@@ -18,6 +19,7 @@ public class Household {
     private String regionCode;
     private String regionName;
     private User admin;
+    private Long version;
 
     public Household() {}
 
@@ -81,5 +83,13 @@ public class Household {
     }
     public void setAdmin(User admin) {
         this.admin = admin;
+    }
+
+    @Version
+    public Long getVersion() {
+        return version;
+    }
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }

@@ -35,6 +35,7 @@ import type {
 import LinkProductModal from "../../components/recipes/LinkProductModal";
 import type { LinkedProduct } from "../../components/recipes/LinkProductModal";
 import GenerateAiFiltersModal from "../../components/recipes/GenerateAiFiltersModal";
+import { useHouseholdStore } from "../../store/householdStore";
 import { THEME } from "../../theme/theme";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "AddRecipe">;
@@ -113,7 +114,8 @@ const emptyIngredient = (): IngredientRow => ({
 
 export default function AddRecipeScreen({ navigation, route }: Props) {
     const { t } = useTranslation();
-    const householdId = route.params?.householdId ?? 10;
+    const currentHouseholdId = useHouseholdStore((s) => s.currentHouseholdId);
+    const householdId = route.params?.householdId ?? currentHouseholdId;
     const initialRecipe = route.params?.initialRecipe;
     const recipeId = route.params?.recipeId;
 
@@ -185,7 +187,7 @@ export default function AddRecipeScreen({ navigation, route }: Props) {
         setErrors([]);
         setGeneratingAi(true);
         await generateAiRecipe(
-            householdId,
+            householdId!,
             { ...params, excludeTitles: generatedTitles.length > 0 ? generatedTitles : null },
             (recipe: NewRecipeParams) => {
                 setGeneratingAi(false);
@@ -283,7 +285,7 @@ export default function AddRecipeScreen({ navigation, route }: Props) {
         if (recipeId) {
             await updateRecipe(recipeId, recipeParams, onSuccess, onError);
         } else {
-            await createRecipe(recipeParams, onSuccess, onError);
+            await createRecipe(householdId!, recipeParams, onSuccess, onError);
         }
     };
 
@@ -589,7 +591,7 @@ export default function AddRecipeScreen({ navigation, route }: Props) {
                 <PrimaryButton
                     text={saving ? t("common.saving") : t("addRecipe.actions.save")}
                     onPress={handleSave}
-                    disabled={saving}
+                    disabled={saving || generatingAi}
                 />
 
                 <Pressable style={styles.cancelBtn} onPress={() => navigation.goBack()}>
@@ -608,14 +610,14 @@ export default function AddRecipeScreen({ navigation, route }: Props) {
 
             <GenerateAiFiltersModal
                 visible={showAiModal}
-                householdId={householdId}
+                householdId={householdId!}
                 onGenerate={(params) => { setShowAiModal(false); handleGenerateAi(params); }}
                 onClose={() => setShowAiModal(false)}
             />
 
             <LinkProductModal
                 visible={linkModal.open}
-                householdId={householdId}
+                householdId={householdId!}
                 onSelect={(p: LinkedProduct) => {
                     if (linkModal.index !== null) {
                         updateIngredient(linkModal.index, {

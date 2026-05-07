@@ -14,7 +14,8 @@ public class HouseholdConversor {
     public static final HouseholdDto toHouseholdDto(Household household){
 
         return new HouseholdDto(household.getId(), household.getName(), household.getDescription(),
-        household.getCountryCode(), household.getRegionCode(), household.getRegionName(), household.getAdmin().getId());
+        household.getCountryCode(), household.getRegionCode(), household.getRegionName(), household.getAdmin().getId(),
+        household.getVersion());
     
     }
 

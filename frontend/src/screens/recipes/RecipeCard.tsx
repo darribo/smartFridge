@@ -1,15 +1,17 @@
-import { View, Text, StyleSheet, Image, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { resolveImage } from "../../utils/image";
 import { THEME } from "../../theme/theme";
+import { FallbackImage } from "../../components/common/FallbackImage";
 import type { RecipeSummary } from "../../api/recipes/recipeService";
 
 export function RecipeCard({ item, onPress }: Readonly<{ item: RecipeSummary; onPress?: () => void }>) {
     return (
         <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]} onPress={onPress}>
-            <Image
-                source={{ uri: resolveImage(false, item.image) }}
+            <FallbackImage
+                image={item.image}
                 style={styles.cardImage}
+                iconName="silverware-fork-knife"
+                iconSize={36}
             />
             <View style={styles.cardInfo}>
                 <Text style={styles.cardTitle} numberOfLines={2}>{item.title}</Text>

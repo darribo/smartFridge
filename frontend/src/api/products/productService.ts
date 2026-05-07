@@ -34,6 +34,7 @@ export type Product = {
     createdAt: string; // ISO 8601 format
     daysAfterOpening?: number | null;
     hasActiveItems?: boolean | null;
+    version: number;
 }
 
 export type ProductItem = {
@@ -46,6 +47,7 @@ export type ProductItem = {
     openedAt?: string | null;
     initialQuantityValue?: string | null;
     quantityRemainingValue?: string | null;
+    version: number;
 }
 
 export type ProductDetail = {
@@ -64,6 +66,7 @@ export type ProductDetail = {
     createdAt: string;
     daysAfterOpening?: number | null;
     items: ProductItem[];
+    version: number;
 }
 
 export type ProductWithItems = {
@@ -75,6 +78,7 @@ export type ProductWithItems = {
     countItems: number;
     items: ProductItem[];
     hasActiveItems: boolean;
+    isFavorite: boolean;
 }
 
 export type ProductUnit = 'g' | 'kg' | 'ml' | 'l' | 'unit' | 'G' | 'KG' | 'ML' | 'L' | 'UNIT';
@@ -276,6 +280,7 @@ export type UpdateProductParams = {
     nutriScoreGrade?: ProductNutriScoreGrade | null;
     novaGroup?: ProductNovaGroup | null;
     daysAfterOpening?: number | null;
+    version: number;
 }
 
 export type UpdateProductItemParams = {
@@ -283,6 +288,7 @@ export type UpdateProductItemParams = {
     pricePaid?: string | null;
     storageLocation: ProductItemStorageLocation;
     initialQuantityValue?: string | null;
+    version: number;
 }
 
 export const updateProduct = async (
@@ -400,4 +406,22 @@ export const countPantryItems = async (
 ) => {
     const options = await fetchConfig("GET");
     return appFetch(`/products/${householdId}/count/items`, options, onSuccess, onError);
+};
+
+export const addFavoriteProduct = async (
+    productId: number,
+    onSuccess?: () => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("POST");
+    return appFetch(`/products/${productId}/favorite`, options, onSuccess, onError);
+};
+
+export const removeFavoriteProduct = async (
+    productId: number,
+    onSuccess?: () => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("DELETE");
+    return appFetch(`/products/${productId}/favorite`, options, onSuccess, onError);
 };

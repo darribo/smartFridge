@@ -36,12 +36,15 @@ public class ProductItemDto {
     @Schema(description = "Cantidad restante del item", example = "0.50", nullable = true)
     private String quantityRemainingValue;
 
+    @Schema(description = "Versión para control de concurrencia optimista", example = "0")
+    private Long version;
+
     public ProductItemDto() {
     }
 
     public ProductItemDto(Long id, Long productId, String purchaseDate, String expirationDate, String pricePaid,
             ProductItem.StorageLocation storageLocation, String openedAt, String initialQuantityValue,
-            String quantityRemainingValue) {
+            String quantityRemainingValue, Long version) {
         this.id = id;
         this.productId = productId;
         this.purchaseDate = purchaseDate;
@@ -51,6 +54,7 @@ public class ProductItemDto {
         this.openedAt = openedAt;
         this.initialQuantityValue = initialQuantityValue;
         this.quantityRemainingValue = quantityRemainingValue;
+        this.version = version;
     }
 
     public Long getId() {
@@ -123,5 +127,13 @@ public class ProductItemDto {
 
     public void setQuantityRemainingValue(String quantityRemainingValue) {
         this.quantityRemainingValue = quantityRemainingValue;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 }

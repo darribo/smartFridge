@@ -38,6 +38,7 @@ import es.udc.bonilla.rivera.daniel.model.services.exceptions.IngredientUnitMism
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InsufficientStockException;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.InvalidProductItemTransactionException;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.LlmServiceException;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.NoAvailableProductsException;
 import es.udc.bonilla.rivera.daniel.rest.common.ErrorsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.BlockDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.CookedRecipeConversor;
@@ -63,6 +64,7 @@ public class RecipeController {
 
     private static final String INSTANCE_NOT_FOUND_EXCEPTION_CODE = "project.exceptions.InstanceNotFoundException";
     private static final String LLM_SERVICE_EXCEPTION_CODE = "project.exceptions.LlmServiceException";
+    private static final String NO_AVAILABLE_PRODUCTS_EXCEPTION_CODE = "project.exceptions.NoAvailableProductsException";
     private static final String DIETARY_CONFLICT_VEGETARIAN_CODE = "project.exceptions.DietaryConflictException.VEGETARIAN";
     private static final String DIETARY_CONFLICT_VEGAN_CODE = "project.exceptions.DietaryConflictException.VEGAN";
     private static final String INGREDIENT_UNIT_MISMATCH_CODE = "project.exceptions.IngredientUnitMismatchException";
@@ -95,6 +97,15 @@ public class RecipeController {
     public ErrorsDto handleLlmServiceException(LlmServiceException exception, Locale locale) {
         String errorMessage = messageSource.getMessage(LLM_SERVICE_EXCEPTION_CODE, null,
                 LLM_SERVICE_EXCEPTION_CODE, locale);
+        return new ErrorsDto(errorMessage);
+    }
+
+    @ExceptionHandler(NoAvailableProductsException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    @ResponseBody
+    public ErrorsDto handleNoAvailableProductsException(NoAvailableProductsException exception, Locale locale) {
+        String errorMessage = messageSource.getMessage(NO_AVAILABLE_PRODUCTS_EXCEPTION_CODE, null,
+                NO_AVAILABLE_PRODUCTS_EXCEPTION_CODE, locale);
         return new ErrorsDto(errorMessage);
     }
 
@@ -152,10 +163,11 @@ public class RecipeController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public RecipeDto createRecipe(@RequestAttribute Long userId,
+            @RequestParam Long householdId,
             @Validated @RequestBody NewRecipeParamsDto params)
             throws InstanceNotFoundException, DietaryConflictException, IngredientUnitMismatchException {
 
-        Recipe recipe = recipeService.createRecipe(userId, params);
+        Recipe recipe = recipeService.createRecipe(userId, householdId, params);
         List<RecipeIngredient> ingredients = recipeService.getRecipeIngredients(recipe.getId());
 
         return RecipeConversor.toRecipeDto(recipe, ingredients);
@@ -195,6 +207,7 @@ public class RecipeController {
     @GetMapping
     public BlockDto<RecipeSummaryDto> findRecipes(
             @RequestAttribute Long userId,
+            @RequestParam Long householdId,
             @RequestParam(required = false) String title,
             @RequestParam(required = false) Integer minMinutes,
             @RequestParam(required = false) Integer maxMinutes,
@@ -208,7 +221,7 @@ public class RecipeController {
             @RequestParam(required = false) List<Long> productIds,
             @RequestParam(defaultValue = "0") int page) throws InstanceNotFoundException {
 
-        Block<Recipe> block = recipeService.findRecipesByUser(userId, title, minMinutes, maxMinutes,
+        Block<Recipe> block = recipeService.findRecipesByUser(userId, householdId, title, minMinutes, maxMinutes,
                 difficulty, mealType, cuisineType, dietType, seasonType, isVegetarian, isVegan, productIds, page, size);
 
         List<RecipeSummaryDto> dtos = block.getItems().stream()
