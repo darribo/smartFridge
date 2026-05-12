@@ -25,6 +25,8 @@ import ExpiringProductsScreen from "../screens/products/ExpiringProductsScreen";
 import AddRecipeScreen from "../screens/recipes/AddRecipeScreen";
 import MyRecipesScreen from "../screens/recipes/MyRecipes";
 import RecipeDetailScreen from "../screens/recipes/RecipeDetailScreen";
+import ShoppingListScreen from "../screens/shoppingList/ShoppingListScreen";
+import AddShoppingItemScreen from "../screens/shoppingList/AddShoppingItemScreen";
 
 export type AuthStackParamList = {
   Register: { backendError?: ApiError } | undefined;
@@ -48,6 +50,8 @@ export type AuthStackParamList = {
   EditProduct: { productId: number };
   MyRecipes: undefined;
   RecipeDetail: { recipeId: number };
+  ShoppingList: undefined;
+  AddShoppingItem: { listId: number };
 };
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
@@ -75,6 +79,8 @@ export function AuthStack() {
       <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
       <Stack.Screen name="EditProduct" component={EditProductScreen} />
       <Stack.Screen name="ExpiringProducts" component={ExpiringProductsScreen} />
+      <Stack.Screen name="ShoppingList" component={ShoppingListScreen} />
+      <Stack.Screen name="AddShoppingItem" component={AddShoppingItemScreen} />
       <Stack.Screen name="HouseholdDetail">
         {({ route, navigation }) => (
           <HouseholdDetailScreen

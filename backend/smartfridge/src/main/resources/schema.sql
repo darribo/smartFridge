@@ -1,4 +1,7 @@
 /* DROP TABLE IF EXISTS HouseholdInvitation; */
+DROP TABLE IF EXISTS ShoppingListItemAddedBy;
+DROP TABLE IF EXISTS ShoppingListItem;
+DROP TABLE IF EXISTS ShoppingList;
 DROP TABLE IF EXISTS FavoriteProduct;
 DROP TABLE IF EXISTS RecipeIngredient;
 DROP TABLE IF EXISTS ProductItemTransaction;
@@ -185,6 +188,45 @@ CREATE TABLE ProductItemTransaction (
     FOREIGN KEY (cookedRecipeId) REFERENCES CookedRecipe(id) ON DELETE SET NULL
 );
 --TODO: CATEGORY TAGS
+
+CREATE TABLE ShoppingList (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    householdId BIGINT NOT NULL,
+    createdBy BIGINT,
+    createdAt DATETIME NOT NULL,
+    completedAt DATETIME,
+    status TINYINT NOT NULL DEFAULT 0, -- 0=ACTIVE, 1=COMPLETED
+    version BIGINT NOT NULL DEFAULT 0,
+    FOREIGN KEY (householdId) REFERENCES Household(id) ON DELETE CASCADE,
+    FOREIGN KEY (createdBy) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE ShoppingListItem (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    shoppingListId BIGINT NOT NULL,
+    productId BIGINT,
+    customProductName VARCHAR(80),
+    customProductBrand VARCHAR(80),
+    quantity DECIMAL(7,2),
+    unit TINYINT,
+    checked BOOLEAN NOT NULL DEFAULT FALSE,
+    autoAdded BOOLEAN NOT NULL DEFAULT FALSE,
+    checkedBy BIGINT,
+    checkedAt DATETIME,
+    version BIGINT NOT NULL DEFAULT 0,
+    FOREIGN KEY (shoppingListId) REFERENCES ShoppingList(id) ON DELETE CASCADE,
+    FOREIGN KEY (productId) REFERENCES Product(id) ON DELETE SET NULL,
+    FOREIGN KEY (checkedBy) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE ShoppingListItemAddedBy (
+    shoppingListItemId BIGINT NOT NULL,
+    userId BIGINT NOT NULL,
+    addedAt DATETIME NOT NULL,
+    PRIMARY KEY (shoppingListItemId, userId),
+    FOREIGN KEY (shoppingListItemId) REFERENCES ShoppingListItem(id) ON DELETE CASCADE,
+    FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+);
 
 CREATE TABLE RecipeIngredient (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,

@@ -154,7 +154,8 @@
       "home": "Home",
       "pantry": "Pantry",
       "households": "Homes",
-      "recipes": "Recipes"
+      "recipes": "Recipes",
+      "shopping": "Shopping"
     }
   },
   "household": {
@@ -518,6 +519,7 @@
   "profileMenu": {
     "profile": "My profile",
     "changePassword": "Change password",
+    "myHouseholds": "My households",
     "logout": "Log out"
   },
   "profilePhoto": {
@@ -595,5 +597,46 @@
     "capturePhoto": "Take photo",
     "skipPhoto": "Skip",
     "changePhotoTitle": "Change photo"
+  },
+  "shoppingList": {
+    "title": "Shopping list",
+    "noActiveList": "No active list",
+    "createList": "Create shopping list",
+    "deleteList": "Delete list",
+    "deleteListConfirmTitle": "Delete list?",
+    "deleteListConfirmMessage": "The list and all its items will be permanently deleted. This action cannot be undone.",
+    "deleteListConfirm": "Delete",
+    "addItem": "Add product",
+    "finalize": "Finalize purchase",
+    "finalizeConfirmTitle": "Finalize purchase?",
+    "finalizeConfirmMessage": "There are still {{count}} unchecked item(s). Are you sure you want to finalize?",
+    "finalizeAnyway": "Finalize anyway",
+    "cancel": "Cancel",
+    "addedBy": "Added by {{names}}",
+    "autoAdded": "Auto-added",
+    "checkedBy": "Bought by {{name}}",
+    "itemCount": "{{checked}} of {{total}} items",
+    "saveCustomTitle": "Save new products",
+    "saveCustomMessage": "The following products are not in your household. Do you want to save them?",
+    "saveSelected": "Save selected",
+    "skip": "Skip",
+    "history": "List history",
+    "completed": "Completed",
+    "active": "Active",
+    "loadError": "Could not load the shopping list",
+    "addItemError": "Could not add the product",
+    "duplicateItem": "This product is already in the list",
+    "finalizeError": "Could not finalize the purchase",
+    "deleteError": "Could not delete the list"
+  },
+  "addShoppingItem": {
+    "title": "Add product",
+    "searchPlaceholder": "Search household product...",
+    "customSection": "Custom product",
+    "customNamePlaceholder": "Product name",
+    "customBrandPlaceholder": "Brand (optional)",
+    "quantityPlaceholder": "Quantity",
+    "addButton": "Add to list",
+    "orSeparator": "or enter a new one"
   }
 }

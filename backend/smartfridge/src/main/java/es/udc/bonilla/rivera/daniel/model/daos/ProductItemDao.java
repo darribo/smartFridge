@@ -73,6 +73,26 @@ public interface ProductItemDao extends JpaRepository<ProductItem, Long>{
         Pageable pageable);
 
     @Query(value =
+        "SELECT pi.* FROM ProductItem pi " +
+        "JOIN Product p ON pi.productId = p.id " +
+        "WHERE p.householdId = :householdId " +
+        "AND pi.discardDate IS NULL " +
+        "AND pi.quantityRemainingValue IS NOT NULL " +
+        "AND pi.initialQuantityValue IS NOT NULL " +
+        "AND pi.initialQuantityValue > 0 " +
+        "AND pi.quantityRemainingValue / pi.initialQuantityValue < 0.25 " +
+        "AND pi.id = (" +
+            "SELECT pi2.id FROM ProductItem pi2 " +
+            "WHERE pi2.productId = pi.productId " +
+            "AND pi2.discardDate IS NULL " +
+            "AND pi2.quantityRemainingValue IS NOT NULL " +
+            "ORDER BY pi2.quantityRemainingValue DESC LIMIT 1" +
+        ")",
+        nativeQuery = true
+    )
+    List<ProductItem> findAllProductsWithLittleStock(@Param("householdId") Long householdId);
+
+    @Query(value =
         "SELECT COUNT(*) FROM ProductItem pi " +
         "JOIN Product p ON pi.productId = p.id " +
         "WHERE p.householdId = :householdId " +

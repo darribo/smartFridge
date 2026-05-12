@@ -154,7 +154,8 @@
       "home": "Inicio",
       "pantry": "Despensa",
       "households": "Fogares",
-      "recipes": "Receitas"
+      "recipes": "Receitas",
+      "shopping": "Compra"
     }
   },
   "household": {
@@ -518,6 +519,7 @@
   "profileMenu": {
     "profile": "O meu perfil",
     "changePassword": "Cambiar contrasinal",
+    "myHouseholds": "Os meus fogares",
     "logout": "Pechar sesión"
   },
   "profilePhoto": {
@@ -595,5 +597,46 @@
     "capturePhoto": "Tomar foto",
     "skipPhoto": "Omitir",
     "changePhotoTitle": "Cambiar foto"
+  },
+  "shoppingList": {
+    "title": "Lista da compra",
+    "noActiveList": "Non hai ningunha lista activa",
+    "createList": "Crear lista da compra",
+    "deleteList": "Borrar lista",
+    "deleteListConfirmTitle": "Borrar lista?",
+    "deleteListConfirmMessage": "Eliminarase a lista e todos os seus produtos. Esta acción non se pode desfacer.",
+    "deleteListConfirm": "Borrar",
+    "addItem": "Engadir produto",
+    "finalize": "Finalizar compra",
+    "finalizeConfirmTitle": "Finalizar compra?",
+    "finalizeConfirmMessage": "Aínda quedan {{count}} produto(s) sen marcar. Seguro que queres finalizar?",
+    "finalizeAnyway": "Finalizar igualmente",
+    "cancel": "Cancelar",
+    "addedBy": "Engadido por {{names}}",
+    "autoAdded": "Engadido automaticamente",
+    "checkedBy": "Comprado por {{name}}",
+    "itemCount": "{{checked}} de {{total}} produtos",
+    "saveCustomTitle": "Gardar produtos novos",
+    "saveCustomMessage": "Os seguintes produtos non están no teu fogar. Queres gardalos?",
+    "saveSelected": "Gardar seleccionados",
+    "skip": "Omitir",
+    "history": "Historial de listas",
+    "completed": "Completada",
+    "active": "Activa",
+    "loadError": "Non se puido cargar a lista da compra",
+    "addItemError": "Non se puido engadir o produto",
+    "duplicateItem": "Este produto xa está na lista",
+    "finalizeError": "Non se puido finalizar a compra",
+    "deleteError": "Non se puido borrar a lista"
+  },
+  "addShoppingItem": {
+    "title": "Engadir produto",
+    "searchPlaceholder": "Buscar produto do fogar...",
+    "customSection": "Produto non gardado",
+    "customNamePlaceholder": "Nome do produto",
+    "customBrandPlaceholder": "Marca (opcional)",
+    "quantityPlaceholder": "Cantidade",
+    "addButton": "Engadir á lista",
+    "orSeparator": "ou escribe un novo"
   }
 }

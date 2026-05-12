@@ -62,7 +62,6 @@ export function LoginScreen({ navigation }: Props) {
         password,
       },
       (auth) => {
-        console.log(`Login correcto para ${auth.user.userName}`);
         navigation.replace("Home");
       },
       (err: ApiError) => {

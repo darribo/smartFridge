@@ -512,9 +512,12 @@ export default function HomeScreen({ navigation }: Props) {
             onPress={() => navigation.navigate("MyRecipes")}
           />
           <FooterItem
-            icon="home-group"
-            label={t("home.footer.households")}
-            onPress={() => navigation.navigate("MyHouseholds")}
+            icon="cart-outline"
+            label={t("home.footer.shopping")}
+            onPress={() => {
+              if (!resolvedHouseholdId) { setShowNoHousehold(true); return; }
+              navigation.navigate("ShoppingList");
+            }}
           />
         </View>
       </View>
@@ -563,6 +566,15 @@ export default function HomeScreen({ navigation }: Props) {
             >
               <MaterialCommunityIcons name="lock-outline" size={22} color={THEME.text} />
               <Text style={styles.menuItemText}>{t("profileMenu.changePassword")}</Text>
+              <MaterialCommunityIcons name="chevron-right" size={20} color={THEME.muted} />
+            </Pressable>
+
+            <Pressable
+              style={({ pressed }) => [styles.menuItem, pressed && styles.menuItemPressed]}
+              onPress={() => { setShowProfileMenu(false); navigation.navigate("MyHouseholds"); }}
+            >
+              <MaterialCommunityIcons name="home-group" size={22} color={THEME.text} />
+              <Text style={styles.menuItemText}>{t("profileMenu.myHouseholds")}</Text>
               <MaterialCommunityIcons name="chevron-right" size={20} color={THEME.muted} />
             </Pressable>
 

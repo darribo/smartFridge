@@ -154,7 +154,8 @@
       "home": "Inicio",
       "pantry": "Despensa",
       "households": "Hogares",
-      "recipes": "Recetas"
+      "recipes": "Recetas",
+      "shopping": "Compra"
     }
   },
   "household": {
@@ -519,6 +520,7 @@
   "profileMenu": {
     "profile": "Mi perfil",
     "changePassword": "Cambiar contraseña",
+    "myHouseholds": "Mis hogares",
     "logout": "Cerrar sesión"
   },
   "profilePhoto": {
@@ -596,5 +598,46 @@
     "capturePhoto": "Tomar foto",
     "skipPhoto": "Omitir",
     "changePhotoTitle": "Cambiar foto"
+  },
+  "shoppingList": {
+    "title": "Lista de la compra",
+    "noActiveList": "No hay ninguna lista activa",
+    "createList": "Crear lista de la compra",
+    "deleteList": "Borrar lista",
+    "deleteListConfirmTitle": "¿Borrar lista?",
+    "deleteListConfirmMessage": "Se eliminará la lista y todos sus productos. Esta acción no se puede deshacer.",
+    "deleteListConfirm": "Borrar",
+    "addItem": "Añadir producto",
+    "finalize": "Finalizar compra",
+    "finalizeConfirmTitle": "¿Finalizar compra?",
+    "finalizeConfirmMessage": "Todavía quedan {{count}} producto(s) sin marcar. ¿Seguro que quieres finalizar?",
+    "finalizeAnyway": "Finalizar de todas formas",
+    "cancel": "Cancelar",
+    "addedBy": "Añadido por {{names}}",
+    "autoAdded": "Añadido automáticamente",
+    "checkedBy": "Comprado por {{name}}",
+    "itemCount": "{{checked}} de {{total}} productos",
+    "saveCustomTitle": "Guardar productos nuevos",
+    "saveCustomMessage": "Los siguientes productos no están en tu hogar. ¿Quieres guardarlos?",
+    "saveSelected": "Guardar seleccionados",
+    "skip": "Omitir",
+    "history": "Historial de listas",
+    "completed": "Completada",
+    "active": "Activa",
+    "loadError": "No se pudo cargar la lista de la compra",
+    "addItemError": "No se pudo añadir el producto",
+    "duplicateItem": "Este producto ya está en la lista",
+    "finalizeError": "No se pudo finalizar la compra",
+    "deleteError": "No se pudo borrar la lista"
+  },
+  "addShoppingItem": {
+    "title": "Añadir producto",
+    "searchPlaceholder": "Buscar producto del hogar...",
+    "customSection": "Producto no guardado",
+    "customNamePlaceholder": "Nombre del producto",
+    "customBrandPlaceholder": "Marca (opcional)",
+    "quantityPlaceholder": "Cantidad",
+    "addButton": "Añadir a la lista",
+    "orSeparator": "o escribe uno nuevo"
   }
 }

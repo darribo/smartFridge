@@ -75,6 +75,9 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private FavoriteProductDao favoriteProductDao;
 
+    @Autowired
+    private ShoppingListService shoppingListService;
+
     @Override
     /** {@inheritDoc} */
     public Product createProduct(Long userId, String barcode, String name, String brand, String defaultPrice, String image,
@@ -661,6 +664,19 @@ public class ProductServiceImpl implements ProductService {
             productItem.setOpenedAt(LocalDateTime.now().withNano(0));
         }
 
-        return productItemTransactionDao.save(transaction);
+        ProductItemTransaction saved = productItemTransactionDao.save(transaction);
+
+        boolean stockDecreased = type == ProductItemTransaction.TransactionType.DISCARD
+                || type == ProductItemTransaction.TransactionType.CONSUME
+                || (type == ProductItemTransaction.TransactionType.ADJUST
+                        && quantityDeltaValue != null && quantityDeltaValue.compareTo(BigDecimal.ZERO) < 0);
+
+        if (stockDecreased) {
+            Long householdId = productItem.getProduct().getHousehold().getId();
+            Long productId = productItem.getProduct().getId();
+            shoppingListService.maybeAutoAddToList(householdId, productId);
+        }
+
+        return saved;
     }
 }

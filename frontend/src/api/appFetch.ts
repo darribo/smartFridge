@@ -7,6 +7,7 @@ export type ApiError = {
   globalErrors: string[];
   fieldErrors?: Record<string, string[] | string>;
   isTimeout?: boolean;
+  status?: number;
   [k: string]: any;
 };
 
@@ -46,13 +47,13 @@ const safeJson = async (response: Response) => {
 };
 
 const normalizeError = (payload: any, status: number): ApiError => {
-  if (!payload || typeof payload !== "object") return { globalErrors: [`Error HTTP ${status}`] };
+  if (!payload || typeof payload !== "object") return { globalErrors: [`Error HTTP ${status}`], status };
 
-  if (Array.isArray(payload.globalErrors)) return payload;
-  if (typeof payload.globalError === "string") return { ...payload, globalErrors: [payload.globalError] };
-  if (typeof payload.message === "string") return { ...payload, globalErrors: [payload.message] };
+  if (Array.isArray(payload.globalErrors)) return { ...payload, status };
+  if (typeof payload.globalError === "string") return { ...payload, globalErrors: [payload.globalError], status };
+  if (typeof payload.message === "string") return { ...payload, globalErrors: [payload.message], status };
 
-  return { ...payload, globalErrors: [`Error HTTP ${status}`] };
+  return { ...payload, globalErrors: [`Error HTTP ${status}`], status };
 };
 
 export const fetchConfig = async (method: string, body?: any): Promise<RequestInit> => {
