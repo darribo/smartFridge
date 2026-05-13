@@ -1,6 +1,5 @@
 import { ApiError, appFetch, fetchConfig } from "../appFetch";
 import { Block } from "../block";
-import type { ProductUnit } from "../products/productService";
 
 export type ShoppingListStatus = "ACTIVE" | "COMPLETED";
 
@@ -11,8 +10,7 @@ export type ShoppingListItem = {
     productImage?: string | null;
     customProductName?: string | null;
     customProductBrand?: string | null;
-    quantity?: number | null;
-    unit?: ProductUnit | null;
+    itemCount?: number | null;
     checked: boolean;
     autoAdded: boolean;
     checkedByName?: string | null;
@@ -42,8 +40,7 @@ export type AddShoppingListItemParams = {
     productId?: number | null;
     customProductName?: string | null;
     customProductBrand?: string | null;
-    quantity?: number | null;
-    unit?: ProductUnit | null;
+    itemCount?: number | null;
 };
 
 export type FinalizeShoppingListResult = {
@@ -89,6 +86,17 @@ export const addItemToList = async (
     return appFetch(`/shopping-lists/${listId}/items`, options, onSuccess, onError);
 };
 
+export const updateItemCount = async (
+    listId: number,
+    itemId: number,
+    itemCount: number,
+    onSuccess?: (item: ShoppingListItem) => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("PATCH", { itemCount });
+    return appFetch(`/shopping-lists/${listId}/items/${itemId}/count`, options, onSuccess, onError);
+};
+
 export const toggleItemChecked = async (
     listId: number,
     itemId: number,
@@ -111,11 +119,10 @@ export const removeItemFromList = async (
 
 export const finalizeShoppingList = async (
     listId: number,
-    force: boolean,
     onSuccess?: (result: FinalizeShoppingListResult) => void,
     onError?: (err: ApiError) => void
 ) => {
-    const options = await fetchConfig("POST", { force });
+    const options = await fetchConfig("POST");
     return appFetch(`/shopping-lists/${listId}/finalize`, options, onSuccess, onError);
 };
 

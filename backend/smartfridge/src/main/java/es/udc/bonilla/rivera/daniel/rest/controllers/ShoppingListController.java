@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -31,11 +32,10 @@ import es.udc.bonilla.rivera.daniel.model.services.Block;
 import es.udc.bonilla.rivera.daniel.model.services.FinalizeShoppingListResult;
 import es.udc.bonilla.rivera.daniel.model.services.ShoppingListService;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.ActiveShoppingListAlreadyExistsException;
-import es.udc.bonilla.rivera.daniel.model.services.exceptions.UncheckedItemsRemainingException;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.CustomItemMatchesCatalogProductException;
 import es.udc.bonilla.rivera.daniel.rest.common.ErrorsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.AddShoppingListItemParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.BlockDto;
-import es.udc.bonilla.rivera.daniel.rest.dtos.FinalizeShoppingListParamsDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.FinalizeShoppingListResultDto;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ShoppingListConversor;
 import es.udc.bonilla.rivera.daniel.rest.dtos.ShoppingListDto;
@@ -48,7 +48,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class ShoppingListController {
 
     private static final String ACTIVE_LIST_EXISTS_CODE = "project.exceptions.ActiveShoppingListAlreadyExistsException";
-    private static final String UNCHECKED_ITEMS_CODE = "project.exceptions.UncheckedItemsRemainingException";
+    private static final String DUPLICATE_ITEM_CODE = "project.exceptions.DuplicateShoppingListItem";
+    private static final String CATALOG_PRODUCT_EXISTS_CODE = "project.exceptions.CustomItemMatchesCatalogProduct";
 
     @Autowired
     private ShoppingListService shoppingListService;
@@ -67,12 +68,19 @@ public class ShoppingListController {
         return new ErrorsDto(msg);
     }
 
-    @ExceptionHandler(UncheckedItemsRemainingException.class)
+    @ExceptionHandler(DuplicateInstanceException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     @ResponseBody
-    public ErrorsDto handleUncheckedItems(UncheckedItemsRemainingException ex, Locale locale) {
-        String msg = messageSource.getMessage(UNCHECKED_ITEMS_CODE,
-                new Object[]{ex.getUncheckedCount()}, UNCHECKED_ITEMS_CODE, locale);
+    public ErrorsDto handleDuplicateItem(DuplicateInstanceException ex, Locale locale) {
+        String msg = messageSource.getMessage(DUPLICATE_ITEM_CODE, null, DUPLICATE_ITEM_CODE, locale);
+        return new ErrorsDto(msg);
+    }
+
+    @ExceptionHandler(CustomItemMatchesCatalogProductException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ResponseBody
+    public ErrorsDto handleCatalogProductExists(CustomItemMatchesCatalogProductException ex, Locale locale) {
+        String msg = messageSource.getMessage(CATALOG_PRODUCT_EXISTS_CODE, null, CATALOG_PRODUCT_EXISTS_CODE, locale);
         return new ErrorsDto(msg);
     }
 
@@ -110,12 +118,22 @@ public class ShoppingListController {
     @ResponseStatus(HttpStatus.CREATED)
     public ShoppingListItemDto addItemToList(@RequestAttribute Long userId, @PathVariable Long listId,
             @RequestBody AddShoppingListItemParamsDto params)
-            throws InstanceNotFoundException, DuplicateInstanceException {
+            throws InstanceNotFoundException, DuplicateInstanceException, CustomItemMatchesCatalogProductException {
 
         ShoppingListItem item = shoppingListService.addItemToList(userId, listId,
                 params.getProductId(), params.getCustomProductName(), params.getCustomProductBrand(),
-                params.getQuantity(), params.getUnit());
+                params.getItemCount());
 
+        List<ShoppingListItemAddedBy> addedBys = shoppingListItemAddedByDao.findByShoppingListItemId(item.getId());
+        return ShoppingListConversor.toItemDto(item, addedBys);
+    }
+
+    @PatchMapping("/{listId}/items/{itemId}/count")
+    public ShoppingListItemDto updateItemCount(@RequestAttribute Long userId,
+            @PathVariable Long listId, @PathVariable Long itemId,
+            @RequestBody AddShoppingListItemParamsDto params) throws InstanceNotFoundException {
+
+        ShoppingListItem item = shoppingListService.updateItemCount(userId, listId, itemId, params.getItemCount());
         List<ShoppingListItemAddedBy> addedBys = shoppingListItemAddedByDao.findByShoppingListItemId(item.getId());
         return ShoppingListConversor.toItemDto(item, addedBys);
     }
@@ -139,10 +157,9 @@ public class ShoppingListController {
 
     @PostMapping("/{listId}/finalize")
     public FinalizeShoppingListResultDto finalizeShoppingList(@RequestAttribute Long userId,
-            @PathVariable Long listId, @RequestBody FinalizeShoppingListParamsDto params)
-            throws InstanceNotFoundException, UncheckedItemsRemainingException {
+            @PathVariable Long listId) throws InstanceNotFoundException {
 
-        FinalizeShoppingListResult result = shoppingListService.finalizeShoppingList(userId, listId, params.isForce());
+        FinalizeShoppingListResult result = shoppingListService.finalizeShoppingList(userId, listId);
 
         List<Long> allItemIds = result.getCheckedKnownItems().stream()
                 .map(ShoppingListItem::getId).collect(Collectors.toList());

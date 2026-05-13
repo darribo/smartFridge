@@ -17,8 +17,7 @@ public class ShoppingListConversor {
         dto.setId(item.getId());
         dto.setChecked(item.isChecked());
         dto.setAutoAdded(item.isAutoAdded());
-        dto.setQuantity(item.getQuantity());
-        dto.setUnit(item.getUnit());
+        dto.setItemCount(item.getItemCount());
         dto.setCheckedAt(item.getCheckedAt());
 
         if (item.getProduct() != null) {
@@ -73,7 +72,7 @@ public class ShoppingListConversor {
 
     private static List<ShoppingListItemAddedBy> addedBysForItem(List<ShoppingListItemAddedBy> all, Long itemId) {
         return all.stream()
-                .filter(ab -> ab.getShoppingListItem().getId().equals(itemId))
+                .filter(ab -> ab.getId().getShoppingListItemId().equals(itemId))
                 .collect(Collectors.toList());
     }
 }

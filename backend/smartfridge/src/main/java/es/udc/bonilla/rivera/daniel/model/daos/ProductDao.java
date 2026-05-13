@@ -15,6 +15,8 @@ public interface ProductDao extends JpaRepository<Product, Long>, CustomizedProd
 
     boolean existsByHouseholdIdAndName(Long householdId, String name);
 
+    boolean existsByHouseholdIdAndNameIgnoreCase(Long householdId, String name);
+
     boolean existsByHouseholdIdAndNameAndIdNot(Long householdId, String name, Long productId);
 
     boolean existsByBarcode(String barcode);

@@ -1,12 +1,9 @@
 package es.udc.bonilla.rivera.daniel.model.entities;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,8 +20,7 @@ public class ShoppingListItem {
     private Product product;
     private String customProductName;
     private String customProductBrand;
-    private BigDecimal quantity;
-    private Product.Unit unit;
+    private Integer itemCount;
     private boolean checked;
     private boolean autoAdded;
     private User checkedBy;
@@ -34,13 +30,12 @@ public class ShoppingListItem {
     public ShoppingListItem() {}
 
     public ShoppingListItem(ShoppingList shoppingList, Product product, String customProductName,
-            String customProductBrand, BigDecimal quantity, Product.Unit unit, boolean autoAdded) {
+            String customProductBrand, Integer itemCount, boolean autoAdded) {
         this.shoppingList = shoppingList;
         this.product = product;
         this.customProductName = customProductName;
         this.customProductBrand = customProductBrand;
-        this.quantity = quantity;
-        this.unit = unit;
+        this.itemCount = itemCount;
         this.autoAdded = autoAdded;
         this.checked = false;
     }
@@ -68,13 +63,8 @@ public class ShoppingListItem {
     public String getCustomProductBrand() { return customProductBrand; }
     public void setCustomProductBrand(String customProductBrand) { this.customProductBrand = customProductBrand; }
 
-    @Column(precision = 7, scale = 2)
-    public BigDecimal getQuantity() { return quantity; }
-    public void setQuantity(BigDecimal quantity) { this.quantity = quantity; }
-
-    @Enumerated(EnumType.ORDINAL)
-    public Product.Unit getUnit() { return unit; }
-    public void setUnit(Product.Unit unit) { this.unit = unit; }
+    public Integer getItemCount() { return itemCount; }
+    public void setItemCount(Integer itemCount) { this.itemCount = itemCount; }
 
     @Column(nullable = false)
     public boolean isChecked() { return checked; }

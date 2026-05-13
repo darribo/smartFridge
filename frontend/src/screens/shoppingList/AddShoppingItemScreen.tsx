@@ -37,13 +37,11 @@ export default function AddShoppingItemScreen({ route, navigation }: Props) {
 
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Product[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searching, setSearching] = useState(false);
+  const [addingProductId, setAddingProductId] = useState<number | null>(null);
 
   const [customName, setCustomName] = useState("");
-  const [customBrand, setCustomBrand] = useState("");
-
-  const [adding, setAdding] = useState(false);
+  const [addingCustom, setAddingCustom] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -63,8 +61,7 @@ export default function AddShoppingItemScreen({ route, navigation }: Props) {
 
   const handleQueryChange = (text: string) => {
     setQuery(text);
-    setSelectedProduct(null);
-
+    setErrors([]);
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
 
     if (!text.trim() || !householdId) {
@@ -90,56 +87,33 @@ export default function AddShoppingItemScreen({ route, navigation }: Props) {
     }, 300);
   };
 
-  const handleSelectProduct = (product: Product) => {
-    setSelectedProduct(product);
-    setQuery(product.name);
-    setSearchResults([]);
-    setCustomName("");
-    setCustomBrand("");
-  };
-
-  const handleAdd = () => {
+  const handleAddProduct = (product: Product) => {
+    if (addingProductId !== null) return;
     setErrors([]);
-
-    if (selectedProduct) {
-      setAdding(true);
-      addItemToList(
-        listId,
-        { productId: selectedProduct.id },
-        () => {
-          setAdding(false);
-          navigation.goBack();
-        },
-        (err) => {
-          setAdding(false);
-          if (err.status === 409) {
-            setErrors([t("shoppingList.duplicateItem")]);
-          } else {
-            setErrors(extractErrors(err));
-          }
-        }
-      );
-    } else if (customName.trim()) {
-      setAdding(true);
-      addItemToList(
-        listId,
-        {
-          customProductName: customName.trim(),
-          customProductBrand: customBrand.trim() || null,
-        },
-        () => {
-          setAdding(false);
-          navigation.goBack();
-        },
-        (err) => {
-          setAdding(false);
-          setErrors(extractErrors(err));
-        }
-      );
-    }
+    setAddingProductId(product.id);
+    addItemToList(
+      listId,
+      { productId: product.id },
+      () => { navigation.goBack(); },
+      (err) => {
+        setAddingProductId(null);
+        if (err.status === 409) setErrors([t("shoppingList.duplicateItem")]);
+        else setErrors(extractErrors(err));
+      }
+    );
   };
 
-  const canAdd = selectedProduct != null || customName.trim().length > 0;
+  const handleAddCustom = () => {
+    if (!customName.trim()) return;
+    setErrors([]);
+    setAddingCustom(true);
+    addItemToList(
+      listId,
+      { customProductName: customName.trim() },
+      () => { setAddingCustom(false); navigation.goBack(); },
+      (err) => { setAddingCustom(false); setErrors(extractErrors(err)); }
+    );
+  };
 
   return (
     <SafeAreaView edges={["top", "bottom"]} style={styles.safe}>
@@ -178,28 +152,15 @@ export default function AddShoppingItemScreen({ route, navigation }: Props) {
             {query.length > 0 && !searching && (
               <Pressable
                 hitSlop={8}
-                onPress={() => {
-                  setQuery("");
-                  setSearchResults([]);
-                  setSelectedProduct(null);
-                }}
+                onPress={() => { setQuery(""); setSearchResults([]); }}
               >
                 <MaterialCommunityIcons name="close" size={18} color={THEME.muted} />
               </Pressable>
             )}
           </View>
-
-          {selectedProduct && (
-            <View style={styles.selectedChip}>
-              <MaterialCommunityIcons name="check-circle" size={16} color={THEME.primary} />
-              <Text style={styles.selectedChipText} numberOfLines={1}>
-                {selectedProduct.name}
-              </Text>
-            </View>
-          )}
         </View>
 
-        {searchResults.length > 0 && !selectedProduct ? (
+        {searchResults.length > 0 ? (
           <FlatList
             data={searchResults}
             keyExtractor={(item) => String(item.id)}
@@ -209,8 +170,13 @@ export default function AddShoppingItemScreen({ route, navigation }: Props) {
             ItemSeparatorComponent={ResultSeparator}
             renderItem={({ item }) => (
               <Pressable
-                style={({ pressed }) => [styles.resultRow, pressed && styles.resultPressed]}
-                onPress={() => handleSelectProduct(item)}
+                style={({ pressed }) => [
+                  styles.resultRow,
+                  pressed && addingProductId === null && styles.resultPressed,
+                  addingProductId !== null && addingProductId !== item.id && styles.resultDimmed,
+                ]}
+                onPress={() => handleAddProduct(item)}
+                disabled={addingProductId !== null}
               >
                 <FallbackImage
                   image={item.image}
@@ -219,64 +185,48 @@ export default function AddShoppingItemScreen({ route, navigation }: Props) {
                   style={styles.resultImage}
                 />
                 <View style={styles.resultInfo}>
-                  <Text style={styles.resultName} numberOfLines={1}>
-                    {item.name}
-                  </Text>
+                  <Text style={styles.resultName} numberOfLines={1}>{item.name}</Text>
                   {item.brand ? (
-                    <Text style={styles.resultBrand} numberOfLines={1}>
-                      {item.brand}
-                    </Text>
+                    <Text style={styles.resultBrand} numberOfLines={1}>{item.brand}</Text>
                   ) : null}
                 </View>
-                <MaterialCommunityIcons name="plus" size={18} color={THEME.primary} />
+                {addingProductId === item.id
+                  ? <ActivityIndicator size="small" color={THEME.primary} />
+                  : <MaterialCommunityIcons name="plus" size={18} color={THEME.primary} />}
               </Pressable>
             )}
           />
         ) : (
           <View style={styles.form}>
-            {!selectedProduct && (
-              <>
-                <View style={styles.separator2} />
-                <Text style={styles.orLabel}>{t("addShoppingItem.orSeparator")}</Text>
-                <Text style={styles.sectionLabel}>{t("addShoppingItem.customSection")}</Text>
-                <View style={styles.inputWrap}>
-                  <TextInput
-                    style={styles.input}
-                    placeholder={t("addShoppingItem.customNamePlaceholder")}
-                    placeholderTextColor={THEME.muted}
-                    value={customName}
-                    onChangeText={setCustomName}
-                  />
-                </View>
-                <View style={styles.inputWrap}>
-                  <TextInput
-                    style={styles.input}
-                    placeholder={t("addShoppingItem.customBrandPlaceholder")}
-                    placeholderTextColor={THEME.muted}
-                    value={customBrand}
-                    onChangeText={setCustomBrand}
-                  />
-                </View>
-              </>
-            )}
-
+            <View style={styles.separator2} />
+            <Text style={styles.orLabel}>{t("addShoppingItem.orSeparator")}</Text>
+            <Text style={styles.sectionLabel}>{t("addShoppingItem.customSection")}</Text>
+            <View style={styles.inputWrap}>
+              <TextInput
+                style={styles.input}
+                placeholder={t("addShoppingItem.customNamePlaceholder")}
+                placeholderTextColor={THEME.muted}
+                value={customName}
+                onChangeText={(text) => { setCustomName(text); setErrors([]); }}
+              />
+            </View>
           </View>
         )}
 
-        <View style={styles.bottomBar}>
-          <Pressable
-            style={[styles.addBtn, (!canAdd || adding) && styles.btnDisabled]}
-            onPress={handleAdd}
-            disabled={!canAdd || adding}
-          >
-            {adding ? (
-              <ActivityIndicator size="small" color="#0B2817" />
-            ) : (
-              <MaterialCommunityIcons name="plus" size={20} color="#0B2817" />
-            )}
-            <Text style={styles.addBtnText}>{t("addShoppingItem.addButton")}</Text>
-          </Pressable>
-        </View>
+        {searchResults.length === 0 && (
+          <View style={styles.bottomBar}>
+            <Pressable
+              style={[styles.addBtn, (!customName.trim() || addingCustom) && styles.btnDisabled]}
+              onPress={handleAddCustom}
+              disabled={!customName.trim() || addingCustom}
+            >
+              {addingCustom
+                ? <ActivityIndicator size="small" color="#0B2817" />
+                : <MaterialCommunityIcons name="plus" size={20} color="#0B2817" />}
+              <Text style={styles.addBtnText}>{t("addShoppingItem.addButton")}</Text>
+            </Pressable>
+          </View>
+        )}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -367,6 +317,9 @@ const styles = StyleSheet.create({
   },
   resultPressed: {
     opacity: 0.7,
+  },
+  resultDimmed: {
+    opacity: 0.4,
   },
   resultImage: {
     width: 40,

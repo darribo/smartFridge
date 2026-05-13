@@ -1,8 +1,5 @@
 package es.udc.bonilla.rivera.daniel.rest.dtos;
 
-import java.math.BigDecimal;
-
-import es.udc.bonilla.rivera.daniel.model.entities.Product;
 import jakarta.validation.constraints.Size;
 
 public class AddShoppingListItemParamsDto {
@@ -15,8 +12,7 @@ public class AddShoppingListItemParamsDto {
     @Size(max = 80)
     private String customProductBrand;
 
-    private BigDecimal quantity;
-    private Product.Unit unit;
+    private Integer itemCount;
 
     public Long getProductId() { return productId; }
     public void setProductId(Long productId) { this.productId = productId; }
@@ -27,9 +23,6 @@ public class AddShoppingListItemParamsDto {
     public String getCustomProductBrand() { return customProductBrand; }
     public void setCustomProductBrand(String customProductBrand) { this.customProductBrand = customProductBrand; }
 
-    public BigDecimal getQuantity() { return quantity; }
-    public void setQuantity(BigDecimal quantity) { this.quantity = quantity; }
-
-    public Product.Unit getUnit() { return unit; }
-    public void setUnit(Product.Unit unit) { this.unit = unit; }
+    public Integer getItemCount() { return itemCount; }
+    public void setItemCount(Integer itemCount) { this.itemCount = itemCount; }
 }

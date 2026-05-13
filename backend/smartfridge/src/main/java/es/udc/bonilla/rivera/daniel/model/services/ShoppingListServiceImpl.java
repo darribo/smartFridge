@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import es.udc.bonilla.rivera.daniel.model.common.DuplicateInstanceException;
 import es.udc.bonilla.rivera.daniel.model.common.InstanceNotFoundException;
 import es.udc.bonilla.rivera.daniel.model.daos.FavoriteProductDao;
+import es.udc.bonilla.rivera.daniel.model.daos.ProductDao;
 import es.udc.bonilla.rivera.daniel.model.daos.ProductItemDao;
 import es.udc.bonilla.rivera.daniel.model.daos.ShoppingListDao;
 import es.udc.bonilla.rivera.daniel.model.daos.ShoppingListItemAddedByDao;
@@ -31,7 +32,7 @@ import es.udc.bonilla.rivera.daniel.model.entities.ShoppingListItemAddedBy;
 import es.udc.bonilla.rivera.daniel.model.entities.ShoppingListItemAddedById;
 import es.udc.bonilla.rivera.daniel.model.entities.User;
 import es.udc.bonilla.rivera.daniel.model.services.exceptions.ActiveShoppingListAlreadyExistsException;
-import es.udc.bonilla.rivera.daniel.model.services.exceptions.UncheckedItemsRemainingException;
+import es.udc.bonilla.rivera.daniel.model.services.exceptions.CustomItemMatchesCatalogProductException;
 
 @Service
 @Transactional
@@ -48,6 +49,9 @@ public class ShoppingListServiceImpl implements ShoppingListService {
 
     @Autowired
     private FavoriteProductDao favoriteProductDao;
+
+    @Autowired
+    private ProductDao productDao;
 
     @Autowired
     private ProductItemDao productItemDao;
@@ -113,10 +117,11 @@ public class ShoppingListServiceImpl implements ShoppingListService {
 
     @Override
     public ShoppingListItem addItemToList(Long userId, Long listId, Long productId, String customProductName,
-            String customProductBrand, BigDecimal quantity, Product.Unit unit) throws InstanceNotFoundException, DuplicateInstanceException {
+            String customProductBrand, Integer itemCount)
+            throws InstanceNotFoundException, DuplicateInstanceException, CustomItemMatchesCatalogProductException {
 
         ShoppingList list = checkListBelongsToUserHousehold(userId, listId);
-        
+
         //Si la lista no está activa se considera que no existe para evitar que se puedan añadir items a listas finalizadas o canceladas, aunque realmente el error sería otro, pero así se simplifica el manejo de errores en el frontend al no tener que distinguir entre "lista no encontrada" y "lista no activa"
         if (list.getStatus() != ShoppingList.Status.ACTIVE) {
             throw new InstanceNotFoundException("project.entities.shoppinglist", listId);
@@ -129,11 +134,19 @@ public class ShoppingListServiceImpl implements ShoppingListService {
             if (shoppingListItemDao.existsByShoppingListIdAndProductId(listId, productId)) {
                 throw new DuplicateInstanceException("project.entities.shoppinglistitem", productId);
             }
+        } else if (customProductName != null) {
+            if (productDao.existsByHouseholdIdAndNameIgnoreCase(list.getHousehold().getId(), customProductName)) {
+                throw new CustomItemMatchesCatalogProductException();
+            }
+            if (shoppingListItemDao.existsByShoppingListIdAndCustomProductNameIgnoreCase(listId, customProductName)
+                    || shoppingListItemDao.existsByShoppingListIdAndProductNameIgnoreCase(listId, customProductName)) {
+                throw new DuplicateInstanceException("project.entities.shoppinglistitem", customProductName);
+            }
         }
 
         User user = permissionChecker.checkUserExists(userId);
 
-        ShoppingListItem item = new ShoppingListItem(list, product, customProductName, customProductBrand, quantity, unit, false);
+        ShoppingListItem item = new ShoppingListItem(list, product, customProductName, customProductBrand, itemCount, false);
         item = shoppingListItemDao.save(item);
 
         ShoppingListItemAddedBy addedBy = new ShoppingListItemAddedBy(item, user, LocalDateTime.now().withNano(0));
@@ -166,6 +179,24 @@ public class ShoppingListServiceImpl implements ShoppingListService {
     }
 
     @Override
+    public ShoppingListItem updateItemCount(Long userId, Long listId, Long itemId, Integer itemCount)
+            throws InstanceNotFoundException {
+        checkListBelongsToUserHousehold(userId, listId);
+
+        ShoppingListItem item = shoppingListItemDao.findById(itemId)
+                .orElseThrow(() -> new InstanceNotFoundException("project.entities.shoppinglistitem", itemId));
+
+        if (!item.getShoppingList().getId().equals(listId)) {
+            throw new InstanceNotFoundException("project.entities.shoppinglistitem", itemId);
+        }
+
+        item.setItemCount(itemCount);
+        ShoppingListItem saved = shoppingListItemDao.save(item);
+        if (saved.getProduct() != null) saved.getProduct().getName();
+        return saved;
+    }
+
+    @Override
     public void removeItemFromList(Long userId, Long listId, Long itemId) throws InstanceNotFoundException {
         checkListBelongsToUserHousehold(userId, listId);
 
@@ -181,8 +212,8 @@ public class ShoppingListServiceImpl implements ShoppingListService {
     }
 
     @Override
-    public FinalizeShoppingListResult finalizeShoppingList(Long userId, Long listId, boolean force)
-            throws InstanceNotFoundException, UncheckedItemsRemainingException {
+    public FinalizeShoppingListResult finalizeShoppingList(Long userId, Long listId)
+            throws InstanceNotFoundException {
 
         ShoppingList list = checkListBelongsToUserHousehold(userId, listId);
 
@@ -190,25 +221,18 @@ public class ShoppingListServiceImpl implements ShoppingListService {
             throw new InstanceNotFoundException("project.entities.shoppinglist", listId);
         }
 
-        //Si hay ítems sin marcar y el usuario no ha confirmado (force=false),
-        //lanza la excepción con el número de ítems pendientes. 
-        //El frontend la captura y muestra el Alert "¿Seguro? Quedan X productos sin marcar".
-        //Si confirma, llama de nuevo con force=true
-        long uncheckedCount = shoppingListItemDao.countByShoppingListIdAndChecked(listId, false);
-        if (!force && uncheckedCount > 0) {
-            throw new UncheckedItemsRemainingException(uncheckedCount);
-        }
-
         List<ShoppingListItem> allItems = shoppingListItemDao.findByShoppingListId(listId);
 
-        //Productos conocidos por el hogar
         List<ShoppingListItem> checkedKnown = allItems.stream()
                 .filter(i -> i.isChecked() && i.getProduct() != null)
                 .collect(Collectors.toList());
 
-        //Productos no conocidos por el hogar
         List<ShoppingListItem> checkedCustom = allItems.stream()
                 .filter(i -> i.isChecked() && i.getProduct() == null && i.getCustomProductName() != null)
+                .collect(Collectors.toList());
+
+        List<ShoppingListItem> unchecked = allItems.stream()
+                .filter(i -> !i.isChecked())
                 .collect(Collectors.toList());
 
         checkedKnown.forEach(i -> {
@@ -222,6 +246,26 @@ public class ShoppingListServiceImpl implements ShoppingListService {
         list.setStatus(ShoppingList.Status.COMPLETED);
         list.setCompletedAt(LocalDateTime.now().withNano(0));
         shoppingListDao.save(list);
+
+        if (!unchecked.isEmpty()) {
+            ShoppingList newList = new ShoppingList(list.getHousehold(), null, LocalDateTime.now().withNano(0));
+            newList = shoppingListDao.save(newList);
+            LocalDateTime now = LocalDateTime.now().withNano(0);
+
+            for (ShoppingListItem oldItem : unchecked) {
+                ShoppingListItem newItem = new ShoppingListItem(
+                        newList, oldItem.getProduct(),
+                        oldItem.getCustomProductName(), oldItem.getCustomProductBrand(),
+                        oldItem.getItemCount(), oldItem.isAutoAdded());
+                newItem = shoppingListItemDao.save(newItem);
+
+                List<ShoppingListItemAddedBy> addedBys = shoppingListItemAddedByDao.findByShoppingListItemId(oldItem.getId());
+                final ShoppingListItem savedNewItem = newItem;
+                for (ShoppingListItemAddedBy ab : addedBys) {
+                    shoppingListItemAddedByDao.save(new ShoppingListItemAddedBy(savedNewItem, ab.getUser(), now));
+                }
+            }
+        }
 
         return new FinalizeShoppingListResult(checkedKnown, checkedCustom);
     }
@@ -269,7 +313,7 @@ public class ShoppingListServiceImpl implements ShoppingListService {
             if (shoppingListItemDao.existsByShoppingListIdAndProductId(list.getId(), productId)) return;
 
             Product product = permissionChecker.checkProductExistsInHousehold(productId, householdId);
-            ShoppingListItem item = new ShoppingListItem(list, product, null, null, product.getQuantity(), product.getUnit(), true);
+            ShoppingListItem item = new ShoppingListItem(list, product, null, null, null, true);
             item = shoppingListItemDao.save(item);
 
             LocalDateTime now = LocalDateTime.now().withNano(0);
@@ -328,7 +372,7 @@ public class ShoppingListServiceImpl implements ShoppingListService {
             if (pi == null) continue;
 
             Product product = pi.getProduct();
-            ShoppingListItem item = new ShoppingListItem(list, product, null, null, product.getQuantity(), product.getUnit(), true);
+            ShoppingListItem item = new ShoppingListItem(list, product, null, null, null, true);
             item = shoppingListItemDao.save(item);
 
             for (Long uid : userIds) {

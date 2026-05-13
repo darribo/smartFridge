@@ -38,6 +38,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
   const currentHouseholdId = useHouseholdStore((s) => s.currentHouseholdId);
   const householdId = route.params?.householdId ?? currentHouseholdId;
   const barcodeProduct = route.params?.barcodeProduct;
+  const initialItemCount = route.params?.initialItemCount;
   const existingSeedFromRoute = useMemo(() => toExistingProductSeed(barcodeProduct), [barcodeProduct]);
   const [createdProductSeed, setCreatedProductSeed] = useState<ExistingProduct | null>(null);
   const [isFirstTime, setIsFirstTime] = useState(() => !existingSeedFromRoute);
@@ -115,6 +116,7 @@ export default function AddProductScreen({ navigation, route }: Props) {
           <ExistingProductItemForm
             householdId={householdId}
             selectedProductSeed={selectedProductSeed}
+            initialItemCount={initialItemCount}
             onCompleted={() => navigation.goBack()}
           />
         )}

@@ -78,6 +78,7 @@ public class ProductController {
 
     private static final String INVALID_EXPIRATION_DATE_EXCEPTION_CODE = "project.exceptions.InvalidExpirationDateException";
     private static final String PRODUCT_IS_NOT_FOOD_EXCEPTION_CODE = "project.exceptions.ProductIsNotFoodException";
+    private static final String DUPLICATE_PRODUCT_CODE = "project.exceptions.DuplicateProduct";
 
     private static final int SEARCH_PRODUCTS_SIZE = 5;
 
@@ -92,6 +93,14 @@ public class ProductController {
 
     @Autowired
     private UserService userService;
+
+    @ExceptionHandler(DuplicateInstanceException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ResponseBody
+    public ErrorsDto handleDuplicateProduct(DuplicateInstanceException ex, Locale locale) {
+        String msg = messageSource.getMessage(DUPLICATE_PRODUCT_CODE, null, DUPLICATE_PRODUCT_CODE, locale);
+        return new ErrorsDto(msg);
+    }
 
     @ExceptionHandler(InvalidExpirationDateException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)

@@ -18,5 +18,10 @@ public interface ShoppingListItemDao extends JpaRepository<ShoppingListItem, Lon
 
     boolean existsByShoppingListIdAndProductId(Long shoppingListId, Long productId);
 
+    boolean existsByShoppingListIdAndCustomProductNameIgnoreCase(Long shoppingListId, String customProductName);
+
+    @Query("SELECT COUNT(sli) > 0 FROM ShoppingListItem sli JOIN sli.product p WHERE sli.shoppingList.id = :listId AND LOWER(p.name) = LOWER(:name)")
+    boolean existsByShoppingListIdAndProductNameIgnoreCase(@Param("listId") Long listId, @Param("name") String name);
+
     long countByShoppingListIdAndChecked(Long shoppingListId, boolean checked);
 }

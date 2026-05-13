@@ -40,7 +40,7 @@ export type AuthStackParamList = {
   UpdateHousehold: { household: Household };
   MyHouseholds: undefined;
   HouseholdDetail: { householdId: number };
-  AddProduct: { householdId: number; barcodeProduct?: BarcodeProduct } | undefined;
+  AddProduct: { householdId: number; barcodeProduct?: BarcodeProduct; initialItemCount?: number } | undefined;
   ScanProduct: { householdId: number };
   ProductLocationSelector: undefined;
   MyProducts: { storageFilter: "ALL" | "PANTRY" | "FRIDGE" | "FREEZER" } | undefined;

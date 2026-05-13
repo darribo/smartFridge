@@ -26,6 +26,7 @@ import {
   getActiveShoppingList,
   removeItemFromList,
   toggleItemChecked,
+  updateItemCount,
   type FinalizeShoppingListResult,
   type ShoppingList,
   type ShoppingListItem,
@@ -59,8 +60,9 @@ export default function ShoppingListScreen({ navigation }: Props) {
   const [errors, setErrors] = useState<string[]>([]);
 
   const togglingItemIds = useRef<Set<number>>(new Set());
-  const pendingFinalizeItems = useRef<Array<{ householdId: number; barcodeProduct: BarcodeProduct }>>([]);
+  const pendingFinalizeItems = useRef<Array<{ householdId: number; barcodeProduct: BarcodeProduct; initialItemCount?: number }>>([]);
   const inFinalizeFlow = useRef(false);
+  const doFinalizeNavigationRef = useRef(() => {});
 
   const extractErrors = useCallback((err: ApiError): string[] => {
     if (Array.isArray(err.globalErrors) && err.globalErrors.length > 0) {
@@ -74,6 +76,27 @@ export default function ShoppingListScreen({ navigation }: Props) {
     }
     return [t("common.networkError")];
   }, [t]);
+
+  doFinalizeNavigationRef.current = () => {
+    if (pendingFinalizeItems.current.length === 0) {
+      inFinalizeFlow.current = false;
+      navigation.navigate("Home");
+      return;
+    }
+    const next = pendingFinalizeItems.current.shift()!;
+    if (next.barcodeProduct.id === null) {
+      Alert.alert(
+        t("shoppingList.registerProductTitle"),
+        t("shoppingList.registerProductMessage", { name: next.barcodeProduct.name ?? "" }),
+        [
+          { text: t("shoppingList.skip"), style: "cancel", onPress: () => doFinalizeNavigationRef.current() },
+          { text: t("shoppingList.registerProduct"), onPress: () => navigation.navigate("AddProduct", next) },
+        ]
+      );
+      return;
+    }
+    navigation.navigate("AddProduct", next);
+  };
 
   const loadList = useCallback(() => {
     if (!householdId) {
@@ -102,17 +125,11 @@ export default function ShoppingListScreen({ navigation }: Props) {
   useFocusEffect(
     useCallback(() => {
       if (inFinalizeFlow.current) {
-        if (pendingFinalizeItems.current.length > 0) {
-          const next = pendingFinalizeItems.current.shift()!;
-          navigation.navigate("AddProduct", next);
-          return;
-        }
-        inFinalizeFlow.current = false;
-        navigation.navigate("Home");
+        doFinalizeNavigationRef.current();
         return;
       }
       loadList();
-    }, [loadList, navigation])
+    }, [loadList])
   );
 
   const handleCreate = () => {
@@ -146,6 +163,16 @@ export default function ShoppingListScreen({ navigation }: Props) {
         togglingItemIds.current.delete(itemId);
       }
     );
+  };
+
+  const handleUpdateCount = (itemId: number, newCount: number) => {
+    if (!list) return;
+    setList((prev) => withItemReplaced(prev, itemId,
+      { ...prev!.items.find((i) => i.id === itemId)!, itemCount: newCount }
+    ));
+    updateItemCount(list.id, itemId, newCount, (updated) => {
+      setList((prev) => withItemReplaced(prev, itemId, updated));
+    });
   };
 
   const handleRemove = (itemId: number) => {
@@ -199,9 +226,8 @@ export default function ShoppingListScreen({ navigation }: Props) {
           barcode: "",
           name: item.productName ?? "",
           image: item.productImage ?? null,
-          quantity: item.quantity ?? null,
-          unit: item.unit ?? null,
         } as BarcodeProduct,
+        initialItemCount: item.itemCount ?? undefined,
       })),
       ...result.checkedCustomItems.map((item) => ({
         householdId: hid,
@@ -211,16 +237,16 @@ export default function ShoppingListScreen({ navigation }: Props) {
           name: item.customProductName ?? "",
           brand: item.customProductBrand ?? null,
         } as BarcodeProduct,
+        initialItemCount: item.itemCount ?? undefined,
       })),
     ];
   };
 
-  const doFinalize = (force: boolean) => {
+  const doFinalize = () => {
     if (!list) return;
     setActionLoading(true);
     finalizeShoppingList(
       list.id,
-      force,
       (result) => {
         setActionLoading(false);
         setList(null);
@@ -229,31 +255,33 @@ export default function ShoppingListScreen({ navigation }: Props) {
           navigation.navigate("Home");
           return;
         }
-        pendingFinalizeItems.current = queue.slice(1);
+        pendingFinalizeItems.current = queue;
         inFinalizeFlow.current = true;
-        navigation.navigate("AddProduct", queue[0]);
+        doFinalizeNavigationRef.current();
       },
       (err) => {
         setActionLoading(false);
-        if (err.status === 409) {
-          const match = /\d+/.exec(err.globalErrors?.[0] ?? "");
-          const count = match ? Number.parseInt(match[0], 10) : 0;
-          Alert.alert(
-            t("shoppingList.finalizeConfirmTitle"),
-            t("shoppingList.finalizeConfirmMessage", { count }),
-            [
-              { text: t("shoppingList.cancel"), style: "cancel" },
-              { text: t("shoppingList.finalizeAnyway"), onPress: () => doFinalize(true) },
-            ]
-          );
-        } else {
-          setErrors(extractErrors(err));
-        }
+        setErrors(extractErrors(err));
       }
     );
   };
 
-  const handleFinalize = () => doFinalize(false);
+  const handleFinalize = () => {
+    if (!list) return;
+    const uncheckedCount = list.items.filter((i) => !i.checked).length;
+    if (uncheckedCount > 0) {
+      Alert.alert(
+        t("shoppingList.finalizeConfirmTitle"),
+        t("shoppingList.finalizeConfirmMessage", { count: uncheckedCount }),
+        [
+          { text: t("shoppingList.cancel"), style: "cancel" },
+          { text: t("shoppingList.finalizeAnyway"), onPress: doFinalize },
+        ]
+      );
+      return;
+    }
+    doFinalize();
+  };
 
   const checkedCount = list?.items.filter((i) => i.checked).length ?? 0;
   const totalCount = list?.items.length ?? 0;
@@ -307,6 +335,7 @@ export default function ShoppingListScreen({ navigation }: Props) {
                 item={item}
                 onToggle={handleToggle}
                 onRemove={handleRemove}
+                onUpdateCount={handleUpdateCount}
                 disabled={actionLoading}
               />
             )}
@@ -328,9 +357,9 @@ export default function ShoppingListScreen({ navigation }: Props) {
               <Text style={styles.ghostBtnText}>{t("shoppingList.addItem")}</Text>
             </Pressable>
             <Pressable
-              style={[styles.primaryBtn, actionLoading && styles.btnDisabled]}
+              style={[styles.primaryBtn, (actionLoading || totalCount === 0) && styles.btnDisabled]}
               onPress={handleFinalize}
-              disabled={actionLoading}
+              disabled={actionLoading || totalCount === 0}
             >
               {actionLoading ? (
                 <ActivityIndicator size="small" color="#0B2817" />

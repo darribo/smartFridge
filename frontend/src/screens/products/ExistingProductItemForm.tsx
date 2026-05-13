@@ -31,12 +31,14 @@ import { FallbackImage } from "../../components/common/FallbackImage";
 type Props = {
   householdId: number;
   selectedProductSeed?: ExistingProduct | null;
+  initialItemCount?: number;
   onCompleted: () => void;
 };
 
 export default function ExistingProductItemForm({
   householdId,
   selectedProductSeed,
+  initialItemCount,
   onCompleted,
 }: Props) {
   //Se hace la búsqueda de producto existente y la creación de uno o varios items.
@@ -72,10 +74,10 @@ export default function ExistingProductItemForm({
     setSearch(selectedProductSeed.name);
     setPricePaid(selectedProductSeed.defaultPrice ?? "");
     setInitialQuantityValue(selectedProductSeed.quantity ?? "");
-    setItemCount(1);
+    setItemCount(initialItemCount ?? 1);
     setStorageLocation("PANTRY");
     setGlobalErrors([]);
-  }, [selectedProductSeed]);
+  }, [selectedProductSeed, initialItemCount]);
 
   const decrementCount = () => setItemCount((prev) => Math.max(1, prev - 1));
   const incrementCount = () => setItemCount((prev) => Math.min(99, prev + 1));

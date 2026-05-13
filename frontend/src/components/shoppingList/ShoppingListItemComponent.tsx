@@ -11,10 +11,11 @@ type Props = {
   item: ShoppingListItem;
   onToggle: (itemId: number) => void;
   onRemove: (itemId: number) => void;
+  onUpdateCount: (itemId: number, newCount: number) => void;
   disabled?: boolean;
 };
 
-export default function ShoppingListItemComponent({ item, onToggle, onRemove, disabled }: Props) {
+export default function ShoppingListItemComponent({ item, onToggle, onRemove, onUpdateCount, disabled }: Props) {
   const { t } = useTranslation();
 
   const name = item.productName ?? item.customProductName ?? "—";
@@ -82,11 +83,8 @@ export default function ShoppingListItemComponent({ item, onToggle, onRemove, di
           </Text>
         ) : null}
 
-        {item.quantity != null ? (
-          <Text style={styles.sub}>
-            {item.quantity}
-            {item.unit ? ` ${item.unit.toLowerCase()}` : ""}
-          </Text>
+        {item.itemCount != null && item.itemCount > 1 ? (
+          <Text style={styles.sub}>× {item.itemCount}</Text>
         ) : null}
 
         {item.autoAdded && !item.checked ? (
@@ -101,6 +99,26 @@ export default function ShoppingListItemComponent({ item, onToggle, onRemove, di
           </Text>
         ) : null}
       </View>
+
+      {!item.checked && (
+        <View style={styles.stepper}>
+          <Pressable
+            hitSlop={8}
+            style={styles.stepperBtn}
+            onPress={() => !disabled && onUpdateCount(item.id, Math.max(1, (item.itemCount ?? 1) - 1))}
+          >
+            <MaterialCommunityIcons name="minus" size={14} color={THEME.text} />
+          </Pressable>
+          <Text style={styles.stepperCount}>{item.itemCount ?? 1}</Text>
+          <Pressable
+            hitSlop={8}
+            style={styles.stepperBtn}
+            onPress={() => !disabled && onUpdateCount(item.id, Math.min(99, (item.itemCount ?? 1) + 1))}
+          >
+            <MaterialCommunityIcons name="plus" size={14} color={THEME.text} />
+          </Pressable>
+        </View>
+      )}
 
       <Pressable
         onPress={() => !disabled && onRemove(item.id)}
@@ -189,6 +207,26 @@ const styles = StyleSheet.create({
     color: THEME.primary,
     fontWeight: "600",
     marginTop: 2,
+  },
+  stepper: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  stepperBtn: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    backgroundColor: THEME.mint2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  stepperCount: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: THEME.text,
+    minWidth: 18,
+    textAlign: "center",
   },
   deleteBtn: {
     padding: 4,
