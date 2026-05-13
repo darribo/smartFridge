@@ -50,6 +50,7 @@ public class ProductItemConversor {
 
         return new ProductWithLittleStockDto(
                 productItem.getId(),
+                productItem.getProduct().getId(),
                 productItem.getProduct().getName(),
                 productItem.getProduct().getImage(),
                 productItem.getQuantityRemainingValue() != null ? productItem.getQuantityRemainingValue().toString() : null,

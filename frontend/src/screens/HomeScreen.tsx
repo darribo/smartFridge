@@ -345,7 +345,7 @@ export default function HomeScreen({ navigation }: Props) {
                 onPress={() => {
                   if (heroMode === "allGood") openAiModal();
                   else if (heroMode === "expiring") openAiModalWithExpiring();
-                  else navigation.navigate("ProductLocationSelector");
+                  else navigation.navigate("LittleStockProducts");
                 }}
               >
                 {loadingAiModal
@@ -386,7 +386,7 @@ export default function HomeScreen({ navigation }: Props) {
             </Pressable>
             <Pressable
               style={({ pressed }) => [styles.metricCard, pressed && styles.metricCardPressed, lowStockCount === 0 && styles.metricCardDisabled]}
-              onPress={() => lowStockCount > 0 ? navigation.navigate("MyProducts", { storageFilter: "ALL" }) : undefined}
+              onPress={() => lowStockCount > 0 ? navigation.navigate("LittleStockProducts") : undefined}
             >
               <View style={[styles.metricIconWrap, { backgroundColor: "#F0EBFC" }]}>
                 <MaterialCommunityIcons name="trending-down" size={16} color="#7B54C9" />

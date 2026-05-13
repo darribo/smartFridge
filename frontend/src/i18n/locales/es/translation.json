@@ -515,6 +515,16 @@
       "errors": {
         "default": "No se pudieron cargar los productos."
       }
+    },
+    "littleStock": {
+      "title": "Poco stock",
+      "subtitle": "Menos del 25% de cantidad inicial",
+      "badge": "Poco stock",
+      "percentRemaining": "{{percent}}% restante",
+      "empty": "No hay productos con poco stock",
+      "errors": {
+        "default": "No se pudieron cargar los productos."
+      }
     }
   },
   "profileMenu": {

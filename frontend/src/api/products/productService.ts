@@ -122,6 +122,15 @@ export type ExpiringProduct = {
     daysRemaining: number;
 }
 
+export type LittleStockProduct = {
+    id: number | null;
+    productId: number;
+    productName: string;
+    productImage?: string | null;
+    quantityRemainingValue?: string | null;
+    initialQuantityValue?: string | null;
+}
+
 
 export const createProduct = async (householdId: number, params: NewProductParams, onSuccess?: (product: Product) => void, onError?: (err: ApiError) => void) => {
 
@@ -388,6 +397,21 @@ export const countExpiringProducts = async (
 ) => {
     const options = await fetchConfig("GET");
     return appFetch(`/products/${householdId}/count/expiring`, options, onSuccess, onError);
+};
+
+export const getLittleStockProducts = async (
+    householdId: number,
+    page: number,
+    onSuccess?: (block: Block<LittleStockProduct>) => void,
+    onError?: (err: ApiError) => void
+) => {
+    const options = await fetchConfig("GET");
+    return appFetch(
+        `/products/${householdId}/littleStock?page=${page}`,
+        options,
+        onSuccess,
+        onError
+    );
 };
 
 export const countLittleStockProducts = async (

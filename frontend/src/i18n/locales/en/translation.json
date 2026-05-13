@@ -514,6 +514,16 @@
       "errors": {
         "default": "Could not load products."
       }
+    },
+    "littleStock": {
+      "title": "Low stock",
+      "subtitle": "Less than 25% of initial quantity",
+      "badge": "Low stock",
+      "percentRemaining": "{{percent}}% remaining",
+      "empty": "No products with low stock",
+      "errors": {
+        "default": "Could not load products."
+      }
     }
   },
   "profileMenu": {

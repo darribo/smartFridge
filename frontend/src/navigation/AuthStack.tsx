@@ -22,6 +22,7 @@ import ProductDetailScreen from "../screens/products/ProductDetailScreen";
 import EditProductScreen from "../screens/products/EditProductScreen";
 import ProductLocationSelectorScreen from "../screens/products/ProductLocationSelectorScreen";
 import ExpiringProductsScreen from "../screens/products/ExpiringProductsScreen";
+import LittleStockScreen from "../screens/products/LittleStockScreen";
 import AddRecipeScreen from "../screens/recipes/AddRecipeScreen";
 import MyRecipesScreen from "../screens/recipes/MyRecipes";
 import RecipeDetailScreen from "../screens/recipes/RecipeDetailScreen";
@@ -45,6 +46,7 @@ export type AuthStackParamList = {
   ProductLocationSelector: undefined;
   MyProducts: { storageFilter: "ALL" | "PANTRY" | "FRIDGE" | "FREEZER" } | undefined;
   ExpiringProducts: undefined;
+  LittleStockProducts: undefined;
   ProductDetail: { productId: number };
   AddRecipe: { householdId?: number; initialRecipe?: NewRecipeParams; recipeId?: number } | undefined;
   EditProduct: { productId: number };
@@ -79,6 +81,7 @@ export function AuthStack() {
       <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
       <Stack.Screen name="EditProduct" component={EditProductScreen} />
       <Stack.Screen name="ExpiringProducts" component={ExpiringProductsScreen} />
+      <Stack.Screen name="LittleStockProducts" component={LittleStockScreen} />
       <Stack.Screen name="ShoppingList" component={ShoppingListScreen} />
       <Stack.Screen name="AddShoppingItem" component={AddShoppingItemScreen} />
       <Stack.Screen name="HouseholdDetail">

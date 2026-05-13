@@ -3,6 +3,7 @@ package es.udc.bonilla.rivera.daniel.rest.dtos;
 public class ProductWithLittleStockDto {
 
     private Long id;
+    private Long productId;
     private String productName;
     private String productImage;
     private String quantityRemainingValue;
@@ -10,9 +11,10 @@ public class ProductWithLittleStockDto {
 
     public ProductWithLittleStockDto() {}
 
-    public ProductWithLittleStockDto(Long id, String productName, String productImage,
+    public ProductWithLittleStockDto(Long id, Long productId, String productName, String productImage,
             String quantityRemainingValue, String initialQuantityValue) {
         this.id = id;
+        this.productId = productId;
         this.productName = productName;
         this.productImage = productImage;
         this.quantityRemainingValue = quantityRemainingValue;
@@ -21,6 +23,9 @@ public class ProductWithLittleStockDto {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public Long getProductId() { return productId; }
+    public void setProductId(Long productId) { this.productId = productId; }
 
     public String getProductName() { return productName; }
     public void setProductName(String productName) { this.productName = productName; }
