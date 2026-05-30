@@ -325,7 +325,8 @@ public class ProductController {
             throws InstanceNotFoundException, InvalidExpirationDateException, OptimisticLockingException {
 
         return ProductItemConversor.toProductItemDto(productService.updateProductItem(userId, itemId,
-                params.getVersion(), params.getExpirationDate(), params.getPricePaid(), params.getStorageLocation()));
+                params.getVersion(), params.getExpirationDate(), params.getPricePaid(), params.getStorageLocation(),
+                params.getQuantityRemainingValue()));
     }
 
     @DeleteMapping("/{productId}/items/{itemId}")

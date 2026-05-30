@@ -208,7 +208,7 @@ class ProductServiceTest {
                 "2026-03-10T10:00:00", "3.10", ProductItem.StorageLocation.FRIDGE, null);
 
         ProductItem updated = productService.updateProductItem(admin.getId(), created.getId(), created.getVersion(),
-                "2026-03-12T10:00:00", "3.40", ProductItem.StorageLocation.FREEZER);
+                "2026-03-12T10:00:00", "3.40", ProductItem.StorageLocation.FREEZER, null);
 
         assertEquals(LocalDateTime.parse("2026-03-12T10:00:00"), updated.getExpirationDate());
         assertEquals(new BigDecimal("3.40"), updated.getPricePaid());

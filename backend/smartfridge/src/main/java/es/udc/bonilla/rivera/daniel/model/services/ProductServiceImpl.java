@@ -241,7 +241,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     /** {@inheritDoc} */
     public ProductItem updateProductItem(Long userId, Long productItemId, Long version, String expirationDate, String pricePaid,
-            ProductItem.StorageLocation storageLocation)
+            ProductItem.StorageLocation storageLocation, String quantityRemainingValue)
             throws InstanceNotFoundException, InvalidExpirationDateException, OptimisticLockingException {
 
         ProductItem productItem = permissionChecker.checkProductItemExists(productItemId);
@@ -258,6 +258,10 @@ public class ProductServiceImpl implements ProductService {
         productItem.setExpirationDate(parsedExpirationDate);
         productItem.setPricePaid(parseBigDecimal(pricePaid));
         productItem.setStorageLocation(storageLocation);
+
+        if (quantityRemainingValue != null) {
+            productItem.setQuantityRemainingValue(parseBigDecimal(quantityRemainingValue));
+        }
 
         return productItem;
     }

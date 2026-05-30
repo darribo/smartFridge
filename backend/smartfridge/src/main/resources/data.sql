@@ -55,7 +55,7 @@ INSERT INTO Household (id, name, description, countryCode, regionCode, regionNam
 INSERT INTO UserHousehold (userId, householdId, joinedAt) VALUES
     (1, 10, '2026-02-17 09:00:00'),
     (2, 10, '2026-02-17 09:05:00');
-/*,
+/* Usuarios adicionales comentados:
     (3, 10, '2026-02-17 09:10:00'),
     (4, 10, '2026-02-17 09:15:00'),
     (1, 11, '2026-02-18 08:00:00'),
@@ -68,6 +68,7 @@ INSERT INTO UserHousehold (userId, householdId, joinedAt) VALUES
     (1, 13, '2026-02-20 09:00:00'),
     (3, 14, '2026-02-20 09:10:00'),
     (4, 14, '2026-02-20 09:12:00');
+*/
 
 INSERT INTO Product (
     id, householdId, barcode, name, brand, image, quantity, unit, vegetarian, vegan, nutriScoreGrade, novaGroup, createdAt, defaultPrice, daysAfterOpening
@@ -135,43 +136,43 @@ INSERT INTO ProductItem (id, productId, purchaseDate, expirationDate, storageLoc
 -- dietType:     0=STANDARD, 1=VEGETARIAN, 2=VEGAN
 -- mealType:     0=BREAKFAST, 1=LUNCH, 2=DINNER
 -- seasonType:   0=SPRING, 1=SUMMER, 2=AUTUMN, 3=WINTER, 4=ALL_YEAR
-INSERT INTO Recipe (id, createdByUserId, title, description, image, servings, preparationMinutes, cookingMinutes, totalMinutes, difficulty, cuisineType, dietType, mealType, seasonType, vegetarian, vegan, instructions, notes, generationSource, createdAt, updatedAt) VALUES
-    (1, 1, 'Tortilla de Patatas',
+INSERT INTO Recipe (id, createdByUserId, householdId, title, description, image, servings, preparationMinutes, cookingMinutes, totalMinutes, difficulty, cuisineType, dietType, mealType, seasonType, vegetarian, vegan, instructions, notes, generationSource, createdAt, updatedAt) VALUES
+    (1, 1, 10, 'Tortilla de Patatas',
         'La tortilla española clásica, jugosa por dentro y dorada por fuera.',
         NULL, 4, 15, 20, 35, 0, 0, 1, 1, 4, 1, 0,
         '1. Pela y corta las patatas en láminas finas.\n2. Fríelas en abundante aceite a fuego medio hasta que estén tiernas.\n3. Bate los huevos con sal y añade las patatas escurridas.\n4. Cuaja la tortilla en una sartén antiadherente a fuego suave, dándole la vuelta con un plato.',
         'El truco está en no dejarla cuajar demasiado para que quede jugosa.',
         'USER', '2026-03-10 12:00:00', '2026-03-10 12:00:00'),
 
-    (2, 1, 'Lentejas con Verduras',
+    (2, 1, 10, 'Lentejas con Verduras',
         'Guiso tradicional de lentejas con zanahoria, cebolla y ajo. Reconfortante y nutritivo.',
         NULL, 4, 10, 40, 50, 0, 0, 2, 2, 3, 1, 1,
         '1. Pon las lentejas en una olla con agua fría.\n2. Añade la zanahoria en rodajas, la cebolla troceada y los ajos enteros.\n3. Agrega el tomate frito y el caldo.\n4. Cocina a fuego medio 35-40 minutos hasta que las lentejas estén tiernas.\n5. Salpimienta y ajusta de líquido si es necesario.',
         'No hace falta remojar las lentejas pardinas.',
         'USER', '2026-03-12 19:00:00', '2026-03-12 19:00:00'),
 
-    (3, 1, 'Pasta con Tomate y Atún',
+    (3, 1, 10, 'Pasta con Tomate y Atún',
         'Receta rápida de pasta con salsa de tomate casera y atún. Lista en 20 minutos.',
         NULL, 2, 5, 15, 20, 0, 1, 0, 1, 4, 0, 0,
         '1. Cuece la pasta en agua con sal según indicaciones del paquete.\n2. Sofríe el ajo laminado en aceite.\n3. Añade el tomate triturado y cocina 10 minutos.\n4. Incorpora el atún escurrido, mezcla y sirve sobre la pasta.',
         'Con atún en aceite queda más sabroso.',
         'USER', '2026-03-15 13:30:00', '2026-03-15 13:30:00'),
 
-    (4, 1, 'Pollo al Ajillo',
+    (4, 1, 10, 'Pollo al Ajillo',
         'Clásico pollo al ajillo en su punto, con los ajos dorados y jugosos.',
         NULL, 3, 10, 30, 40, 1, 0, 0, 2, 4, 0, 0,
         '1. Salpimienta los trozos de pollo.\n2. Dora el pollo en aceite caliente a fuego alto por todos los lados.\n3. Añade los ajos sin pelar y baja el fuego.\n4. Agrega el vino blanco, tapa y cocina 20 minutos hasta que el pollo esté hecho.',
         'Aplasta ligeramente los ajos antes de echarlos para que suelten más sabor.',
         'USER', '2026-03-18 20:00:00', '2026-03-18 20:00:00'),
 
-    (5, 1, 'Ensalada de Garbanzos',
+    (5, 1, 10, 'Ensalada de Garbanzos',
         'Ensalada mediterránea fresquita con garbanzos, pimiento y cebolla morada.',
         NULL, 2, 10, 0, 10, 0, 7, 2, 1, 1, 1, 1,
         '1. Escurre y enjuaga los garbanzos cocidos.\n2. Corta el pimiento en tiras y la cebolla en juliana fina.\n3. Mezcla todo en un bol.\n4. Aliña con aceite de oliva, zumo de limón, sal y comino al gusto.',
         'Mejor si reposa 30 minutos en la nevera antes de servir.',
         'USER', '2026-03-20 14:00:00', '2026-03-20 14:00:00'),
 
-    (6, 1, 'Espinacas a la Crema',
+    (6, 1, 10, 'Espinacas a la Crema',
         'Espinacas salteadas con nata y ajo, cremosas y listas en 15 minutos.',
         NULL, 2, 5, 10, 15, 0, 0, 1, 2, 3, 1, 0,
         '1. Saltea los ajos laminados en mantequilla a fuego medio.\n2. Añade las espinacas frescas y rehoga hasta que pierdan el volumen.\n3. Vierte la nata y cocina 5 minutos hasta que espese.\n4. Salpimienta y sirve caliente.',
@@ -216,9 +217,11 @@ INSERT INTO RecipeIngredient (id, recipeId, name, quantityValue, unit, notes, op
     (28, 6, 'Ajo',               2.00,   4, NULL,                   0, 3, 113),
     (29, 6, 'Mantequilla',       20.00,  0, NULL,                   0, 4, 115);
 
+/* Invitaciones comentadas (referencian usuarios adicionales comentados):
 -- status enum (ordinal): 0 = ACCEPTED, 1 = PENDING, 2 = REJECTED
 INSERT INTO HouseholdInvitation (id, householdId, hostId, guestId, sendingDate, responseDate, status) VALUES
     (100, 10, 1, 3, '2026-02-17 11:00:00', NULL, 1),
     (101, 10, 1, 4, '2026-02-17 11:10:00', '2026-02-17 11:30:00', 0),
     (102, 11, 3, 2, '2026-02-17 11:20:00', '2026-02-17 11:40:00', 2),
-    (103, 12, 1, 5, '2026-02-19 15:20:00', NULL, 1); */
+    (103, 12, 1, 5, '2026-02-19 15:20:00', NULL, 1);
+*/

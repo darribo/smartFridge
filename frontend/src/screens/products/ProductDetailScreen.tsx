@@ -2,7 +2,9 @@ import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -208,7 +210,7 @@ function EditItemModal({ item, product, visible, onClose, onSaved, t }: EditItem
   const [expirationDate, setExpirationDate] = useState<Date | null>(null);
   const [pricePaid, setPricePaid] = useState("");
   const [storageLocation, setStorageLocation] = useState<ProductItemStorageLocation>("FRIDGE");
-  const [initialQuantityValue, setInitialQuantityValue] = useState("");
+  const [quantityRemainingValue, setQuantityRemainingValue] = useState("");
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [fieldErrors, setFieldErrors] = useState<{ pricePaid?: string; quantity?: string }>({});
@@ -218,7 +220,7 @@ function EditItemModal({ item, product, visible, onClose, onSaved, t }: EditItem
       setExpirationDate(item.expirationDate ? new Date(item.expirationDate) : null);
       setPricePaid(item.pricePaid ?? "");
       setStorageLocation(item.storageLocation);
-      setInitialQuantityValue(item.initialQuantityValue ?? "");
+      setQuantityRemainingValue(item.quantityRemainingValue ?? item.initialQuantityValue ?? "");
       setErrors([]);
       setFieldErrors({});
     }
@@ -237,8 +239,8 @@ function EditItemModal({ item, product, visible, onClose, onSaved, t }: EditItem
       if (isNaN(p)) errs.pricePaid = t("addProduct.errors.invalidDecimal");
       else if (p > PRICE_LIMIT) errs.pricePaid = t("addProduct.errors.maxDecimal");
     }
-    if (initialQuantityValue.trim()) {
-      const q = parseNonNegativeDecimal(initialQuantityValue);
+    if (quantityRemainingValue.trim()) {
+      const q = parseNonNegativeDecimal(quantityRemainingValue);
       if (isNaN(q)) errs.quantity = t("addProduct.errors.invalidDecimal");
       else if (q > QUANTITY_LIMIT) errs.quantity = t("addProduct.errors.maxQuantity");
     }
@@ -260,7 +262,7 @@ function EditItemModal({ item, product, visible, onClose, onSaved, t }: EditItem
         expirationDate: expDateFormatted,
         pricePaid: pricePaid.trim() || null,
         storageLocation,
-        initialQuantityValue: initialQuantityValue.trim() || null,
+        quantityRemainingValue: quantityRemainingValue.trim() || null,
         version: item.version,
       },
       () => {
@@ -279,7 +281,7 @@ function EditItemModal({ item, product, visible, onClose, onSaved, t }: EditItem
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.modalBackdrop} onPress={onClose} />
-      <View style={styles.sheetWrap}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.sheetWrap}>
         <View style={styles.sheet}>
           <View style={styles.sheetHandle} />
           <Text style={styles.sheetTitle}>{t("editProduct.editItem")}</Text>
@@ -310,8 +312,8 @@ function EditItemModal({ item, product, visible, onClose, onSaved, t }: EditItem
           <FormLabel text={t("addProduct.fields.initialQuantityValue", { unit: quantityUnit })} />
           <TextInput
             style={[styles.sheetInput, fieldErrors.quantity ? styles.sheetInputError : null]}
-            value={initialQuantityValue}
-            onChangeText={setInitialQuantityValue}
+            value={quantityRemainingValue}
+            onChangeText={setQuantityRemainingValue}
             placeholder={t("addProduct.placeholders.decimal")}
             placeholderTextColor={THEME.muted}
             keyboardType="decimal-pad"
@@ -337,7 +339,7 @@ function EditItemModal({ item, product, visible, onClose, onSaved, t }: EditItem
             )}
           </Pressable>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

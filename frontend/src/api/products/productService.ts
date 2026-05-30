@@ -296,7 +296,7 @@ export type UpdateProductItemParams = {
     expirationDate?: string | null;
     pricePaid?: string | null;
     storageLocation: ProductItemStorageLocation;
-    initialQuantityValue?: string | null;
+    quantityRemainingValue?: string | null;
     version: number;
 }
 

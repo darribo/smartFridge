@@ -1,5 +1,6 @@
 import difflib
 import os
+import re
 from pathlib import Path
 
 from openai import OpenAI
@@ -80,6 +81,10 @@ def _post_process(recipe: RecipeDto, products: list[ProductDto]) -> RecipeDto:
         # Cap quantity to available stock
         if product.availableQuantity is not None and ing.quantityValue > product.availableQuantity:
             ing.quantityValue = product.availableQuantity
+
+    # Ensure numbered steps are separated by newlines
+    recipe.instructions = re.sub(r'\s+(\d+\.)\s+', r'\n\1 ', recipe.instructions).strip()
+    recipe.description = re.sub(r'\s+(\d+\.)\s+', r'\n\1 ', recipe.description).strip()
 
     # Fix vegetarian/vegan flags based on actual ingredients
     linked = [product_map.get(ing.productId) for ing in recipe.ingredients]

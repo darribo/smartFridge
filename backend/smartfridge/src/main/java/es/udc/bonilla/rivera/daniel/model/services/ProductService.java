@@ -110,7 +110,7 @@ public interface ProductService {
      * @throws InvalidExpirationDateException Si la fecha de caducidad es anterior a la fecha de compra.
      */
     ProductItem updateProductItem(Long userId, Long productItemId, Long version, String expirationDate, String pricePaid,
-            ProductItem.StorageLocation storageLocation)
+            ProductItem.StorageLocation storageLocation, String quantityRemainingValue)
             throws InstanceNotFoundException, InvalidExpirationDateException, OptimisticLockingException;
 
     /**

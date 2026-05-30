@@ -8,6 +8,7 @@ public class UpdateProductItemParamsDto {
     private String expirationDate;
     private String pricePaid;
     private ProductItem.StorageLocation storageLocation;
+    private String quantityRemainingValue;
     private Long version;
 
     public UpdateProductItemParamsDto() {
@@ -36,6 +37,14 @@ public class UpdateProductItemParamsDto {
 
     public void setStorageLocation(ProductItem.StorageLocation storageLocation) {
         this.storageLocation = storageLocation;
+    }
+
+    public String getQuantityRemainingValue() {
+        return quantityRemainingValue;
+    }
+
+    public void setQuantityRemainingValue(String quantityRemainingValue) {
+        this.quantityRemainingValue = quantityRemainingValue;
     }
 
     @NotNull

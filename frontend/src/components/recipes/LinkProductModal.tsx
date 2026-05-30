@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { searchProductsByName } from "../../api/products/productService";
-import { Modal, Pressable, StyleSheet, View, Text, TextInput, ScrollView } from "react-native";
+import { Dimensions, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View, Text, TextInput, ScrollView } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { THEME } from "../../theme/theme";
+
+const WINDOW_HEIGHT = Dimensions.get("window").height;
 
 export type LinkedProduct = {
     id: number;
@@ -55,50 +57,55 @@ export default function LinkProductModal({ visible, householdId, onSelect, onClo
 
     return (
         <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
-            <Pressable style={styles.backdrop} onPress={handleClose} />
-            <View style={styles.sheet}>
-                <View style={styles.handle} />
-                <Text style={styles.title}>{t("addRecipe.ingredient.linkTitle")}</Text>
+            <View style={styles.container}>
+                <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
+                <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
+                    <View style={styles.sheet}>
+                        <View style={styles.handle} />
+                        <Text style={styles.title}>{t("addRecipe.ingredient.linkTitle")}</Text>
 
-                <TextInput
-                    style={styles.input}
-                    value={search}
-                    onChangeText={handleSearch}
-                    placeholder={t("addRecipe.ingredient.searchPlaceholder")}
-                    placeholderTextColor={THEME.muted}
-                    autoFocus
-                />
-            
-                <ScrollView keyboardShouldPersistTaps="handled" style={styles.results}>
-                    {products.length === 0 && search.trim().length > 0 && (
-                        <Text style={styles.emptyText}>{t("addRecipe.ingredient.noResults")}</Text>
-                    )}
-                    {products.map((p) => {
-                        const noStock = p.hasActiveItems === false;
-                        return (
-                            <Pressable key={p.id} style={styles.resultItem} onPress={() => handleSelect(p)}>
-                                <View style={styles.resultLeft}>
-                                    <Text style={[styles.resultName, noStock && styles.resultNameNoStock]}>{p.name}</Text>
-                                    {noStock && (
-                                        <View style={styles.noStockBadge}>
-                                            <MaterialCommunityIcons name="package-variant-remove" size={11} color="#9CA3AF" />
-                                            <Text style={styles.noStockText}>{t("addRecipe.ingredient.noStock")}</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={search}
+                            onChangeText={handleSearch}
+                            placeholder={t("addRecipe.ingredient.searchPlaceholder")}
+                            placeholderTextColor={THEME.muted}
+                            autoFocus
+                        />
+
+                        <ScrollView keyboardShouldPersistTaps="handled" style={styles.results}>
+                            {products.length === 0 && search.trim().length > 0 && (
+                                <Text style={styles.emptyText}>{t("addRecipe.ingredient.noResults")}</Text>
+                            )}
+                            {products.map((p) => {
+                                const noStock = p.hasActiveItems === false;
+                                return (
+                                    <Pressable key={p.id} style={styles.resultItem} onPress={() => handleSelect(p)}>
+                                        <View style={styles.resultLeft}>
+                                            <Text style={[styles.resultName, noStock && styles.resultNameNoStock]}>{p.name}</Text>
+                                            {noStock && (
+                                                <View style={styles.noStockBadge}>
+                                                    <MaterialCommunityIcons name="package-variant-remove" size={11} color="#9CA3AF" />
+                                                    <Text style={styles.noStockText}>{t("addRecipe.ingredient.noStock")}</Text>
+                                                </View>
+                                            )}
                                         </View>
-                                    )}
-                                </View>
-                                <Text style={[styles.resultUnit, noStock && styles.resultUnitNoStock]}>{p.unit.toLowerCase()}</Text>
-                            </Pressable>
-                        );
-                    })}
-                </ScrollView>
+                                        <Text style={[styles.resultUnit, noStock && styles.resultUnitNoStock]}>{p.unit.toLowerCase()}</Text>
+                                    </Pressable>
+                                );
+                            })}
+                        </ScrollView>
+                    </View>
+                </KeyboardAvoidingView>
             </View>
         </Modal>
     )
 }
 
 const styles = StyleSheet.create({
-    backdrop: {
+    container: {
         flex: 1,
+        justifyContent: "flex-end",
         backgroundColor: "rgba(0,0,0,0.35)",
     },
     sheet: {
@@ -107,7 +114,7 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 20,
         padding: 18,
         gap: 12,
-        maxHeight: "70%",
+        maxHeight: WINDOW_HEIGHT * 0.7,
     },
     handle: {
         width: 44,
@@ -133,7 +140,7 @@ const styles = StyleSheet.create({
         color: THEME.text,
     },
     results: {
-        flexGrow: 0,
+        maxHeight: WINDOW_HEIGHT * 0.4,
     },
     resultItem: {
         flexDirection: "row",
